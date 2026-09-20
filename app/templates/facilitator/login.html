@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ t('facilitator.title') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow">{{ t('app.name') }}</div>
+  <h1>{{ t('facilitator.title') }}</h1>
+
+  {% if disabled %}
+  <div class="banner bad">{{ t('facilitator.disabled') }}</div>
+  {% endif %}
+  {% if error %}
+  <div class="banner bad">{{ t('facilitator.bad_password') }}</div>
+  {% endif %}
+
+  <form method="post" class="panel">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field">
+      <span class="lb">{{ t('facilitator.password') }}</span>
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn primary wide" type="submit" {{ 'disabled' if disabled }}>{{ t('facilitator.sign_in') }}</button>
+  </form>
+</div>
+{% endblock %}

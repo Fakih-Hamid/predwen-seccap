@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ t('assistant.pick_title') }} · {{ t('assistant.title') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow">{{ t('assistant.title') }}</div>
+  <h1>{{ t('assistant.pick_title') }}</h1>
+
+  {% if not ev %}
+  <div class="banner">{{ t('assistant.no_session') }}</div>
+  {% else %}
+  <p class="small mut">{{ t('assistant.pick_lead') }}</p>
+  <div class="tools">
+    {% for team in teams %}
+    <form method="post" action="{{ url_for('assistant.choose_team') }}" class="toolrow">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="team_id" value="{{ team.id }}">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <span>
+          <span class="swatch {{ team.color }}" aria-hidden="true"></span>
+          <span class="tl">{{ team.name }}</span>
+          <span class="small mut"> · {{ team.online }}/{{ team.size }} {{ t('assistant.online') }}</span>
+        </span>
+        <button class="btn sm primary" type="submit">{{ t('assistant.pick') }}</button>
+      </div>
+    </form>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('assistant.logout') }}" style="margin-top:1.5rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn sm ghost" type="submit">{{ t('assistant.sign_out') }}</button>
+  </form>
+</div>
+{% endblock %}

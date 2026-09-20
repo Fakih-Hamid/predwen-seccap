@@ -1,0 +1,30 @@
+<section class="stuck" data-stuck data-scope="{{ scope }}"
+         data-total="{{ ladder | length }}"
+         aria-labelledby="stuck-h-{{ scope }}">
+  {% set hl = heading_level | default(3) %}
+  <div class="stuckhead">
+    <h{{ hl }} id="stuck-h-{{ scope }}">
+      {{ t('artifact.stuck') if scope != 'mission' else t('mission.stuck_title') }}
+    </h{{ hl }}>
+    <p class="small mut">{{ t('mission.stuck_lead') }}</p>
+  </div>
+
+  <div class="revealed" data-revealed role="status" aria-live="polite"></div>
+
+  <div class="stuckbar">
+    <button class="btn" type="button" data-reveal
+            data-t-first="{{ t('mission.stuck_first') }}"
+            data-t-more="{{ t('mission.stuck_more') }}">{{ t('mission.stuck_first') }}</button>
+    <span class="small mut" data-count
+          data-t="{{ t('mission.stuck_used', used='{used}', total='{total}') }}"></span>
+  </div>
+
+  <p class="small mut" data-exhausted hidden>
+    {{ t('mission.stuck_all_source') if scope != 'mission' else t('mission.stuck_all') }}
+  </p>
+
+  {% for h in ladder %}
+  <span class="stuckrung" data-rung="{{ h.id }}"
+        data-level="{{ h.label or t('hint_level.' ~ h.level) }}" hidden></span>
+  {% endfor %}
+</section>

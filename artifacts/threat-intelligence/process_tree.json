@@ -1,0 +1,46 @@
+{
+  "host": "SR-DEV-077",
+  "captured_at": "2026-09-02T00:23:00Z",
+  "processes": [
+    {
+      "pid": 1180,
+      "ppid": 704,
+      "image": "C:\\Windows\\explorer.exe",
+      "user": "SAKURA\\s.nakamura",
+      "start_time": "2026-09-01T23:48:02Z"
+    },
+    {
+      "pid": 6020,
+      "ppid": 1180,
+      "image": "C:\\Program Files\\Sakura SecureConnect\\SecureConnect.exe",
+      "command_line": "\"C:\\Program Files\\Sakura SecureConnect\\SecureConnect.exe\" --background",
+      "user": "SAKURA\\s.nakamura",
+      "start_time": "2026-09-02T00:18:37Z"
+    },
+    {
+      "pid": 6224,
+      "ppid": 6020,
+      "image": "C:\\Users\\s.nakamura\\AppData\\Local\\Temp\\SakuraVPNUpdate_4.2.1.exe",
+      "command_line": "SakuraVPNUpdate_4.2.1.exe /quiet /channel stable",
+      "sha256": "ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31",
+      "user": "SAKURA\\s.nakamura",
+      "start_time": "2026-09-02T00:19:16Z"
+    },
+    {
+      "pid": 6388,
+      "ppid": 6224,
+      "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "command_line": "powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand JABjAGEAbQBwAGEAaQBnAG4APQAnAEsASQBUAFMAVQBOAEUALQA0ADIAJwA7ACQAZQBuAGQAcABvAGkAbgB0AD0AJwBoAHQAdABwAHMAOgAvAC8AYQByAGMAaABpAHYAZQAuAHMAYQBrAHUAcgBhAC0AdgBwAG4ALQB1AHAAZABhAHQAZQAuAGMAbwBtAC8AYQAvAGMAaABlAGMAawBpAG4AJwA7AFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAIgAkAGMAYQBtAHAAYQBpAGcAbgB8ACQAZQBuAGQAcABvAGkAbgB0ACIA",
+      "user": "SAKURA\\s.nakamura",
+      "start_time": "2026-09-02T00:19:17Z"
+    },
+    {
+      "pid": 6492,
+      "ppid": 6224,
+      "image": "C:\\Windows\\System32\\schtasks.exe",
+      "command_line": "schtasks.exe /Create /TN \"SakuraVPN Update Check\" /SC ONLOGON /TR \"%APPDATA%\\SakuraVPN\\svcupd.exe\"",
+      "user": "SAKURA\\s.nakamura",
+      "start_time": "2026-09-02T00:20:25Z"
+    }
+  ]
+}

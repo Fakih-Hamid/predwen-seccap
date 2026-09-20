@@ -1,0 +1,16 @@
+{
+  "product": "Sakura SecureConnect VPN",
+  "channel": "stable",
+  "version": "4.2.1",
+  "published_at": "2026-09-02T00:10:00Z",
+  "artifact": {
+    "name": "SakuraVPNUpdate_4.2.1.bin",
+    "url": "https://cdn.sakura-vpn-update.com/releases/SakuraVPNUpdate_4.2.1.bin",
+    "size": 711,
+    "sha256": "ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31"
+  },
+  "signature": {
+    "status": "not_present",
+    "expected_key_id": "SR-REL-2019"
+  }
+}

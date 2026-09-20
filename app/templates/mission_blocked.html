@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow mut">{{ team.display_name }}</div>
+  <h1>{{ title }}</h1>
+  <div class="banner info">{{ t('mission.blocked_title') }}</div>
+  <p class="lead">{{ t('mission.blocked_body') }}</p>
+  <p class="small">{{ t('mission.blocked_remaining',
+                       missions=missions | map(attribute='title') | join(' · ')) }}</p>
+  {% for m in missions %}
+  <a class="btn primary" href="{{ url_for('participant.mission', slug=m.slug) }}">
+    {{ m.title }}</a>
+  {% endfor %}
+  <a class="btn" href="{{ url_for('participant.team_home') }}">{{ t('nav.team') }}</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var SLUG = {{ slug | tojson }};
+  poll('/api/session-state', function (d) {
+    if ((d.ready || []).indexOf(SLUG) !== -1) location.reload();
+  });
+})();
+</script>
+{% endblock %}

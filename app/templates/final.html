@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+{% block title %}{{ t('final.title') }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page wide">
+  <div class="eyebrow">{{ t('final.eyebrow') }} · {{ team.display_name }}</div>
+  <h1>{{ t('final.title') }}</h1>
+
+  {% if closed %}<div class="banner">{{ t('final.after_close') }}</div>
+  {% elif report.locked %}<div class="banner ok">{{ t('final.locked') }}</div>{% endif %}
+
+  <div class="work">
+    <div class="side">
+      <div class="panel tight">
+        {% for para in definition.narrative.split('\n\n') %}<p class="small">{{ para }}</p>{% endfor %}
+      </div>
+
+      <div class="panel tight">
+        <div class="eyebrow mut">{{ t('final.dossier') }}</div>
+        {% for m in dossier %}
+        <h3 style="margin-top:0.75rem">{{ m.title }}</h3>
+        {% if not m['items'] %}
+        <p class="small mut">{{ t('final.dossier_empty') }}</p>
+        {% else %}
+        {% for item in m['items'] %}
+        <div class="ob">
+          <div class="who">{{ item.prompt }}</div>
+          <div class="tx">{{ item.answer_text }}</div>
+          {% for e in item.evidence %}
+          <div class="small mut" style="margin-top:0.1875rem">
+            <span class="art">{{ e.artifact_title }}</span>
+            {% if e.excerpt %}<div style="margin-top:0.1875rem">{{ e.excerpt }}</div>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="panel">
+        <h2>{{ t('final.timeline') }}</h2>
+        <div class="hint">{{ t('final.timeline_hint') }}</div>
+        <div class="orderlist" id="timeline">
+          {% for e in report.timeline_events %}
+          <div class="orderitem" data-id="{{ e.id }}">
+            <span class="no"></span>
+            <span class="lbl">{{ e.label }}</span>
+            <span class="mv">
+              <button type="button" class="btn sm ghost" data-move="up" aria-label="{{ t('mission.a11y_move_up', item=e.label) }}">↑</button>
+              <button type="button" class="btn sm ghost" data-move="down" aria-label="{{ t('mission.a11y_move_down', item=e.label) }}">↓</button>
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 id="lb-verdict">{{ t('final.verdict') }}</h2>
+        <textarea id="verdict" aria-labelledby="lb-verdict" rows="3" maxlength="2000">{{ report.verdict }}</textarea>
+      </div>
+
+      <div class="grid three">
+        <div class="panel">
+          <h3 id="lb-confirmed">{{ t('final.confirmed') }}</h3>
+          <textarea id="confirmed_facts" aria-labelledby="lb-confirmed" rows="6" maxlength="2000">{{ report.confirmed_facts }}</textarea>
+        </div>
+        <div class="panel">
+          <h3 id="lb-inferences">{{ t('final.inferences') }}</h3>
+          <textarea id="inferences" aria-labelledby="lb-inferences" rows="6" maxlength="2000">{{ report.inferences }}</textarea>
+        </div>
+        <div class="panel">
+          <h3 id="lb-unknowns">{{ t('final.unknowns') }}</h3>
+          <textarea id="unknowns" aria-labelledby="lb-unknowns" rows="6" maxlength="2000">{{ report.unknowns }}</textarea>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 id="lb-scope">{{ t('final.scope') }}</h3>
+        <p class="small mut">{{ t('final.scope_hint') }}</p>
+        <textarea id="scope" aria-labelledby="lb-scope" rows="4" maxlength="2000">{{ report.scope }}</textarea>
+      </div>
+
+      <div class="panel">
+        <h2>{{ t('final.response_now') }}</h2>
+        <div class="hint">{{ t('final.response_now_hint') }}</div>
+        <div class="small mut">{{ t('mission.order_hint') }}</div>
+        <div class="orderlist" id="response">
+          {% for a in report.response_items %}
+          <div class="orderitem" data-id="{{ a.id }}">
+            <span class="no"></span>
+            <span class="lbl">{{ a.label }}</span>
+            <span class="mv">
+              <button type="button" class="btn sm ghost" data-move="up" aria-label="{{ t('mission.a11y_move_up', item=a.label) }}">↑</button>
+              <button type="button" class="btn sm ghost" data-move="down" aria-label="{{ t('mission.a11y_move_down', item=a.label) }}">↓</button>
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="small mut cutnote">{{ t('final.top_five_note', top=5) }}</div>
+      </div>
+
+      <div class="panel">
+        <h2>{{ t('final.response_later') }}</h2>
+        <div class="hint">{{ t('final.response_later_hint') }}</div>
+        <div class="small mut">{{ t('mission.order_hint') }}</div>
+        <div class="orderlist" id="response-later">
+          {% for a in report.response_later_items %}
+          <div class="orderitem" data-id="{{ a.id }}">
+            <span class="no"></span>
+            <span class="lbl">{{ a.label }}</span>
+            <span class="mv">
+              <button type="button" class="btn sm ghost" data-move="up" aria-label="{{ t('mission.a11y_move_up', item=a.label) }}">↑</button>
+              <button type="button" class="btn sm ghost" data-move="down" aria-label="{{ t('mission.a11y_move_down', item=a.label) }}">↓</button>
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="small mut cutnote">{{ t('final.top_five_note', top=5) }}</div>
+      </div>
+
+      <div class="panel">
+        <h2 id="lb-other">{{ t('final.response_other') }}</h2>
+        <div class="hint">{{ t('final.response_other_hint') }}</div>
+        <textarea id="response_other" aria-labelledby="lb-other" rows="3"
+                  maxlength="2000">{{ report.response_other }}</textarea>
+      </div>
+
+      <div class="panel">
+        <h2 id="lb-limitations">{{ t('final.limitations') }}</h2>
+        <textarea id="limitations" aria-labelledby="lb-limitations" rows="3" maxlength="2000">{{ report.limitations }}</textarea>
+      </div>
+
+      <div class="panel">
+        <div class="row" style="justify-content:space-between">
+          <a class="btn" href="{{ url_for('participant.presentation') }}">{{ t('final.open_presentation') }}</a>
+          <button class="btn warn" id="lockfinal" {{ 'disabled' if report.locked }}>{{ t('final.lock') }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const LOCKED = {{ report.locked | tojson }};
+  const TOP = {{ report.top_actions | tojson }};
+  const RV = {{ {
+      'title': t('final.review_title'),
+      'counts': t('final.review_counts', filled='{filled}', total='{total}'),
+      'all_good': t('final.review_all_good'),
+      'gaps': t('final.review_gaps'),
+      'filled': t('final.review_filled'),
+      'blank': t('final.review_blank'),
+      'ordered': t('final.review_ordered'),
+      'not_ordered': t('final.review_not_ordered'),
+      'go': t('final.review_go'),
+      'consequence': t('final.review_consequence'),
+      'back': t('final.review_back'),
+      'lock': t('final.review_lock'),
+      'f_timeline': t('final.timeline'),
+      'f_response': t('final.response_now'),
+      'f_response_later': t('final.response_later'),
+      'f_verdict': t('final.verdict'),
+      'f_confirmed': t('final.confirmed'),
+      'f_inferences': t('final.inferences'),
+      'f_unknowns': t('final.unknowns'),
+      'f_scope': t('final.scope'),
+      'f_limitations': t('final.limitations'),
+  } | tojson }};
+  const SAVED_TIMELINE = {{ report.timeline | tojson }};
+  const SAVED_RESPONSE = {{ report.response | tojson }};
+  const SAVED_RESPONSE_LATER = {{ report.response_later | tojson }};
+  const ONE_WRITER = {
+    title: {{ t('final.one_writer_title') | tojson }},
+    body: {{ t('final.one_writer_body') | tojson }},
+    check: {{ t('final.one_writer_check') | tojson }},
+    ok: {{ t('common.ok') | tojson }}
+  };
+
+  if (!LOCKED) {
+    let asked = true;
+    try { asked = sessionStorage.getItem('seccap.final.writer') === '1'; }
+    catch (e) {}
+    if (!asked) {
+      try { sessionStorage.setItem('seccap.final.writer', '1'); } catch (e) {}
+      openModal(function (box, close) {
+        const h = document.createElement('h2');
+        h.textContent = ONE_WRITER.title;
+        const p = document.createElement('p');
+        p.className = 'lead';
+        p.textContent = ONE_WRITER.body;
+        const label = document.createElement('label');
+        label.className = 'checkline';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        const span = document.createElement('span');
+        span.textContent = ONE_WRITER.check;
+        label.appendChild(cb); label.appendChild(span);
+        const ok = document.createElement('button');
+        ok.className = 'btn primary';
+        ok.textContent = ONE_WRITER.ok;
+        ok.disabled = true;
+        cb.addEventListener('change', function () { ok.disabled = !cb.checked; });
+        ok.addEventListener('click', close);
+        box.appendChild(h); box.appendChild(p); box.appendChild(label); box.appendChild(ok);
+      }, {focus: 'input'});
+    }
+  }
+
+  const timeline = document.getElementById('timeline');
+  const response = document.getElementById('response');
+  const responseLater = document.getElementById('response-later');
+
+  function applyOrder(list, ids) {
+    (ids || []).forEach(function (id) {
+      const el = list.querySelector('.orderitem[data-id="' + CSS.escape(id) + '"]');
+      if (el) list.appendChild(el);
+    });
+  }
+  applyOrder(timeline, SAVED_TIMELINE);
+  applyOrder(response, SAVED_RESPONSE);
+  applyOrder(responseLater, SAVED_RESPONSE_LATER);
+  markTop();
+
+  function markTop() {
+    [response, responseLater].forEach(function (list) {
+      Array.prototype.forEach.call(list.querySelectorAll('.orderitem'), function (el, i) {
+        el.classList.toggle('picked', i < TOP);
+        el.classList.toggle('firstout', i === TOP);
+      });
+    });
+  }
+
+  let pending = {};
+  const flush = debounce(async function () {
+    if (LOCKED) return;
+    const body = pending;
+    pending = {};
+    const r = await api('POST', '/api/final', body);
+    if (r.ok) toast(window.SECCAP.t.saved);
+    else Object.assign(pending, body);      // keep it for the next attempt
+  }, 700);
+
+  function save(fields) {
+    Object.assign(pending, fields);
+    flush();
+  }
+
+  wireReorder(timeline, function (order) { save({timeline: order}); });
+  wireReorder(response, function (order) { markTop(); save({response: order}); });
+  wireReorder(responseLater, function (order) { markTop(); save({response_later: order}); });
+
+  ['verdict', 'confirmed_facts', 'inferences', 'unknowns', 'scope', 'limitations',
+   'response_other'].forEach(function (id) {
+    const el = document.getElementById(id);
+    el.addEventListener('input', function () {
+      const body = {};
+      body[id] = el.value;
+      save(body);
+    });
+    if (LOCKED) el.setAttribute('readonly', 'readonly');
+  });
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  const FIELDS = [
+    {id: 'verdict', label: RV.f_verdict},
+    {id: 'confirmed_facts', label: RV.f_confirmed},
+    {id: 'inferences', label: RV.f_inferences},
+    {id: 'unknowns', label: RV.f_unknowns},
+    {id: 'scope', label: RV.f_scope},
+    {id: 'limitations', label: RV.f_limitations}
+  ];
+
+  let reviewDialog = null;
+
+  function reviewBeforeFinalLock(onConfirm) {
+    const rows = FIELDS.map(function (f) {
+      const box = document.getElementById(f.id);
+      return {id: f.id, label: f.label, text: (box.value || '').trim()};
+    });
+    const empty = rows.filter(r => !r.text);
+    const orders = [
+      {id: 'timeline', label: RV.f_timeline,
+       touched: (SAVED_TIMELINE || []).length > 0},
+      {id: 'response', label: RV.f_response,
+       touched: (SAVED_RESPONSE || []).length > 0},
+      {id: 'response-later', label: RV.f_response_later,
+       touched: (SAVED_RESPONSE_LATER || []).length > 0}
+    ];
+    const untouched = orders.filter(o => !o.touched);
+
+    const back = el('div', 'modalback');
+    const box = el('div', 'modal wide');
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-labelledby', 'finalreviewh');
+
+    const h = el('h2', null, RV.title);
+    h.id = 'finalreviewh';
+    box.appendChild(h);
+    box.appendChild(el('p', 'small', RV.counts
+      .replace('{filled}', rows.length - empty.length)
+      .replace('{total}', rows.length)));
+    const gaps = empty.length + untouched.length;
+    box.appendChild(el('p', gaps ? 'small warn' : 'small ok',
+                       gaps ? RV.gaps : RV.all_good));
+
+    const list = el('ul', 'reviewlist');
+    orders.forEach(function (o) {
+      const li = el('li', o.touched ? 'ok' : 'gap');
+      li.appendChild(el('span', 'rp', o.label));
+      const state = el('span', 'rs');
+      state.appendChild(el('span', 'rmark', o.touched ? '✓' : '—'));
+      state.appendChild(el('span', null, o.touched ? RV.ordered : RV.not_ordered));
+      li.appendChild(state);
+      const go = el('button', 'btn sm ghost', RV.go);
+      go.setAttribute('aria-label', RV.go + ' — ' + o.label);
+      go.addEventListener('click', function () { closeReview(); focusField(o.id); });
+      li.appendChild(go);
+      list.appendChild(li);
+    });
+    rows.forEach(function (r) {
+      const li = el('li', r.text ? 'ok' : 'gap');
+      li.appendChild(el('span', 'rp', r.label));
+      const state = el('span', 'rs');
+      state.appendChild(el('span', 'rmark', r.text ? '✓' : '—'));
+      state.appendChild(el('span', null, r.text ? RV.filled : RV.blank));
+      li.appendChild(state);
+      const go = el('button', 'btn sm ghost', RV.go);
+      go.setAttribute('aria-label', RV.go + ' — ' + r.label);
+      go.addEventListener('click', function () { closeReview(); focusField(r.id); });
+      li.appendChild(go);
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+    box.appendChild(el('p', 'small mut', RV.consequence));
+
+    const row = el('div', 'row');
+    row.style.justifyContent = 'flex-end';
+    row.style.marginTop = '1rem';
+    const cancel = el('button', 'btn primary', RV.back);
+    const go = el('button', 'btn warn', RV.lock);
+    cancel.addEventListener('click', closeReview);
+    go.addEventListener('click', function () { closeReview(); onConfirm(); });
+    row.appendChild(cancel);
+    row.appendChild(go);
+    box.appendChild(row);
+
+    function focusField(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      target.scrollIntoView({block: 'center'});
+      target.focus();
+    }
+    function closeReview() {
+      if (!reviewDialog) return;
+      document.removeEventListener('keydown', onKey);
+      reviewDialog.remove();
+      reviewDialog = null;
+      const opener = document.getElementById('lockfinal');
+      if (opener) opener.focus();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') closeReview();
+      if (e.key === 'Tab') {
+        const f = box.querySelectorAll('button');
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+        else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+      }
+    }
+
+    back.appendChild(box);
+    document.body.appendChild(back);
+    reviewDialog = back;
+    document.addEventListener('keydown', onKey);
+    cancel.focus();
+  }
+
+  document.getElementById('lockfinal').addEventListener('click', function () {
+    if (LOCKED) return;
+    reviewBeforeFinalLock(doLock);
+  });
+
+  async function doLock() {
+    await api('POST', '/api/final', {
+      timeline: currentOrder(timeline),
+      response: currentOrder(response),
+      response_later: currentOrder(responseLater),
+      verdict: document.getElementById('verdict').value,
+      confirmed_facts: document.getElementById('confirmed_facts').value,
+      inferences: document.getElementById('inferences').value,
+      unknowns: document.getElementById('unknowns').value,
+      scope: document.getElementById('scope').value,
+      limitations: document.getElementById('limitations').value,
+      response_other: document.getElementById('response_other').value
+    });
+    const r = await api('POST', '/api/final/lock', {});
+    if (r.ok) location.reload();
+  }
+})();
+</script>
+{% endblock %}

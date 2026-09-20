@@ -1,0 +1,24 @@
+{
+  "snapshot_time": "2026-09-02T09:10:51Z",
+  "source": "https://rdap.verisign.com/com/v1/domain/sakura-vpn-update.com",
+  "objectClassName": "domain",
+  "handle": "3136600782_DOMAIN_COM-VRSN",
+  "ldhName": "SAKURA-VPN-UPDATE.COM",
+  "status": ["client transfer prohibited"],
+  "registrar": {
+    "name": "NameCheap, Inc.",
+    "iana_id": "1068"
+  },
+  "events": [
+    {"eventAction": "registration", "eventDate": "2026-08-27T18:15:10Z"},
+    {"eventAction": "expiration", "eventDate": "2027-08-27T18:15:10Z"},
+    {"eventAction": "last changed", "eventDate": "2026-08-27T18:22:20Z"}
+  ],
+  "secureDNS": {"delegationSigned": false},
+  "nameservers": [
+    "ITZEL.NS.CLOUDFLARE.COM",
+    "THADDEUS.NS.CLOUDFLARE.COM"
+  ],
+  "privacy_note": "No registrant identity is exposed. Do not infer the incident operator from registrar or privacy data.",
+  "capture_note": "Cached RDAP response retained for fallback use if the live service is unavailable."
+}

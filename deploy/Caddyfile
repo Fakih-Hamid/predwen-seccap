@@ -1,0 +1,27 @@
+{
+	admin off
+}
+
+{$SECCAP_SITE_ADDRESS} {
+	encode zstd gzip
+
+	basic_auth {
+		{$SECCAP_BASIC_AUTH_USER} {$SECCAP_BASIC_AUTH_HASH}
+	}
+
+	reverse_proxy seccap:8000 {
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		header_up Host {host}
+
+		lb_try_duration 5s
+		lb_try_interval 250ms
+	}
+
+	header Strict-Transport-Security "max-age=31536000"
+
+	log {
+		output stderr
+		format console
+	}
+}

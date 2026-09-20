@@ -1,0 +1,55 @@
+{
+  "snapshot_time": "2026-09-02T09:14:00Z",
+  "source": "https://www.certkit.io/tools/ct-logs/?query=sakura-vpn-update.com",
+  "tool": "CertKit — Search Certificate Transparency Logs",
+  "query": "sakura-vpn-update.com",
+  "result_count": 7,
+  "capture_note": "Captured from the live tool so the session survives that service being unavailable. It is shown only when the tool cannot be reached; while the tool answers, teams run the search themselves.",
+  "columns": ["not_before", "common_name", "matching_sans", "issuer"],
+  "certificates": [
+    {
+      "not_before": "2026-08-28",
+      "common_name": "archive.sakura-vpn-update.com",
+      "matching_sans": ["archive.sakura-vpn-update.com"],
+      "issuer": "Google Trust Services"
+    },
+    {
+      "not_before": "2026-08-28",
+      "common_name": "archive.sakura-vpn-update.com",
+      "matching_sans": ["archive.sakura-vpn-update.com"],
+      "issuer": "Google Trust Services"
+    },
+    {
+      "not_before": "2026-08-28",
+      "common_name": "update.sakura-vpn-update.com",
+      "matching_sans": ["update.sakura-vpn-update.com"],
+      "issuer": "Google Trust Services"
+    },
+    {
+      "not_before": "2026-08-28",
+      "common_name": "update.sakura-vpn-update.com",
+      "matching_sans": ["update.sakura-vpn-update.com"],
+      "issuer": "Google Trust Services"
+    },
+    {
+      "not_before": "2026-08-28",
+      "common_name": "cdn.sakura-vpn-update.com",
+      "matching_sans": ["cdn.sakura-vpn-update.com"],
+      "issuer": "Google Trust Services"
+    },
+    {
+      "not_before": "2026-08-28",
+      "common_name": "cdn.sakura-vpn-update.com",
+      "matching_sans": ["cdn.sakura-vpn-update.com"],
+      "issuer": "Google Trust Services"
+    },
+    {
+      "not_before": "2026-08-29",
+      "common_name": "sakura-vpn-update.com",
+      "matching_sans": ["*.sakura-vpn-update.com", "sakura-vpn-update.com"],
+      "issuer": "Sectigo Limited"
+    }
+  ],
+  "reading_note": "A certificate transparency log records that a certificate was ISSUED for a name. It does not say the host is running, who operates it, or what it serves. Two entries for one name are ordinarily a renewal or a second issuer, not two machines.",
+  "scope_note": "Every name here is organizer-controlled and part of the exercise. Nothing in this file identifies a real person or a real company."
+}

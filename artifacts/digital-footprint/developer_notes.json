@@ -1,0 +1,31 @@
+{
+  "source": "https://sora-dev77.github.io/",
+  "captured": "2026-09-02",
+  "author": {
+    "name": "Sora Nakamura",
+    "role": "Client software developer — release reliability and update testing",
+    "organization": "Sakura SecureConnect",
+    "contact": "sora.nakamura@sakura-robotics.example",
+    "github": "https://github.com/sora-dev77",
+    "repository": "https://github.com/sora-dev77/sakura-secureconnect-client"
+  },
+  "entries": [
+    {
+      "date": "2026-09-01T18:20:00+09:00",
+      "title": "APAC fallback bench test",
+      "body": "The regional fallback responded consistently during tonight's client test.",
+      "image": "assets/apac-fallback-bench.jpg"
+    },
+    {
+      "date": "2026-08-12T16:12:00+09:00",
+      "title": "SecureConnect 4.2.0 release prep",
+      "body": "Release commit d10897a94b735d367f2fb998d7aace11d457fd0e."
+    },
+    {
+      "date": "2026-07-19T10:48:00+09:00",
+      "title": "Signature checks",
+      "body": "Signing key reference SR-REL-2019; verifier commit 584ba0b3cd519ad86f901bc5eb9ac92a851c03dc."
+    }
+  ],
+  "note": "The bench-test entry is timestamped 18:20 JST on 2026-09-01. The repository change is timestamped 23:52 JST the same evening."
+}

@@ -1,0 +1,23 @@
+{% if compact %}
+<details class="panel tight disclose guide">
+  <summary><h3 class="eyebrow mut">{{ t('roles.guide_title') }}</h3></summary>
+  <p class="small mut">{{ t('roles.guide_lead') }}</p>
+  <ul class="guidelist">
+    {% for r in roles %}
+    <li><b>{{ t('roles.' ~ r) }}</b> — {{ t('roles.' ~ r ~ '_desc') }}</li>
+    {% endfor %}
+  </ul>
+  <p class="small mut">{{ t('roles.guide_any_size') }}</p>
+</details>
+{% else %}
+<div class="panel guide">
+  <h2>{{ t('roles.guide_title') }}</h2>
+  <p class="small mut">{{ t('roles.guide_lead') }}</p>
+  <ul class="guidelist">
+    {% for r in roles %}
+    <li><b>{{ t('roles.' ~ r) }}</b> — {{ t('roles.' ~ r ~ '_desc') }}</li>
+    {% endfor %}
+  </ul>
+  <p class="small mut">{{ t('roles.guide_any_size') }}</p>
+</div>
+{% endif %}

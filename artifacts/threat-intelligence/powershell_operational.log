@@ -1,0 +1,5 @@
+2026-09-02T00:19:17.182Z host=SR-DEV-077 event_id=400 engine=PowerShell state=Available host_application="powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand JABjAGEAbQBwAGEAaQBnAG4APQAnAEsASQBUAFMAVQBOAEUALQA0ADIAJwA7ACQAZQBuAGQAcABvAGkAbgB0AD0AJwBoAHQAdABwAHMAOgAvAC8AYQByAGMAaABpAHYAZQAuAHMAYQBrAHUAcgBhAC0AdgBwAG4ALQB1AHAAZABhAHQAZQAuAGMAbwBtAC8AYQAvAGMAaABlAGMAawBpAG4AJwA7AFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAIgAkAGMAYQBtAHAAYQBpAGcAbgB8ACQAZQBuAGQAcABvAGkAbgB0ACIA"
+2026-09-02T00:19:17.231Z host=SR-DEV-077 event_id=4104 script_block_id=4dbd9fe2-2c21-4ee0-8f3b-4b0c9d41742e message="Script block logging captured an encoded command. Decode as UTF-16LE after Base64."
+2026-09-02T00:19:17.295Z host=SR-DEV-077 event_id=403 engine=PowerShell state=Stopped exit_code=0
+
+# Operational log extract. The encoded command line is preserved verbatim; decode it before drawing any conclusion.

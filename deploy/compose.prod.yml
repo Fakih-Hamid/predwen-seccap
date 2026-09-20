@@ -1,0 +1,68 @@
+name: predwen-seccap
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  seccap:
+    image: predwen-seccap:${SECCAP_IMAGE_TAG:?SECCAP_IMAGE_TAG is required}
+    pull_policy: never
+    restart: unless-stopped
+    logging: *logging
+    expose:
+      - "8000"                    # internal to the `edge` network only
+    environment:
+      SECCAP_DATABASE_URI: sqlite:////data/seccap.db
+      SECCAP_TRUSTED_PROXIES: "1"
+      SECCAP_WORKERS: "4"
+      SECCAP_COOKIE_SECURE: "1"
+      SECCAP_DEFAULT_LANG: "${SECCAP_DEFAULT_LANG:-ja}"
+      SECCAP_JOIN_RPM: "${SECCAP_JOIN_RPM:-60}"
+      SECCAP_SECRET_KEY: "${SECCAP_SECRET_KEY:?SECCAP_SECRET_KEY is required}"
+      SECCAP_FACILITATOR_PASSWORD_HASH: "${SECCAP_FACILITATOR_PASSWORD_HASH:?required}"
+      SECCAP_ASSISTANT_PASSWORD_HASH: "${SECCAP_ASSISTANT_PASSWORD_HASH:-}"
+      SECCAP_ADMIN_BYPASS: ""
+      SECCAP_DEBUG: ""
+    volumes:
+      - seccap-data:/data
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  caddy:
+    image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    restart: unless-stopped
+    logging: *logging
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"             # HTTP/3
+    environment:
+      SECCAP_SITE_ADDRESS: "${SECCAP_SITE_ADDRESS:?SECCAP_SITE_ADDRESS is required}"
+      SECCAP_BASIC_AUTH_USER: "${SECCAP_BASIC_AUTH_USER:?required}"
+      SECCAP_BASIC_AUTH_HASH: "${SECCAP_BASIC_AUTH_HASH:?required}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - edge
+    depends_on:
+      - seccap
+
+networks:
+  edge:
+    driver: bridge
+
+volumes:
+  seccap-data:
+  caddy-data:
+  caddy-config:

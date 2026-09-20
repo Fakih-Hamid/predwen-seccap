@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ t('briefing.title') }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="eyebrow">{{ t('briefing.title') }}</div>
+  <h1>{{ t('briefing.story_title') }}</h1>
+
+  <div class="panel">
+    {% for para in t('briefing.story').split('\n\n') %}
+    <p class="lead">{{ para }}</p>
+    {% endfor %}
+  </div>
+
+  <div class="grid two">
+    <div class="panel">
+      <h2>{{ t('briefing.rules_title') }}</h2>
+      {% for para in t('briefing.rules').split('\n\n') %}
+      <p>{{ para }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="panel">
+      <h2>{{ t('briefing.claims_title') }}</h2>
+      <p>{{ t('briefing.claims') }}</p>
+    </div>
+  </div>
+
+
+  <div class="panel tight">
+    <h2>{{ t('briefing.rejoin_title') }}</h2>
+    <p>{{ t('briefing.rejoin') }}</p>
+  </div>
+
+  {% include "_guide.html" %}
+
+  <div class="pagenext">
+    {% if nav and nav.mission %}
+    <a class="btn primary" href="{{ url_for('participant.mission', slug=nav.mission.slug) }}">
+      {{ nav.mission.title }} →
+    </a>
+    {% else %}
+    <a class="btn primary" href="{{ url_for('participant.team_home') }}">{{ t('briefing.continue') }} →</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

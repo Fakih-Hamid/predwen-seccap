@@ -1,0 +1,64 @@
+{
+  "report_id": "SBX-K42-20260902-01",
+  "analysis_started": "2026-09-02T01:05:00Z",
+  "sample": {
+    "submitted_name": "SakuraVPNUpdate_4.2.1.bin",
+    "sha256": "ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31",
+    "classification": "malicious"
+  },
+  "observed_behaviors": [
+    {
+      "behavior": "Hidden PowerShell with Base64-encoded UTF-16LE command",
+      "evidence": "powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand ...",
+      "attack_id": "T1059.001"
+    },
+    {
+      "behavior": "Registry Run key persistence",
+      "evidence": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SakuraVPNCheck",
+      "attack_id": "T1547.001"
+    },
+    {
+      "behavior": "Scheduled task persistence",
+      "evidence": "\\SakuraVPN Update Check at logon",
+      "attack_id": "T1053.005"
+    },
+    {
+      "behavior": "HTTPS check-in every 300 seconds",
+      "evidence": "archive.sakura-vpn-update.com/a/checkin",
+      "attack_id": "T1071.001"
+    },
+    {
+      "behavior": "Local document collection and ZIP staging",
+      "evidence": "C:\\ProgramData\\SakuraVPN\\cache\\kumo_stage.zip",
+      "attack_id": "T1560.001"
+    },
+    {
+      "behavior": "Exfiltration over HTTPS",
+      "evidence": "PUT /uploads/kumo_stage_SR-DEV-077_20260902T003644Z.zip",
+      "attack_id": "T1041"
+    }
+  ],
+  "not_observed_in_sandbox": [
+    {
+      "claim": "Software supply-chain compromise",
+      "attack_id": "T1195.002",
+      "reason": "This may describe the wider incident, but it is not a behavior directly observed during sample execution."
+    },
+    {
+      "claim": "Data encrypted for impact",
+      "attack_id": "T1486",
+      "reason": "No file was encrypted or renamed during detonation, and no ransom note was written. The sample copied documents and left the originals in place."
+    },
+    {
+      "claim": "Password spraying",
+      "attack_id": "T1110.003",
+      "reason": "The sample made no authentication attempt against any account or service during detonation."
+    }
+  ],
+  "network_indicators": [
+    "update.sakura-vpn-update.com",
+    "cdn.sakura-vpn-update.com",
+    "archive.sakura-vpn-update.com"
+  ],
+  "analysis_note": "Report generated from controlled detonation telemetry."
+}

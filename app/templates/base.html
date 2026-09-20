@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="{{ html_lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ t('app.name') }}{% endblock %}</title>
+<link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('seccap.css') }}">
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+<a class="skip" href="#main">{{ t('nav.skip') }}</a>
+<div class="shell">
+
+{% block chrome %}
+<header class="top">
+  <a class="brand" href="{{ url_for('participant.team_home') if me else url_for('meta.landing') }}">
+    {% include "_pred.svg" %}
+    <b>{{ t('app.name') }}</b>
+  </a>
+
+  {% if me and my_team %}
+  <span class="chip team"><span class="dot"></span>{{ my_team.display_name }}</span>
+  {% endif %}
+
+  <div class="spacer"></div>
+
+  {% if me %}
+  <nav class="tabs" aria-label="{{ t('nav.team') }}">
+    <a href="{{ url_for('participant.team_home') }}" class="{{ 'on' if request.endpoint == 'participant.team_home' }}">{{ t('nav.team') }}</a>
+
+    {% if nav and nav.mission %}
+    <a href="{{ url_for('participant.mission', slug=nav.mission.slug) }}"
+       class="tab-mission {{ 'on' if request.endpoint == 'participant.mission' }}"
+       title="{{ t('nav.currently_in', title=nav.mission.title) }}">{{ nav.mission.title }}</a>
+    {% else %}
+    <span class="tab-off">{{ t('nav.no_mission_open') }}</span>
+    {% endif %}
+
+    <a href="{{ url_for('participant.evidence_board') }}" class="{{ 'on' if request.endpoint == 'participant.evidence_board' }}">{{ t('nav.evidence') }}</a>
+
+    {% if nav and nav.collective_open %}
+    <a href="{{ url_for('participant.collective') }}" class="{{ 'on' if request.endpoint == 'participant.collective' }}">{{ t('nav.collective') }}</a>
+    {% endif %}
+
+    <a href="{{ url_for('participant.final') }}" class="{{ 'on' if request.endpoint == 'participant.final' }}">{{ t('nav.final') }}</a>
+
+    <a href="{{ url_for('participant.briefing') }}" class="{{ 'on' if request.endpoint == 'participant.briefing' }}">{{ t('nav.briefing') }}</a>
+  </nav>
+  {% elif is_facilitator %}
+  <nav class="tabs">
+    <a href="{{ url_for('facilitator.console') }}" class="{{ 'on' if request.endpoint == 'facilitator.console' }}">{{ t('nav.facilitator') }}</a>
+    <a href="{{ url_for('facilitator.scoring') }}" class="{{ 'on' if request.endpoint == 'facilitator.scoring' }}">{{ t('scoring.title') }}</a>
+    <a href="{{ url_for('assistant.board') }}" class="{{ 'on' if request.endpoint == 'assistant.board' }}">{{ t('nav.assistant') }}</a>
+    <a href="{{ url_for('participant.scoreboard') }}">{{ t('nav.scoreboard') }}</a>
+  </nav>
+  {% elif is_assistant %}
+  <nav class="tabs">
+    <a href="{{ url_for('assistant.board') }}" class="{{ 'on' if request.endpoint == 'assistant.board' }}">{{ t('nav.assistant') }}</a>
+  </nav>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('meta.lang') }}" class="langbox">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <button name="lang" value="ja" class="{{ 'on' if lang == 'ja' }}" type="submit">日本語</button>
+    <button name="lang" value="en" class="{{ 'on' if lang == 'en' }}" type="submit">EN</button>
+  </form>
+</header>
+{% endblock %}
+
+{% if admin_preview %}
+<div class="adminstrip">
+  <b>ADMIN PREVIEW</b>
+  <span>gates open — locked missions, hidden scoreboard and the closed synthesis all render as if they were available</span>
+  <a href="/admin/">panel</a>
+</div>
+{% endif %}
+
+{% block bar %}{% endblock %}
+
+<main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+
+<footer class="foot">
+  <div class="foot-marks">
+    <img src="{{ asset('naist.png') }}" alt="NAIST"
+         onerror="this.remove()">
+    <img src="{{ asset('iplab.png') }}"
+         alt="IPLab, Laboratory for Cyber Resilience" onerror="this.remove()">
+  </div>
+  <div>{{ t('app.name') }} · {{ t('app.tagline') }}</div>
+</footer>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" style="display:none"></div>
+
+<script>
+window.SECCAP = {
+  csrf: {{ csrf_token() | tojson }},
+  poll: {{ poll_seconds | tojson }},
+  lang: {{ lang | tojson }},
+  t: {{ {
+      'saved': t('common.saved'),
+      'saving': t('common.saving'),
+      'error': t('common.error'),
+      'copied': t('artifact.copied'),
+      'published': t('collective.published'),
+  } | tojson }}
+};
+</script>
+<script src="{{ asset('seccap.js') }}"></script>
+{% if me %}
+<script>
+(function () {
+  var TITLE = {{ t('announce.title') | tojson }};
+  var OK = {{ t('announce.ok') | tojson }};
+  var KEY = 'seccap.announce.seen';
+  var dismissed = {};
+  var showing = null;
+  function seen() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+  function keep(tok) { try { localStorage.setItem(KEY, tok); } catch (e) {} }
+  function maybeShow(text, tok) {
+    tok = tok || text || '';
+    if (!text || seen() === tok || dismissed[tok] || showing === tok) return;
+    showing = tok;
+    openModal(function (box, close) {
+      var h = document.createElement('h2'); h.textContent = TITLE;
+      var p = document.createElement('p'); p.className = 'lead'; p.textContent = text;
+      var ok = document.createElement('button'); ok.className = 'btn primary'; ok.textContent = OK;
+      ok.addEventListener('click', function () { keep(tok); close(); });
+      box.appendChild(h); box.appendChild(p); box.appendChild(ok);
+    }, { className: 'announce', focus: '.btn', onClose: function () { dismissed[showing] = true; showing = null; } });
+  }
+  poll('/api/session-state', function (d) { maybeShow(d.announcement, d.announcement_at); });
+})();
+</script>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

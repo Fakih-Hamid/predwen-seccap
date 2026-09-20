@@ -1,0 +1,1140 @@
+{
+ "final-incident.yaml": {
+  "budget": {
+   "completeness": 30,
+   "correctness": 60,
+   "reasoning": 60
+  },
+  "facilitator_notes": {},
+  "max_points": 150,
+  "narrative": {},
+  "objectives": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "questions": [
+   {
+    "items": [
+     {
+      "id": "e_execute",
+      "label": {}
+     },
+     {
+      "id": "e_registration",
+      "label": {}
+     },
+     {
+      "id": "e_upload",
+      "label": {}
+     },
+     {
+      "id": "e_commit",
+      "label": {}
+     },
+     {
+      "id": "e_collect",
+      "label": {}
+     },
+     {
+      "id": "e_publish",
+      "label": {}
+     },
+     {
+      "id": "e_persist",
+      "label": {}
+     },
+     {
+      "id": "e_download",
+      "label": {}
+     }
+    ],
+    "key": "final_timeline",
+    "points": 30,
+    "prompt": {},
+    "type": "order",
+    "validator": {
+     "accept": [
+      "e_registration",
+      "e_commit",
+      "e_publish",
+      "e_download",
+      "e_execute",
+      "e_persist",
+      "e_collect",
+      "e_upload"
+     ]
+    }
+   },
+   {
+    "items": [
+     {
+      "id": "a_isolate",
+      "label": {}
+     },
+     {
+      "id": "a_channel",
+      "label": {}
+     },
+     {
+      "id": "a_preserve",
+      "label": {}
+     },
+     {
+      "id": "a_revoke",
+      "label": {}
+     },
+     {
+      "id": "a_block",
+      "label": {}
+     },
+     {
+      "id": "a_scope",
+      "label": {}
+     },
+     {
+      "id": "a_wipe",
+      "label": {}
+     }
+    ],
+    "key": "final_response_now",
+    "points": 18,
+    "prompt": {},
+    "type": "order",
+    "validator": {
+     "before": [
+      [
+       "a_isolate",
+       "a_preserve"
+      ]
+     ],
+     "exact_count": 5,
+     "first": "a_isolate",
+     "must_include": [
+      "a_isolate",
+      "a_channel",
+      "a_preserve",
+      "a_revoke",
+      "a_block"
+     ],
+     "must_not": [
+      "a_wipe"
+     ]
+    }
+   },
+   {
+    "items": [
+     {
+      "id": "f_signing",
+      "label": {}
+     },
+     {
+      "id": "f_internal",
+      "label": {}
+     },
+     {
+      "id": "f_mfa",
+      "label": {}
+     },
+     {
+      "id": "f_tokens",
+      "label": {}
+     },
+     {
+      "id": "f_review",
+      "label": {}
+     },
+     {
+      "id": "f_egress",
+      "label": {}
+     },
+     {
+      "id": "f_blockall",
+      "label": {}
+     }
+    ],
+    "key": "final_response_later",
+    "points": 12,
+    "prompt": {},
+    "type": "order",
+    "validator": {
+     "exact_count": 5,
+     "first": "f_signing",
+     "must_include": [
+      "f_signing",
+      "f_internal",
+      "f_mfa"
+     ],
+     "must_not": [
+      "f_blockall"
+     ]
+    }
+   },
+   {
+    "key": "final_response_other",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   }
+  ],
+  "response_actions": [
+   {
+    "id": "a_isolate",
+    "label": {}
+   },
+   {
+    "id": "a_preserve",
+    "label": {}
+   },
+   {
+    "id": "a_revoke",
+    "label": {}
+   },
+   {
+    "id": "a_channel",
+    "label": {}
+   },
+   {
+    "id": "a_block",
+    "label": {}
+   },
+   {
+    "id": "a_scope",
+    "label": {}
+   },
+   {
+    "id": "a_rebuild",
+    "label": {}
+   },
+   {
+    "id": "a_notify",
+    "label": {}
+   },
+   {
+    "id": "a_monitor",
+    "label": {}
+   },
+   {
+    "id": "a_wipe",
+    "label": {}
+   },
+   {
+    "id": "a_all_hosts",
+    "label": {}
+   },
+   {
+    "id": "a_contact",
+    "label": {}
+   }
+  ],
+  "rubric": [
+   {
+    "criteria": [
+     {},
+     {},
+     {}
+    ],
+    "facilitator_note": {},
+    "key": "final_verdict",
+    "placeholder": {},
+    "points": 20,
+    "prompt": {}
+   },
+   {
+    "criteria": [
+     {},
+     {},
+     {}
+    ],
+    "facilitator_note": {},
+    "key": "final_confidence",
+    "points": 25,
+    "prompt": {}
+   },
+   {
+    "criteria": [
+     {},
+     {},
+     {}
+    ],
+    "facilitator_note": {},
+    "key": "final_scope",
+    "placeholder": {},
+    "points": 10,
+    "prompt": {}
+   },
+   {
+    "criteria": [
+     {},
+     {}
+    ],
+    "key": "final_limitation",
+    "points": 5,
+    "prompt": {}
+   },
+   {
+    "criteria": [
+     {},
+     {},
+     {},
+     {},
+     {}
+    ],
+    "key": "final_presentation",
+    "points": 30,
+    "prompt": {}
+   }
+  ],
+  "short_label": {},
+  "slug": "final-incident",
+  "subtitle": {},
+  "timeline_events": [
+   {
+    "id": "e_registration",
+    "label": {}
+   },
+   {
+    "id": "e_commit",
+    "label": {}
+   },
+   {
+    "id": "e_publish",
+    "label": {}
+   },
+   {
+    "id": "e_download",
+    "label": {}
+   },
+   {
+    "id": "e_execute",
+    "label": {}
+   },
+   {
+    "id": "e_persist",
+    "label": {}
+   },
+   {
+    "id": "e_collect",
+    "label": {}
+   },
+   {
+    "id": "e_upload",
+    "label": {}
+   }
+  ],
+  "title": {}
+ },
+ "m1-digital-footprint.yaml": {
+  "artifacts": [
+   "commit",
+   "dev-notes",
+   "github-account",
+   "photo-exif",
+   "token-audit",
+   "username-collision"
+  ],
+  "budget": {
+   "completeness": 10,
+   "correctness": 35,
+   "evidence": 30,
+   "reasoning": 20,
+   "speed": 5
+  },
+  "first_step": {},
+  "loop": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "max_points": 100,
+  "narrative": {},
+  "objectives": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "questions": [
+   {
+    "accepted_evidence": [
+     "commit"
+    ],
+    "evidence_points": 4,
+    "key": "m1_key_id",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "SR-REL-2019"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "commit"
+    ],
+    "evidence_points": 4,
+    "key": "m1_update_url",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "update.sakura-vpn-update.com/api/channel.json"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "commit"
+    ],
+    "evidence_points": 4,
+    "key": "m1_flag",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "ALLOW_UNSIGNED_RECOVERY"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "commit"
+    ],
+    "evidence_points": 4,
+    "key": "m1_test",
+    "options": [
+     {
+      "correct": true,
+      "id": "assertions_removed",
+      "label": {}
+     },
+     {
+      "id": "test_added",
+      "label": {}
+     },
+     {
+      "id": "test_unchanged",
+      "label": {}
+     },
+     {
+      "id": "test_deleted",
+      "label": {}
+     }
+    ],
+    "points": 5,
+    "prompt": {},
+    "type": "choice"
+   },
+   {
+    "accepted_evidence": [
+     "username-collision"
+    ],
+    "evidence_points": 5,
+    "key": "m1_collision",
+    "needs_reasoning": true,
+    "options": [
+     {
+      "correct": true,
+      "id": "unrelated",
+      "label": {}
+     },
+     {
+      "id": "same_person_alt",
+      "label": {}
+     },
+     {
+      "id": "attacker",
+      "label": {}
+     },
+     {
+      "id": "undecidable",
+      "label": {}
+     }
+    ],
+    "points": 6,
+    "prompt": {},
+    "type": "choice"
+   },
+   {
+    "accepted_evidence": [
+     "photo-exif"
+    ],
+    "evidence_points": 4,
+    "key": "m1_exif",
+    "options": [
+     {
+      "correct": true,
+      "id": "artist",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "datetime",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "model",
+      "label": {}
+     },
+     {
+      "id": "gps",
+      "label": {}
+     },
+     {
+      "id": "serial",
+      "label": {}
+     }
+    ],
+    "points": 4,
+    "prompt": {},
+    "type": "multi_choice",
+    "validator": {}
+   },
+   {
+    "accepted_evidence": [
+     "token-audit",
+     "commit",
+     "github-account"
+    ],
+    "evidence_points": 5,
+    "key": "m1_attribution",
+    "needs_reasoning": true,
+    "options": [
+     {
+      "correct": true,
+      "id": "compromised_token",
+      "label": {}
+     },
+     {
+      "id": "stolen_token",
+      "label": {}
+     },
+     {
+      "id": "sora_did_it",
+      "label": {}
+     },
+     {
+      "id": "nothing",
+      "label": {}
+     }
+    ],
+    "points": 5,
+    "prompt": {},
+    "type": "choice"
+   },
+   {
+    "key": "m1_w_separation",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m1_w_disconfirm",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m1_w_coverage",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   }
+  ],
+  "rubric": [
+   {
+    "criteria": {},
+    "key": "m1_r_separation",
+    "placeholder": {},
+    "points": 12,
+    "prompt": {},
+    "response_key": "m1_w_separation"
+   },
+   {
+    "criteria": {},
+    "key": "m1_r_disconfirm",
+    "placeholder": {},
+    "points": 8,
+    "prompt": {},
+    "response_key": "m1_w_disconfirm"
+   },
+   {
+    "criteria": {},
+    "key": "m1_r_coverage",
+    "placeholder": {},
+    "points": 10,
+    "prompt": {},
+    "response_key": "m1_w_coverage"
+   }
+  ],
+  "short_label": {},
+  "slug": "digital-footprint",
+  "subtitle": {},
+  "title": {}
+ },
+ "m2-fake-infrastructure.yaml": {
+  "artifacts": [
+   "archive",
+   "cdn-manifest",
+   "channel-api",
+   "dns",
+   "kitsune-job",
+   "payload",
+   "rdap",
+   "transfer-log",
+   "update-service"
+  ],
+  "budget": {
+   "completeness": 10,
+   "correctness": 35,
+   "evidence": 30,
+   "reasoning": 20,
+   "speed": 5
+  },
+  "first_step": {},
+  "loop": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "max_points": 100,
+  "narrative": {},
+  "objectives": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "questions": [
+   {
+    "accepted_evidence": [
+     "update-service"
+    ],
+    "evidence_points": 4,
+    "key": "m2_manifest_host",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "cdn.sakura-vpn-update.com/manifest.json"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "update-service"
+    ],
+    "evidence_points": 4,
+    "key": "m2_failover_host",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "archive.sakura-vpn-update.com"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "payload",
+     "cdn-manifest"
+    ],
+    "evidence_points": 5,
+    "key": "m2_hash",
+    "placeholder": {},
+    "points": 6,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "cdn-manifest"
+    ],
+    "evidence_points": 4,
+    "key": "m2_signature",
+    "options": [
+     {
+      "correct": true,
+      "id": "absent_expected_key",
+      "label": {}
+     },
+     {
+      "id": "invalid_sig",
+      "label": {}
+     },
+     {
+      "id": "valid_sig",
+      "label": {}
+     },
+     {
+      "id": "no_block",
+      "label": {}
+     }
+    ],
+    "points": 5,
+    "prompt": {},
+    "type": "choice"
+   },
+   {
+    "accepted_evidence": [
+     "kitsune-job",
+     "archive"
+    ],
+    "evidence_points": 4,
+    "key": "m2_campaign",
+    "placeholder": {},
+    "points": 4,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "KITSUNE-42"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "dns"
+    ],
+    "evidence_points": 5,
+    "key": "m2_shared_ip",
+    "needs_reasoning": true,
+    "options": [
+     {
+      "correct": true,
+      "id": "shared_proxy",
+      "label": {}
+     },
+     {
+      "id": "same_actor",
+      "label": {}
+     },
+     {
+      "id": "same_server",
+      "label": {}
+     },
+     {
+      "id": "unrelated",
+      "label": {}
+     }
+    ],
+    "points": 6,
+    "prompt": {},
+    "type": "choice"
+   },
+   {
+    "accepted_evidence": [
+     "update-service",
+     "cdn-manifest",
+     "kitsune-job",
+     "transfer-log",
+     "payload"
+    ],
+    "evidence_points": 4,
+    "key": "m2_strongest_link",
+    "options": [
+     {
+      "correct": true,
+      "id": "headers",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "hash",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "campaign",
+      "label": {}
+     },
+     {
+      "id": "shared_ips",
+      "label": {}
+     },
+     {
+      "id": "same_ns",
+      "label": {}
+     },
+     {
+      "id": "recent_reg",
+      "label": {}
+     }
+    ],
+    "points": 4,
+    "prompt": {},
+    "type": "multi_choice",
+    "validator": {}
+   },
+   {
+    "key": "m2_w_strength",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m2_w_timeline",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m2_w_coverage",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   }
+  ],
+  "rubric": [
+   {
+    "criteria": {},
+    "key": "m2_r_strength",
+    "placeholder": {},
+    "points": 12,
+    "prompt": {},
+    "response_key": "m2_w_strength"
+   },
+   {
+    "criteria": {},
+    "key": "m2_r_timeline",
+    "placeholder": {},
+    "points": 8,
+    "prompt": {},
+    "response_key": "m2_w_timeline"
+   },
+   {
+    "criteria": {},
+    "key": "m2_r_coverage",
+    "placeholder": {},
+    "points": 10,
+    "prompt": {},
+    "response_key": "m2_w_coverage"
+   }
+  ],
+  "short_label": {},
+  "slug": "fake-infrastructure",
+  "subtitle": {},
+  "title": {}
+ },
+ "m3-threat-intelligence.yaml": {
+  "artifacts": [
+   "case-summary",
+   "evidence-pack",
+   "file-timeline",
+   "mitre",
+   "network",
+   "persistence",
+   "powershell-log",
+   "process-tree",
+   "proxy-log",
+   "sandbox",
+   "virustotal"
+  ],
+  "budget": {
+   "completeness": 10,
+   "correctness": 35,
+   "evidence": 30,
+   "reasoning": 20,
+   "speed": 5
+  },
+  "first_step": {},
+  "loop": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "max_points": 100,
+  "narrative": {},
+  "objectives": [
+   {},
+   {},
+   {},
+   {}
+  ],
+  "questions": [
+   {
+    "accepted_evidence": [
+     "file-timeline",
+     "process-tree"
+    ],
+    "evidence_points": 4,
+    "key": "m3_execution_time",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "00:19:16"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "process-tree"
+    ],
+    "evidence_points": 4,
+    "key": "m3_parent",
+    "placeholder": {},
+    "points": 4,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "SakuraVPNUpdate_4.2.1.exe"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "persistence"
+    ],
+    "evidence_points": 4,
+    "key": "m3_persistence",
+    "options": [
+     {
+      "correct": true,
+      "id": "run_key",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "sched_task",
+      "label": {}
+     },
+     {
+      "id": "service",
+      "label": {}
+     }
+    ],
+    "points": 5,
+    "prompt": {},
+    "type": "multi_choice",
+    "validator": {}
+   },
+   {
+    "accepted_evidence": [
+     "proxy-log",
+     "network"
+    ],
+    "evidence_points": 4,
+    "key": "m3_exfil",
+    "placeholder": {},
+    "points": 5,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "archive.sakura-vpn-update.com"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "proxy-log",
+     "network"
+    ],
+    "evidence_points": 4,
+    "key": "m3_upload_time",
+    "placeholder": {},
+    "points": 4,
+    "prompt": {},
+    "type": "short_text",
+    "validator": {
+     "accept": [
+      "00:42:19"
+     ]
+    }
+   },
+   {
+    "accepted_evidence": [
+     "file-timeline",
+     "network",
+     "persistence",
+     "proxy-log",
+     "case-summary"
+    ],
+    "evidence_points": 5,
+    "key": "m3_scope",
+    "needs_reasoning": true,
+    "options": [
+     {
+      "correct": true,
+      "id": "srdev077",
+      "label": {}
+     },
+     {
+      "id": "srfin014",
+      "label": {}
+     },
+     {
+      "id": "srlab021",
+      "label": {}
+     }
+    ],
+    "points": 6,
+    "prompt": {},
+    "type": "multi_choice",
+    "validator": {}
+   },
+   {
+    "accepted_evidence": [
+     "sandbox",
+     "mitre"
+    ],
+    "evidence_points": 5,
+    "key": "m3_attack",
+    "options": [
+     {
+      "correct": true,
+      "id": "t1059_001",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "t1547_001",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "t1053_005",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "t1071_001",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "t1560_001",
+      "label": {}
+     },
+     {
+      "correct": true,
+      "id": "t1041",
+      "label": {}
+     },
+     {
+      "id": "t1195_002",
+      "label": {}
+     },
+     {
+      "id": "t1486",
+      "label": {}
+     },
+     {
+      "id": "t1110_003",
+      "label": {}
+     }
+    ],
+    "points": 6,
+    "prompt": {},
+    "type": "multi_choice",
+    "validator": {}
+   },
+   {
+    "accepted_evidence": [
+     "virustotal",
+     "sandbox"
+    ],
+    "key": "m3_vt_interpretation",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m3_w_scope",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m3_w_observed",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   },
+   {
+    "key": "m3_w_coverage",
+    "placeholder": {},
+    "points": 0,
+    "prompt": {},
+    "type": "free_text"
+   }
+  ],
+  "rubric": [
+   {
+    "criteria": {},
+    "key": "m3_r_scope",
+    "placeholder": {},
+    "points": 12,
+    "prompt": {},
+    "response_key": "m3_w_scope"
+   },
+   {
+    "criteria": {},
+    "key": "m3_r_observed",
+    "placeholder": {},
+    "points": 6,
+    "prompt": {},
+    "response_key": "m3_w_observed"
+   },
+   {
+    "criteria": [
+     {},
+     {}
+    ],
+    "facilitator_note": {},
+    "key": "m3_r_virustotal_limit",
+    "placeholder": {},
+    "points": 2,
+    "prompt": {},
+    "response_key": "m3_vt_interpretation"
+   },
+   {
+    "criteria": {},
+    "key": "m3_r_coverage",
+    "placeholder": {},
+    "points": 10,
+    "prompt": {},
+    "response_key": "m3_w_coverage"
+   }
+  ],
+  "short_label": {},
+  "slug": "threat-intelligence",
+  "subtitle": {},
+  "title": {}
+ }
+}

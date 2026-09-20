@@ -1,0 +1,246 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: content, japanese, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.14"
+
+      - name: Install pinned dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Validate content
+        run: python scripts/validate_content.py
+
+      - name: Japanese review list is up to date
+        run: python scripts/japanese_review.py --check
+
+      - name: sshd drop-in ordering — the effective config, under both names
+        run: |
+          set -e
+          SSHD=$(command -v sshd || echo /usr/sbin/sshd)
+          if [ ! -x "$SSHD" ]; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq openssh-server
+            SSHD=/usr/sbin/sshd
+          fi
+
+          probe() {
+            name=$1
+            d=$(mktemp -d)
+            mkdir -p "$d/sshd_config.d"
+            cp deploy/sshd_hardening.conf "$d/sshd_config.d/$name"
+            printf '# Created by cloud-init\nPasswordAuthentication yes\n' \
+              > "$d/sshd_config.d/50-cloud-init.conf"
+            ssh-keygen -q -t ed25519 -N '' -f "$d/hostkey"
+            printf 'Include %s/sshd_config.d/*.conf\nHostKey %s/hostkey\n' "$d" "$d" \
+              > "$d/sshd_config"
+            "$SSHD" -t -f "$d/sshd_config"
+            "$SSHD" -T -f "$d/sshd_config" \
+              | grep -E '^(passwordauthentication|kbdinteractiveauthentication|pubkeyauthentication|permitrootlogin|allowusers)' \
+              | sort
+          }
+
+          echo "::group::drop-in named 00-predwen.conf (the fix)"
+          probe 00-predwen.conf | tee /tmp/eff-00.txt
+          echo "::endgroup::"
+          echo "::group::drop-in named 99-predwen.conf (what was deployed)"
+          probe 99-predwen.conf | tee /tmp/eff-99.txt
+          echo "::endgroup::"
+
+          for key in "passwordauthentication no" "kbdinteractiveauthentication no" \
+                     "pubkeyauthentication yes" "permitrootlogin no" "allowusers seccap"; do
+            grep -qx "$key" /tmp/eff-00.txt \
+              || { echo "::error::00-predwen.conf did not produce: $key"; exit 1; }
+          done
+          grep -qx "passwordauthentication yes" /tmp/eff-99.txt \
+            || { echo "::error::99-predwen.conf no longer reproduces the bug; this proves nothing"; exit 1; }
+          echo "00- wins over 50-cloud-init.conf; 99- loses to it. Bug reproduced, fix verified."
+
+      - name: Tests
+        env:
+          SECCAP_REQUIRE_SSHD: "1"
+        run: python -m pytest -q
+
+  image:
+    name: docker build and /healthz smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t seccap:ci .
+
+      - name: Worker counter (reads /proc, no procps in the slim image)
+        run: |
+          cat > /tmp/count_workers.py <<'PY'
+          import os, sys
+          procs = []
+          for pid in [d for d in os.listdir("/proc") if d.isdigit()]:
+              try:
+                  with open("/proc/%s/cmdline" % pid, "rb") as fh:
+                      cmd = fh.read().decode("utf-8", "replace").replace("\0", " ").strip()
+              except (FileNotFoundError, ProcessLookupError, PermissionError):
+                  continue
+              if "gunicorn" in cmd and "wsgi:app" in cmd:
+                  procs.append("%s: %s" % (pid, cmd))
+          expected = int(sys.argv[1])
+          workers = len(procs) - 1          # one of them is the master
+          print("expected_workers=%d observed_workers=%d" % (expected, workers))
+          assert workers == expected, "\n".join(procs) or "no gunicorn process found"
+          PY
+
+      - name: Three independent COLD STARTS, each on a brand-new volume
+        run: |
+          set -e
+          for run in 1 2 3; do
+            echo "::group::cold start $run"
+            docker volume rm -f seccap-ci-data >/dev/null 2>&1 || true
+            docker volume create seccap-ci-data >/dev/null
+            docker rm -f seccap-ci >/dev/null 2>&1 || true
+            docker run -d --name seccap-ci -p 8000:8000 \
+              -v seccap-ci-data:/data \
+              -e SECCAP_WORKERS=4 \
+              -e SECCAP_SECRET_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(48))')" \
+              -e SECCAP_DATABASE_URI="sqlite:////data/seccap.db" \
+              seccap:ci
+
+            ok=""
+            for i in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:8000/healthz >/dev/null 2>&1; then
+                echo "cold start $run: up after ${i}s"; ok=1; break
+              fi
+              sleep 1
+            done
+            if [ -z "$ok" ]; then
+              echo "::error::cold start $run: /healthz never became available"
+              docker logs seccap-ci
+              exit 1
+            fi
+
+            docker logs seccap-ci 2>&1 | grep -q "entrypoint: bootstrapping schema"
+            docker logs seccap-ci 2>&1 | grep -q "init_db: schema ready"
+            docker logs seccap-ci 2>&1 | grep -q "entrypoint: starting gunicorn"
+            boot_line=$(docker logs seccap-ci 2>&1 | grep -n "init_db: schema ready" | head -1 | cut -d: -f1)
+            gun_line=$(docker logs seccap-ci 2>&1 | grep -n "entrypoint: starting gunicorn" | head -1 | cut -d: -f1)
+            [ "$boot_line" -lt "$gun_line" ] || {
+              echo "::error::cold start $run: gunicorn started before the bootstrap finished"; exit 1; }
+
+            if docker logs seccap-ci 2>&1 | grep -q "already exists"; then
+              echo "::error::cold start $run: the bootstrap race is back"
+              docker logs seccap-ci
+              exit 1
+            fi
+
+            echo -n "cold start $run: "
+            docker exec -i seccap-ci python - 4 < /tmp/count_workers.py
+            echo "::endgroup::"
+          done
+
+      - name: The database was really opened
+        run: |
+          docker exec seccap-ci python -c "
+          import urllib.request, json
+          b = json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=5))
+          assert b['session_active'] is False and b['teams'] == 0, b
+          print('empty instance reports a reachable, empty database')
+          "
+
+      - name: Data survives a restart on the same volume, still with four workers
+        run: |
+          set -e
+          docker exec seccap-ci python scripts/seed_demo.py --title "CI persistence" >/dev/null
+          before=$(curl -fsS http://127.0.0.1:8000/healthz)
+          echo "before restart: $before"
+          echo "$before" | grep -q '"teams": *6'
+          echo -n "before restart: "
+          docker exec -i seccap-ci python - 4 < /tmp/count_workers.py
+
+          docker restart seccap-ci >/dev/null
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8000/healthz >/dev/null 2>&1 && break
+            sleep 1
+          done
+          after=$(curl -fsS http://127.0.0.1:8000/healthz)
+          echo "after restart:  $after"
+          echo "$after" | grep -q '"teams": *6'
+          [ "$before" = "$after" ] || { echo "::error::state changed across the restart"; exit 1; }
+          echo -n "after restart:  "
+          docker exec -i seccap-ci python - 4 < /tmp/count_workers.py
+
+          docker logs seccap-ci 2>&1 | grep -q "already exists" && \
+            { echo "::error::restart raced"; exit 1; } || true
+
+      - name: A broken bootstrap stops the container before Gunicorn
+        run: |
+          docker rm -f seccap-broken >/dev/null 2>&1 || true
+          set +e
+          docker run --name seccap-broken \
+            -e SECCAP_SECRET_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(48))')" \
+            -e SECCAP_DATABASE_URI="sqlite:////data/nonexistent-dir/seccap.db" \
+            seccap:ci
+          code=$?
+          set -e
+          echo "exit code: $code"
+          [ "$code" -ne 0 ] || { echo "::error::a failing bootstrap did not stop the container"; exit 1; }
+          docker logs seccap-broken 2>&1 | grep -q "init_db: FAILED"
+          docker logs seccap-broken 2>&1 | grep -q "starting gunicorn" && \
+            { echo "::error::gunicorn started after a failed bootstrap"; exit 1; } || true
+          docker rm -f seccap-broken >/dev/null 2>&1 || true
+
+      - name: /healthz is healthy and leaks nothing
+        run: |
+          body=$(curl -fsS http://127.0.0.1:8000/healthz)
+          echo "$body"
+
+          python - "$body" <<'PY'
+          import json, sys
+          body = json.loads(sys.argv[1])
+          assert body["status"] == "ok", body
+          assert body["database"] == "ok", body
+          assert set(body) == {"status", "database", "session_active",
+                               "teams", "members"}, sorted(body)
+          for banned in ("session", "session_state", "code", "secret", "token",
+                         "password", "sqlite", "detail"):
+              assert banned not in body, f"/healthz publishes {banned!r}"
+          print("healthz OK, no sensitive field")
+          PY
+
+      - name: No forwarded header is believed by default
+        run: |
+          for i in $(seq 1 25); do
+            curl -fsS -H "X-Forwarded-For: 198.51.100.$i" \
+              http://127.0.0.1:8000/healthz >/dev/null
+          done
+          echo "forwarded headers accepted without effect, as intended"
+
+      - name: Container logs
+        if: always()
+        run: docker logs seccap-ci || true
+
+      - name: Stop
+        if: always()
+        run: |
+          docker rm -f seccap-ci seccap-broken || true
+          docker volume rm -f seccap-ci-data || true

@@ -1,0 +1,5 @@
+timestamp_utc,host,source,location,name,value,result
+2026-09-02T00:20:11Z,SR-DEV-077,registry,"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",SakuraVPNCheck,"C:\Users\s.nakamura\AppData\Roaming\SakuraVPN\svcupd.exe --background",created
+2026-09-02T00:20:25Z,SR-DEV-077,scheduled_task,"\SakuraVPN Update Check",Trigger,AtLogOn,created
+2026-09-02T00:20:25Z,SR-DEV-077,scheduled_task,"\SakuraVPN Update Check",Action,"C:\Users\s.nakamura\AppData\Roaming\SakuraVPN\svcupd.exe --background",created
+2026-09-02T00:21:02Z,SR-DEV-077,service,"SakuraSecureConnect",ImagePath,"C:\Program Files\Sakura SecureConnect\SecureConnectService.exe",pre_existing

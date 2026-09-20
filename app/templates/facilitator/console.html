@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+{% block title %}{{ t('facilitator.title') }}{% endblock %}
+
+{% block content %}
+<div class="page wide">
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <div class="eyebrow">{{ t('facilitator.title') }}</div>
+      <h1 id="evtitle">{{ ev.title if ev else '—' }}</h1>
+    </div>
+    <form method="post" action="{{ url_for('facilitator.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn sm ghost">{{ t('console.sign_out') }}</button>
+    </form>
+  </div>
+
+  {% if not ev %}
+  <div class="panel">
+    <h2>{{ t('console.new_session') }}</h2>
+    <form method="post" action="{{ url_for('facilitator.new_session') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span class="lb">{{ t('console.session_title') }}</span>
+        <input type="text" name="title" placeholder="SECCAP Incident Exercise"></label>
+      <label class="field"><span class="lb">{{ t('console.teams_count') }}</span>
+        <input type="text" name="teams" value="5"></label>
+      <button class="btn primary">{{ t('console.create') }}</button>
+    </form>
+  </div>
+  {% else %}
+
+  <div class="panel statusstrip" id="statusstrip" aria-live="polite">
+    <div class="statusrow">
+      <div class="statusitem">
+        <div class="eyebrow mut">{{ t('facilitator.now') }}</div>
+        <div class="statusbig" id="stmission">—</div>
+        <div class="small mut" id="stclock"></div>
+      </div>
+      <div class="statusitem">
+        <div class="eyebrow mut">{{ t('facilitator.locked_teams') }}</div>
+        <div class="statusbig" id="stlocked">—</div>
+      </div>
+      <div class="statusitem grow">
+        <div class="eyebrow mut">{{ t('facilitator.attention') }}</div>
+        <div class="small" id="stattention">—</div>
+      </div>
+      <div class="statusitem grow">
+        <div class="eyebrow mut">{{ t('facilitator.next_action') }}</div>
+        <div class="small" id="stnext">—</div>
+      </div>
+    </div>
+    <div class="statusrow sub">
+      <span class="chip" id="stoffline"></span>
+      <span class="small mut" id="stexport"></span>
+      <span class="small mut">{{ t('facilitator.backup_note') }}</span>
+      <span class="small mut">{{ t('scoreboard.maxima',
+            base=maxima.base | round | int,
+            bonus=maxima.collective_bonus | round | int,
+            total=maxima.total | round | int) }}</span>
+    </div>
+
+    <div class="gradingbar" id="gradingbar" hidden>
+      <span class="statusbig" id="stgradedone">—</span>
+      <span class="small" id="stgradeleft"></span>
+      <span class="small mut" id="stgradeteams"></span>
+      <span class="small mut">{{ t('facilitator_lock.why') }}</span>
+      <span class="row" id="stgradelinks" style="gap:0.375rem;flex-wrap:wrap"></span>
+    </div>
+  </div>
+
+  <div class="panel tight">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div class="eyebrow mut">{{ t('console.session_code') }}</div>
+        <div class="mono" style="font-size:1.625rem;letter-spacing:.18em">{{ ev.code }}</div>
+      </div>
+      <div class="row">
+        <a class="btn sm" href="{{ url_for('participant.scoreboard') }}?projector=1" target="_blank">{{ t('console.scoreboard_projector') }}</a>
+        <a class="btn sm" href="{{ url_for('facilitator.export_results') }}">{{ t('console.export_scores') }}</a>
+        <a class="btn sm" href="{{ url_for('facilitator.export_scoring') }}">{{ t('console.export_scoring_detail') }}</a>
+        <a class="btn sm" href="{{ url_for('facilitator.export_submissions') }}">{{ t('console.export_submissions') }}</a>
+        <a class="btn sm" href="{{ url_for('facilitator.export_session') }}">{{ t('console.export_session') }}</a>
+        <a class="btn sm" href="{{ url_for('facilitator.export_ta_reports') }}">{{ t('console.export_ta_reports') }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('console.switches') }}</div>
+    <div class="row" id="switches">
+      <button class="btn sm" data-flag="scoreboard_visible">{{ t('console.switch_scoreboard') }}</button>
+      <button class="btn sm" data-flag="collective_open">{{ t('console.switch_collective') }}</button>
+      <button class="btn sm" data-flag="scores_locked">{{ t('console.switch_lock') }}</button>
+    </div>
+    <hr class="rule">
+    <div class="row">
+      <input type="text" id="announce" maxlength="400" placeholder="{{ t('console.announce_placeholder') }}" style="flex:1">
+      <button class="btn sm warn" id="sendannounce">{{ t('console.announce_send') }}</button>
+      <button class="btn sm ghost" id="clearannounce">{{ t('console.announce_clear') }}</button>
+    </div>
+    <hr class="rule">
+    <div class="row">
+      <span class="hint">{{ t('console.close_hint') }}</span>
+      <button class="btn sm danger" id="reset">{{ t('console.close_session') }}</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('console.missions') }}</div>
+    <div class="grid three" id="missions"></div>
+  </div>
+
+  <div class="panel tight">
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <span class="hint">Mission 4 is graded per team like the others — the
+        rubric is on each team's grading screen. Press this once the synthesis
+        is closed: it runs only once per team, and a team still ranking its
+        timeline would be scored on the half it had.</span>
+      <button class="btn sm" id="scorefinals">{{ t('console.autoscore_final') }}</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <div class="eyebrow mut">{{ t('console.th_teams') }}</div>
+      <button class="btn sm" id="addteam" type="button">{{ t('console.add_team') }}</button>
+    </div>
+    <div class="scrollx">
+      <table class="data" id="teams"></table>
+    </div>
+    <p class="small mut" id="addteamnote" style="margin:.5rem 0 0"></p>
+  </div>
+
+  <details class="panel">
+    <summary class="eyebrow mut" style="cursor:pointer">{{ t('console.collective_summary') }}</summary>
+    <p class="small mut" style="margin:.5rem 0 .75rem">
+      Each team publishes <b>one</b> indicator of compromise — a domain, a hash, a
+      process, a persistence mechanism or a file path. When the class between them
+      has a <b>validated</b> entry for all five categories, every team is awarded a
+      shared <b>+15</b>: the only points that depend on the room working together,
+      and the one surface where teams see each other's work. Open it to the room
+      with the <b>class board</b> switch above, then validate entries below as they
+      arrive. Nothing happens until you open it — until then this is just the panel
+      explaining itself.
+    </p>
+    <div class="cov" id="cov" style="margin-bottom:0.625rem"></div>
+    <div class="scrollx"><table class="data" id="iocs"></table></div>
+  </details>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('console.awards') }}</div>
+    <div class="grid three" id="awardgrid"></div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('console.leaderboard') }}</div>
+    <div class="lb" id="lb"></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if ev %}
+<script>
+(function () {
+  const AWARDS = {{ awards | list | tojson }};
+  const CLOSE_LABEL = {{ t('facilitator.close') | tojson }};
+  const C = {{ {
+      'team': t('console.th_team'), 'online': t('console.th_online'),
+      'obs': t('console.th_obs'), 'final': t('console.th_final'),
+      'score': t('console.th_score'), 'unlock': t('console.unlock'),
+      'grade': t('console.grade'), 'present': t('console.present'),
+      'validated': t('console.validated'), 'validate': t('console.validate'),
+      'open': t('console.btn_open'), 'pause': t('console.btn_pause'),
+      'st_open': t('team.open'), 'st_paused': t('team.paused'),
+      'st_closed': t('team.closed'), 'st_locked': t('team.locked'),
+      'confirm': t('console.close_confirm'),
+      'bonus': t('console.toast_bonus'), 'award': t('console.toast_award'),
+      'leaderboard': t('console.leaderboard'),
+      'seats': t('console.seats'), 'seats_prompt': t('console.seats_prompt')
+  } | tojson }};
+  const SYNTH_NOTE = "One switch for the whole room — no per-team clock, no per-team lock.";
+  const CLOSE_T = {{ {
+      'title': t('facilitator.close_confirm_title'),
+      'ready': t('facilitator.close_confirm_ready'),
+      'not_ready': t('facilitator.close_confirm_not_ready'),
+      'consequence': t('facilitator.close_confirm_consequence'),
+      'announce': t('facilitator.close_confirm_announce'),
+      'cancel': t('common.cancel'),
+      'confirm': t('facilitator.close_confirm_do'),
+  } | tojson }};
+  const GRD = {{ {
+      'progress': t('facilitator_lock.progress', done='{done}', total='{total}'),
+      'remaining': t('facilitator_lock.remaining', remaining='{remaining}'),
+      'incomplete_teams': t('facilitator_lock.incomplete_teams', teams='{teams}'),
+      'go_to_grading': t('facilitator_lock.go_to_grading'),
+      'all_done': t('facilitator_lock.all_done'),
+      'blocked_title': t('facilitator_lock.blocked_title'),
+  } | tojson }};
+
+  const ST = {{ {
+      'no_mission': t('facilitator.st_no_mission'),
+      'elapsed': t('facilitator.st_elapsed'),
+      'all_fine': t('facilitator.st_all_fine'),
+      'offline': t('facilitator.st_offline_team'),
+      'no_answers': t('facilitator.st_no_answers'),
+      'idle': t('facilitator.st_idle'),
+      'next_open': t('facilitator.st_next_open'),
+      'next_close_ready': t('facilitator.st_next_close_ready'),
+      'next_close_wait': t('facilitator.st_next_close_wait'),
+      'export_at': t('facilitator.st_export_at'),
+      'export_none': t('facilitator.st_export_none'),
+  } | tojson }};
+  let TEAMS = [];
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  async function control(slug, action, body) {
+    const r = await api('POST', '/facilitator/mission/' + encodeURIComponent(slug) + '/' + action, body || {});
+    if (!r.ok) toast(window.SECCAP.t.error);
+  }
+
+  let closeDialog = null;
+
+  function confirmClose(m) {
+    const unlocked = TEAMS.filter(function (t) {
+      const pm = (t.missions || {})[m.slug] || {};
+      return !pm.locked;
+    });
+    const ready = TEAMS.length - unlocked.length;
+
+    const back = el('div', 'modalback');
+    const box = el('div', 'modal');
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-labelledby', 'closeh');
+
+    const h = el('h2', null, CLOSE_T.title.replace('{mission}', m.title));
+    h.id = 'closeh';
+    box.appendChild(h);
+    box.appendChild(el('p', 'small',
+      CLOSE_T.ready.replace('{n}', ready).replace('{total}', TEAMS.length)));
+
+    if (unlocked.length) {
+      box.appendChild(el('p', 'small warn', CLOSE_T.not_ready.replace(
+        '{teams}', unlocked.map(function (t) { return t.name; }).join(', '))));
+      box.appendChild(el('p', 'small', CLOSE_T.consequence));
+      box.appendChild(el('p', 'small mut', CLOSE_T.announce));
+    }
+
+    const row = el('div', 'row');
+    row.style.justifyContent = 'flex-end';
+    row.style.marginTop = '1rem';
+    const cancel = el('button', unlocked.length ? 'btn primary' : 'btn ghost', CLOSE_T.cancel);
+    const go = el('button', unlocked.length ? 'btn ghost danger' : 'btn danger', CLOSE_T.confirm);
+    cancel.addEventListener('click', closeDialogNow);
+    go.addEventListener('click', function () { closeDialogNow(); control(m.slug, 'close'); });
+    row.appendChild(cancel);
+    row.appendChild(go);
+    box.appendChild(row);
+
+    function closeDialogNow() {
+      if (!closeDialog) return;
+      document.removeEventListener('keydown', onKey);
+      closeDialog.remove();
+      closeDialog = null;
+      const back = document.querySelector('[data-close="' + CSS.escape(m.slug) + '"]');
+      if (back) back.focus();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') closeDialogNow();
+      if (e.key === 'Tab') {                     /* keep focus inside */
+        const f = box.querySelectorAll('button');
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+        else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+      }
+    }
+
+    back.appendChild(box);
+    document.body.appendChild(back);
+    closeDialog = back;
+    document.addEventListener('keydown', onKey);
+    (unlocked.length ? cancel : go).focus();
+  }
+
+  document.querySelectorAll('[data-flag]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      const flag = btn.getAttribute('data-flag');
+      const body = {};
+      body[flag] = !btn.classList.contains('primary');
+      const r = await api('POST', '/facilitator/session/state', body);
+      if (r.ok) return;
+      if (r.status === 409 && r.data && r.data.error === 'grading_incomplete') {
+        toast(r.data.message);
+        paintGrading(r.data.grading);
+        const bar = document.getElementById('gradingbar');
+        bar.hidden = false;
+        bar.setAttribute('tabindex', '-1');
+        bar.scrollIntoView({block: 'center'});
+        bar.focus();
+        return;
+      }
+      toast(window.SECCAP.t.error);
+    });
+  });
+
+  document.getElementById('sendannounce').addEventListener('click', async function () {
+    await api('POST', '/facilitator/session/state',
+              {announcement: document.getElementById('announce').value});
+  });
+  document.getElementById('clearannounce').addEventListener('click', async function () {
+    document.getElementById('announce').value = '';
+    await api('POST', '/facilitator/session/state', {announcement: ''});
+  });
+  document.getElementById('addteam').addEventListener('click', async function () {
+    const r = await api('POST', '/facilitator/session/team', {});
+    if (!r.ok) return;
+    const t = r.data.team;
+    const note = document.getElementById('addteamnote');
+    note.textContent = t.name + ' — code ' + t.code
+      + (t.color ? '' : ' (no colour left: the board tells this one apart by name)');
+  });
+  document.getElementById('scorefinals').addEventListener('click', async function () {
+    const r = await api('POST', '/facilitator/api/final/score', {});
+    if (r.ok) toast(r.data.events + ' score events');
+  });
+  document.getElementById('reset').addEventListener('click', async function () {
+    if (!confirm(C.confirm)) return;
+    const r = await api('POST', '/facilitator/session/reset', {});
+    if (r.ok) location.reload();
+  });
+
+  function stateLabel(state) {
+    return {open: C.st_open, paused: C.st_paused,
+            closed: C.st_closed, locked: C.st_locked}[state] || state;
+  }
+
+  function paintMissions(missions) {
+    const box = document.getElementById('missions');
+    box.textContent = '';
+    missions.forEach(function (m) {
+      const card = el('div', 'panel tight');
+      card.appendChild(el('div', 'eyebrow mut', m.slug));
+      card.appendChild(el('h3', null, m.title));
+
+      if (m.switch) {
+        card.appendChild(el('div', 'chip ' + (m.state === 'open' ? 'ok' : 'off'),
+                            stateLabel(m.state)));
+        card.appendChild(el('p', 'small mut', SYNTH_NOTE));
+        const row = el('div', 'row');
+        [[true, C.open], [false, CLOSE_LABEL]].forEach(function (pair) {
+          const b = el('button', 'btn sm' + (pair[0] ? '' : ' danger'), pair[1]);
+          b.setAttribute('aria-label', pair[1] + ' ' + m.title);
+          b.addEventListener('click', async function () {
+            const body = {}; body[m.switch] = pair[0];
+            await api('POST', '/facilitator/session/state', body);
+          });
+          row.appendChild(b);
+        });
+        card.appendChild(row);
+        box.appendChild(card);
+        return;
+      }
+
+      const t = el('div', 'timer' + (m.remaining <= 300 ? ' low' : ''), fmtTime(m.remaining));
+      card.appendChild(t);
+      card.appendChild(el('div', 'chip ' + (m.state === 'open' ? 'ok' : (m.state === 'paused' ? 'warn' : 'off')),
+                          stateLabel(m.state)));
+      const row = el('div', 'row');
+      [['open', C.open], ['pause', C.pause]].forEach(function (pair) {
+        const b = el('button', 'btn sm', pair[1]);
+        b.setAttribute('aria-label', pair[1] + ' ' + m.title);
+        b.addEventListener('click', function () { control(m.slug, pair[0]); });
+        row.appendChild(b);
+      });
+
+      const closeBtn = el('button', 'btn sm danger', CLOSE_LABEL);
+      closeBtn.setAttribute('aria-label', CLOSE_LABEL + ' — ' + m.title);
+      closeBtn.setAttribute('data-close', m.slug);
+      closeBtn.addEventListener('click', function () { confirmClose(m); });
+      row.appendChild(closeBtn);
+      [['+5', 300], ['-5', -300]].forEach(function (pair) {
+        const b = el('button', 'btn sm ghost', pair[0]);
+        b.addEventListener('click', function () { control(m.slug, 'extend', {seconds: pair[1]}); });
+        row.appendChild(b);
+      });
+      card.appendChild(row);
+      box.appendChild(card);
+    });
+  }
+
+  function paintTeams(teams, allMissions) {
+    const missions = allMissions.filter(function (m) { return !m.switch; });
+    TEAMS = teams;
+    const table = document.getElementById('teams');
+    table.textContent = '';
+    const thead = el('thead'), hr = el('tr');
+    [C.team, C.online, C.obs].forEach(function (h) { hr.appendChild(el('th', null, h)); });
+    missions.forEach(function (m) { hr.appendChild(el('th', null, m.slug)); });
+    [C.final, C.score, ''].forEach(function (h) { hr.appendChild(el('th', null, h)); });
+    thead.appendChild(hr); table.appendChild(thead);
+
+    const tb = el('tbody');
+    teams.forEach(function (row) {
+      const tr = el('tr');
+      const name = el('td');
+      name.appendChild(el('span', 'chip', row.name));
+      name.appendChild(el('div', 'mono small mut', row.code));
+      tr.appendChild(name);
+      tr.appendChild(el('td', 'num', row.online + '/' + row.members.length
+                        + (row.capacity ? ' (max ' + row.capacity + ')' : '')));
+      tr.appendChild(el('td', 'num', row.observations));
+      missions.forEach(function (m) {
+        const st = row.missions[m.slug] || {};
+        const td = el('td');
+        td.appendChild(el('span', 'chip ' + (st.locked ? 'ok' : 'off'),
+                          (st.answered || 0) + '/' + (st.questions || 0) + ' · ev ' + (st.evidence || 0)));
+        if (st.locked) {
+          const u = el('button', 'btn sm ghost', C.unlock);
+          u.addEventListener('click', async function () {
+            await api('POST', '/facilitator/mission/' + encodeURIComponent(m.slug) + '/unlock/' + row.team_id, {});
+          });
+          td.appendChild(u);
+        }
+        tr.appendChild(td);
+      });
+      tr.appendChild(el('td', null, row.final_locked ? '✔' : '—'));
+      tr.appendChild(el('td', 'num', row.score.total));
+      const act = el('td');
+
+      const next = row.next_locked;
+      if (next) {
+        const h = el('button', 'btn sm warn',
+                     'hint: ' + next.level + ' (' + Math.ceil(next.opens_in / 60) + 'm)');
+        h.title = 'Open the ' + next.level + ' rung for ' + row.name + ' now';
+        h.addEventListener('click', async function () {
+          const r = await api('POST', '/facilitator/api/hint/unlock',
+                              {team_id: row.team_id, mission_slug: next.mission_slug,
+                               hint_id: next.hint_id});
+          toast(r.ok ? next.level + ' → ' + row.name : window.SECCAP.t.error);
+        });
+        act.appendChild(h);
+      }
+      if (row.hints_taken && row.hints_taken.length) {
+        act.appendChild(el('span', 'chip off', row.hints_taken.length + ' hints'));
+      }
+
+      const seats = el('button', 'btn sm ghost',
+                       C.seats + ': ' + (row.capacity || '\u221e'));
+      seats.addEventListener('click', async function () {
+        const v = window.prompt(C.seats_prompt.replace('{team}', row.name),
+                                row.capacity || '');
+        if (v === null) return;
+        const r = await api('POST', '/facilitator/session/team/' + row.team_id
+                            + '/capacity', {capacity: v.trim()});
+        toast(r.ok ? C.seats + ' \u2192 ' + (r.data.capacity || '\u221e')
+                   : window.SECCAP.t.error);
+      });
+      act.appendChild(seats);
+
+      const g = el('a', 'btn sm', C.grade);
+      g.href = '/facilitator/grade/' + row.team_id;
+      const p = el('a', 'btn sm ghost', C.present);
+      p.href = '/facilitator/present/' + row.team_id;
+      p.target = '_blank';
+      act.appendChild(g); act.appendChild(p);
+      tr.appendChild(act);
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+  }
+
+  async function paintIOCs() {
+    const r = await api('GET', '/facilitator/api/collective');
+    if (!r.ok) return;
+    const cov = document.getElementById('cov');
+    cov.textContent = '';
+    Object.keys(r.data.coverage || {}).forEach(function (k) {
+      cov.appendChild(el('div', 'covitem' + (r.data.coverage[k] ? ' done' : ''),
+                         (r.data.coverage[k] ? '✔ ' : '○ ') + k));
+    });
+    const table = document.getElementById('iocs');
+    table.textContent = '';
+    const tb = el('tbody');
+    (r.data.entries || []).forEach(function (e) {
+      const tr = el('tr');
+      tr.appendChild(el('td', null, e.team));
+      tr.appendChild(el('td', null, e.type));
+      tr.appendChild(el('td', 'mono', e.value));
+      tr.appendChild(el('td', 'small', e.justification || ''));
+      const td = el('td');
+      const b = el('button', 'btn sm ' + (e.validated ? 'primary' : ''),
+                   e.validated ? C.validated : C.validate);
+      b.addEventListener('click', async function () {
+        const res = await api('POST', '/facilitator/api/collective/validate',
+                              {ioc_id: e.id, validated: !e.validated});
+        if (res.ok) { paintIOCs(); if (res.data.bonus_awarded) toast(C.bonus); }
+      });
+      td.appendChild(b);
+      tr.appendChild(td);
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+  }
+
+  function paintAwards() {
+    const box = document.getElementById('awardgrid');
+    box.textContent = '';
+    AWARDS.forEach(function (key) {
+      const wrap = el('div');
+      wrap.appendChild(el('div', 'eyebrow mut', key));
+      const sel = el('select');
+      sel.appendChild(el('option', null, '—'));
+      TEAMS.forEach(function (row) {
+        const o = el('option', null, row.name);
+        o.value = row.team_id;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', async function () {
+        if (!sel.value) return;
+        await api('POST', '/facilitator/api/award', {award_key: key, team_id: parseInt(sel.value, 10)});
+        toast(C.award);
+      });
+      wrap.appendChild(sel);
+      box.appendChild(wrap);
+    });
+  }
+
+  function paintLeaderboard(rows) {
+    const lb = document.getElementById('lb');
+    lb.textContent = '';
+    rows.forEach(function (row) {
+      const e = el('div', 'lbrow c-' + row.color);
+      e.appendChild(el('div', 'rk', row.rank));
+      const mid = el('div');
+      mid.appendChild(el('div', 'nm', row.name));
+      mid.appendChild(el('div', 'sub', 'evidence ' + row.evidence));
+      e.appendChild(mid);
+      e.appendChild(el('div', 'tt', row.total));
+      lb.appendChild(e);
+    });
+  }
+
+  function focusKeyOf(el) {
+    if (!el || el === document.body) return null;
+    for (const attr of ['data-close', 'data-flag', 'data-unlock', 'data-award', 'id']) {
+      const v = el.getAttribute && el.getAttribute(attr);
+      if (v) return attr + '=' + v;
+    }
+    return null;
+  }
+
+  function keepingFocus(paint) {
+    const key = focusKeyOf(document.activeElement);
+    paint();
+    if (!key) return;
+    const [attr, value] = key.split('=');
+    const back = attr === 'id'
+      ? document.getElementById(value)
+      : document.querySelector('[' + attr + '="' + CSS.escape(value) + '"]');
+    if (back && back !== document.activeElement) back.focus();
+  }
+
+  function paintGrading(g) {
+    const bar = document.getElementById('gradingbar');
+    if (!g) { bar.hidden = true; return; }
+    bar.hidden = false;
+    document.getElementById('stgradedone').textContent =
+      GRD.progress.replace('{done}', g.done).replace('{total}', g.total);
+    document.getElementById('stgradeleft').textContent =
+      g.complete ? GRD.all_done : GRD.remaining.replace('{remaining}', g.remaining);
+    document.getElementById('stgradeteams').textContent =
+      g.complete ? '' : GRD.incomplete_teams.replace('{teams}',
+                                                     g.incomplete_teams.join(', '));
+
+    const links = document.getElementById('stgradelinks');
+    links.textContent = '';
+    if (g.complete) return;
+    g.per_team.filter(t => t.missing.length).forEach(function (t) {
+      const a = document.createElement('a');
+      a.className = 'btn sm';
+      a.href = '/facilitator/grade/' + t.team_id;
+      a.textContent = t.name + ' · ' + t.missing.length;
+      a.setAttribute('aria-label',
+                     GRD.go_to_grading + ' — ' + t.name + ' (' +
+                     t.missing.length + ')');
+      links.appendChild(a);
+    });
+  }
+
+  function paintStatus(s, session) {
+    if (!s) return;
+    const set = (id, text) => { document.getElementById(id).textContent = text; };
+
+    set('stmission', s.active_mission || ST.no_mission);
+    set('stclock', s.elapsed === null ? ''
+      : ST.elapsed.replace('{elapsed}', fmtTime(s.elapsed))
+                  .replace('{remaining}', fmtTime(s.remaining)));
+    set('stlocked', s.active_slug
+      ? s.teams_locked + ' / ' + s.teams_total
+      : '— / ' + s.teams_total);
+
+    set('stattention', s.attention.length
+      ? s.attention.map(a => a.name + ' (' + (ST[a.why] || a.why) + ')').join(' · ')
+      : ST.all_fine);
+
+    paintGrading(s.grading);
+
+    let next;
+    if (!s.active_slug) next = ST.next_open;
+    else if (s.teams_locked >= s.teams_total) next = ST.next_close_ready;
+    else next = ST.next_close_wait.replace('{n}', s.teams_total - s.teams_locked);
+    set('stnext', next);
+
+    const off = document.getElementById('stoffline');
+    off.textContent = '';
+    off.className = 'chip off';
+
+    set('stexport', s.last_export
+      ? ST.export_at.replace('{kind}', s.last_export.kind)
+                    .replace('{at}', new Date(s.last_export.at).toLocaleTimeString())
+      : ST.export_none);
+  }
+
+  poll('/facilitator/api/progress', function (d) {
+    if (!d.session) return;
+    paintStatus(d.status, d.session);
+    document.getElementById('evtitle').textContent = d.session.title + ' · ' + d.session.state;
+    document.querySelectorAll('[data-flag]').forEach(function (btn) {
+      btn.classList.toggle('primary', !!d.session[btn.getAttribute('data-flag')]);
+    });
+    keepingFocus(function () {
+      paintMissions(d.missions);
+      paintTeams(d.teams, d.missions);
+      paintLeaderboard(d.leaderboard);
+    });
+    if (!document.getElementById('awardgrid').childElementCount) paintAwards();
+  });
+  paintIOCs();
+  setInterval(paintIOCs, window.SECCAP.poll * 2000);
+})();
+</script>
+{% endif %}
+{% endblock %}

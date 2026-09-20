@@ -1,0 +1,36 @@
+{
+  "source": "https://github.com/sora-dev77",
+  "captured": "2026-09-02",
+  "login": "sora-dev77",
+  "display_name": "Sora Nakamura",
+  "commit_author_email": "321898879+sora-dev77@users.noreply.github.com",
+  "linked_site": "https://sora-dev77.github.io/",
+  "repositories": [
+    {
+      "name": "sakura-secureconnect-client",
+      "description": "Managed VPN client — update channel policy and verifier",
+      "visibility": "public"
+    }
+  ],
+  "recent_commits": [
+    {
+      "sha": "85902d17af7621d58ddaad0f1a306ffc1bff23fb",
+      "date": "2026-09-01T14:52:00Z",
+      "subject": "Fix APAC update fallback"
+    },
+    {
+      "sha": "584ba0b3cd519ad86f901bc5eb9ac92a851c03dc",
+      "date": "2026-07-19T01:48:00Z",
+      "subject": "Signature verifier"
+    },
+    {
+      "sha": "d10897a94b735d367f2fb998d7aace11d457fd0e",
+      "date": "2026-08-12T07:12:00Z",
+      "subject": "4.2.0 release prep"
+    }
+  ],
+  "what_this_does_not_show": [
+    "Which human held the credentials when a commit was pushed.",
+    "Whether a token was stolen; the account page cannot say."
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "source": "https://attack.mitre.org/",
+  "captured": "2026-09-02",
+  "techniques": [
+    {
+      "id": "T1059.001",
+      "name": "Command and Scripting Interpreter: PowerShell"
+    },
+    {
+      "id": "T1547.001",
+      "name": "Boot or Logon Autostart Execution: Registry Run Keys"
+    },
+    {
+      "id": "T1053.005",
+      "name": "Scheduled Task/Job: Scheduled Task"
+    },
+    {
+      "id": "T1071.001",
+      "name": "Application Layer Protocol: Web Protocols"
+    },
+    {
+      "id": "T1560.001",
+      "name": "Archive Collected Data: Archive via Utility"
+    },
+    {
+      "id": "T1041",
+      "name": "Exfiltration Over C2 Channel"
+    },
+    {
+      "id": "T1195.002",
+      "name": "Supply Chain Compromise: Compromise Software Supply Chain"
+    },
+    {
+      "id": "T1486",
+      "name": "Data Encrypted for Impact"
+    },
+    {
+      "id": "T1110.003",
+      "name": "Brute Force: Password Spraying"
+    }
+  ],
+  "reading_note": "Map from the behaviour you can quote in the evidence, not from the technique name that sounds closest. T1195.002 may describe the incident; it is not a behaviour the sandbox observed."
+}

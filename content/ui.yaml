@@ -1,0 +1,714 @@
+app:
+  name: {ja: "Predwen SECCAP", en: "Predwen SECCAP"}
+  tagline: {ja: "インシデント調査演習", en: "Incident investigation exercise"}
+
+common:
+  "yes": {ja: "はい", en: "Yes"}
+  "no": {ja: "いいえ", en: "No"}
+  save: {ja: "保存", en: "Save"}
+  saved: {ja: "保存しました", en: "Saved"}
+  saving: {ja: "保存中…", en: "Saving..."}
+  cancel: {ja: "キャンセル", en: "Cancel"}
+  close: {ja: "閉じる", en: "Close"}
+  back: {ja: "戻る", en: "Back"}
+  next: {ja: "次へ", en: "Next"}
+  open: {ja: "開く", en: "Open"}
+  loading: {ja: "読み込み中…", en: "Loading..."}
+  none: {ja: "なし", en: "None"}
+  points: {ja: "点", en: "pts"}
+  ok: {ja: "了解", en: "OK"}
+  minutes: {ja: "分", en: "min"}
+  seconds: {ja: "秒", en: "s"}
+  team: {ja: "チーム", en: "Team"}
+  role: {ja: "役割", en: "Role"}
+  online: {ja: "接続中", en: "online"}
+  offline: {ja: "未接続", en: "away"}
+  confidence: {ja: "確信度", en: "Confidence"}
+  conf_low: {ja: "低い", en: "Low"}
+  conf_medium: {ja: "中程度", en: "Medium"}
+  conf_high: {ja: "高い", en: "High"}
+  reasoning: {ja: "理由", en: "Reasoning"}
+  evidence: {ja: "根拠", en: "Evidence"}
+  artifact: {ja: "資料", en: "Source"}
+  excerpt: {ja: "任意：回答の根拠となる1行を資料からコピーして貼り付けてください", en: "Optional — paste the line from the source that backs your answer"}
+  reference: {ja: "参考ページを開く", en: "open the reference page"}
+  language: {ja: "言語", en: "Language"}
+  error: {ja: "エラー", en: "Error"}
+  retry: {ja: "もう一度", en: "Try again"}
+
+roles:
+  navigator: {ja: "ナビゲーター", en: "Navigator"}
+  navigator_desc: {ja: "調査画面を操作し、チームの作業を進める。", en: "Drives the investigation view and keeps the team moving."}
+  osint: {ja: "OSINT アナリスト", en: "OSINT Analyst"}
+  osint_desc: {ja: "OSINT は公開情報調査のこと。アカウント・リポジトリ・メタデータの手がかりを調べる。", en: "OSINT is open-source intelligence: works the identity, repository and metadata clues."}
+  infra: {ja: "インフラアナリスト", en: "Infrastructure Analyst"}
+  infra_desc: {ja: "ドメイン・DNS・TLS・IP・HTTP に関する記録を調べる。", en: "Works the domain, DNS, TLS, IP and HTTP evidence."}
+  cti: {ja: "CTI アナリスト", en: "CTI Analyst"}
+  cti_desc: {ja: "CTI はサイバー脅威インテリジェンスのこと。サンドボックスで観測された挙動の分析、IOC（侵害指標）の整理、ATT&CK への対応付けを担当する。", en: "CTI is cyber threat intelligence: works the sandbox behaviour, the IOCs (indicators of compromise) and the ATT&CK mapping."}
+  evidence: {ja: "エビデンス担当／発表担当", en: "Evidence Lead / Presenter"}
+  evidence_desc: {ja: "証拠を整理し、根拠が十分でない結論を見直して、発表を準備する。", en: "Organises evidence, checks weak claims and prepares the presentation."}
+  guide_title: {ja: "作業の分け方（任意）", en: "Ways to split the work (optional)"}
+  guide_lead:
+    ja: "調査の作業は、大きく5つに分けられます。担当を決めても、決めなくても構いません。1人で複数の作業を担当しても、複数人で同じ作業を進めても、途中で担当を交代しても問題ありません。"
+    en: "The investigation has roughly five areas. Assign them if useful, or share them. One person can cover several, two people can work the same one, and you can switch at any time."
+  guide_any_size:
+    ja: "チーム人数に関係なく、すべての設問に必要な資料を利用できます。"
+    en: "Every team has access to the material needed for every question, regardless of team size."
+
+nav:
+  skip: {ja: "本文へスキップ", en: "Skip to main content"}
+  team: {ja: "チーム", en: "Team"}
+  briefing: {ja: "ブリーフィング", en: "Briefing"}
+  evidence: {ja: "エビデンスボード", en: "Evidence board"}
+  collective: {ja: "全体ボード", en: "Class board"}
+  final: {ja: "最終報告書", en: "Synthesis"}
+  mission: {ja: "ミッション", en: "Current mission"}
+  resources: {ja: "参考資料", en: "Resources"}
+  assistant: {ja: "TA ボード", en: "TA board"}
+  not_open_yet: {ja: "まだ開始されていません", en: "Not open yet"}
+  no_mission_open: {ja: "現在、取り組めるミッションはありません", en: "No mission is open"}
+  currently_in: {ja: "現在のミッション：{title}", en: "You are currently in: {title}"}
+  presentation: {ja: "発表資料", en: "Presentation"}
+  scoreboard: {ja: "スコア", en: "Scoreboard"}
+  leave: {ja: "退出", en: "Leave"}
+  facilitator: {ja: "ファシリテーター", en: "Facilitator"}
+
+landing:
+  title: {ja: "SECCAP インシデント調査演習", en: "SECCAP incident investigation exercise"}
+  lead:
+    ja: "あなたのチームはインシデント対応チームです。1件の事案を3つのミッションで調べ、最後に1つの報告書にまとめます。"
+    en: "Your team is an incident-response unit. Investigate one incident across three missions, then produce one final report."
+  join_cta: {ja: "参加する", en: "Join"}
+  no_session: {ja: "演習はまだ始まっていません。開始の案内があるまでこの画面のままでお待ちください。", en: "The exercise has not started yet. Keep this page open until it does."}
+  codes_from_the_room: {ja: "チームコードは、自分のテーブルに置かれています。セッションコードは必要ありません。", en: "Your team code is on your table. You do not need a session code."}
+
+join:
+  title: {ja: "参加", en: "Join"}
+  session_code: {ja: "セッションコード", en: "Session code"}
+  pick_team: {ja: "自分のチームを選ぶ", en: "Choose your team"}
+  team_code: {ja: "チームコード", en: "Team code"}
+  team_code_hint: {ja: "自分のテーブルに置かれているコードです。", en: "The code on your table."}
+  no_session: {ja: "現在、参加できるセッションはありません。ファシリテーターの案内をお待ちください。", en: "No session is open to join yet. Wait for the facilitator."}
+  nickname: {ja: "ニックネーム", en: "Nickname"}
+  submit: {ja: "参加する", en: "Join"}
+  err_no_session: {ja: "現在、参加できるセッションはありません。チームコードの入力ミスではありません。ファシリテーターに知らせてください。", en: "No session is open to join. Tell the facilitator."}
+  err_session: {ja: "そのセッションコードは見つかりません。会場前方の画面に表示されているコードを確認してください。", en: "No session with that code. Check the code on the screen at the front."}
+  err_team: {ja: "そのチームコードは見つかりません。", en: "No team with that code."}
+  err_nickname: {ja: "ニックネームを入力してください。", en: "Enter a nickname."}
+  err_rate: {ja: "参加手続きが短時間に繰り返されました。少し待ってから、もう一度お試しください。", en: "Too many attempts. Wait a moment and try again."}
+  err_full:
+    ja: "このチームは満員です。すでに参加している場合は、前回と同じニックネームを入力してください。"
+    en: "This team is full. If you already joined, enter the same nickname you used before."
+
+briefing:
+  title: {ja: "はじめに", en: "Briefing"}
+  story_title: {ja: "事案", en: "The incident"}
+  story:
+    ja: |-
+      Sakura Robotics（サクラロボティクス）で、開発者アカウントへの不審なログインと、あるワークステーションから見慣れないドメインへの通信が検知されました。VPN クライアントの更新が、侵害された開発者アカウントを経由して配布された可能性があります。
+
+      あなたのチームはインシデント対応チームです。何が起きたのかを調べ、すべての主張に根拠を付け、次に取るべき対応を提案してください。
+    en: |-
+      Sakura Robotics detected a suspicious login to a developer account and outbound traffic from a workstation to an unfamiliar domain. A VPN update may have been distributed through a compromised development account.
+
+      Your team is the incident-response unit. Determine what happened, support every claim with evidence, and recommend the next actions.
+  rules_title: {ja: "進め方", en: "How the exercise runs"}
+  rules:
+    ja: |-
+      ミッション1〜3で順に調査を進め、ミッション4で報告書にまとめます。各ミッションには作業時間の目安があります。目安時間を過ぎても、自動的には終了しません。終了時はファシリテーターが案内します。前のミッションで得た情報は、次のミッションでも使用します。得点と順位はチーム単位で扱い、個人順位は表示しません。
+
+      設問ごとに「この設問のヒント」があります。最初のヒントでは、確認する場所を案内します。ボタンを押すたびに、より具体的なヒントが1つずつ表示されます。資料のページには「行き詰まりましたか？」があり、その資料専用のヒントが出ます。ヒントを使っても減点はありません。
+
+      一部の資料ではツールを使います。各資料ページに、手順、OS別コマンド、インストールできない場合の代替方法があります。初めて使うツールでも、その手順に沿って進められます。
+
+      資料が読み込めない場合や、アクセスがブロックされたことを示すページが表示された場合は、スマートフォンのテザリングに接続して、もう一度試してください。
+    en: |-
+      There are three missions, completed in order. There is no hard time limit. Information from earlier missions remains useful later. Scores and rankings are by team only.
+
+      Every question has its own "Hint for this question". The first press asks "Where do I look?", and each press after that is one step more specific. Every source page has "Stuck?", which gives hints about that source. Hints do not reduce your score.
+
+      Some sources require a tool. Each source page gives the steps, commands for your operating system, and an alternative when installation is not possible. You do not need to have used the tool before.
+
+      If a source does not load, or you get a page saying it is blocked, connect to a phone hotspot and try again.
+  claims_title: {ja: "主張と証拠", en: "Claims and evidence"}
+  claims:
+    ja: "ユーザー名が一致していても、同一人物とは限りません。不審な指標が1つ見つかっただけでは、侵害があったとは断定できません。最終的な結論には、根拠となる資料と該当箇所を示してください。"
+    en: "A username match does not prove identity. One suspicious indicator does not prove compromise. Every final claim must name its supporting source and excerpt."
+  continue: {ja: "チーム画面へ", en: "Go to your team"}
+  rejoin_title: {ja: "接続が切れたときは", en: "If you lose your session"}
+  rejoin:
+    ja: "ページを閉じたり接続が切れたりした場合は、同じチームコードと、前回と同じニックネームで参加し直してください。別のニックネームを使うと、チームに同じ人が2人いることになります。"
+    en: "If you close the page or lose your session, join again with the same team code and the same nickname as before. A different nickname adds you to the team a second time."
+
+team_name:
+  title: {ja: "チーム名を決める", en: "Name your team"}
+  hint: {ja: "最初のミッションが始まるまで変更できます。開始後は固定され、スコアボードとレポートに表示されます。", en: "You can change the name until Mission 1 opens. After that it is fixed and appears on the scoreboard and reports."}
+  save: {ja: "決定", en: "Set name"}
+  locked: {ja: "ミッションが始まったため、チーム名は変更できません。", en: "The exercise has started, so the team name is fixed."}
+  err_too_short: {ja: "2文字以上にしてください。", en: "Use at least two characters."}
+  err_too_long: {ja: "40文字以内にしてください。", en: "Keep it under 40 characters."}
+  err_taken: {ja: "その名前は他のチームが使っています。", en: "Another team already has that name."}
+
+lobby:
+  title: {ja: "チームロビー", en: "Team lobby"}
+  waiting: {ja: "ファシリテーターが最初のミッションを開始するまでお待ちください。", en: "Wait for the facilitator to start the first mission."}
+  members: {ja: "メンバー", en: "Members"}
+  your_code: {ja: "あなたのチーム", en: "Your team"}
+
+team:
+  title: {ja: "チームダッシュボード", en: "Team dashboard"}
+  missions: {ja: "ミッション", en: "Missions"}
+  locked: {ja: "開始前", en: "Not open yet"}
+  open: {ja: "進行中", en: "Open"}
+  paused: {ja: "一時停止", en: "Paused"}
+  closed: {ja: "終了", en: "Closed"}
+  submitted: {ja: "提出済み", en: "Submitted"}
+  next_up: {ja: "次にすること", en: "Next"}
+  nothing_open: {ja: "演習はまだ始まっていません。ファシリテーターが最初のミッションを開始するまでお待ちください。", en: "The exercise has not started yet. Wait for the facilitator to start the first mission."}
+  nothing_open_do: {ja: "待っている間にブリーフィングを確認できます。", en: "You can review the briefing while you wait."}
+  enter: {ja: "ミッションへ", en: "Enter"}
+  preview: {ja: "プレビュー", en: "Preview"}
+  view: {ja: "内容を見る", en: "View"}
+  view_note: {ja: "閲覧のみ。編集はできません。", en: "Read-only — nothing can be changed."}
+  members: {ja: "メンバー", en: "Members"}
+
+mission:
+  estimated_time: {ja: "作業時間の目安：約1時間。目安を過ぎても作業を続けられます。", en: "Estimated working time: about one hour. You may continue after that."}
+  pace_bonus: {ja: "目安時間内に提出内容をロックし、正答率が70％以上の場合、時間ボーナスとして最大5点が加算されます。正確さと根拠を優先してください。", en: "A team that locks within the estimated time may earn up to 5 pace bonus points if it reaches at least 70% correctness. Prioritise accuracy and evidence."}
+  progress_answered: {ja: "{answered}／{questions} 問に回答", en: "{answered} of {questions} answered"}
+  progress_evidence: {ja: "根拠を付けた回答：{evidence}件", en: "Evidence on {evidence} of them"}
+  progress_observations: {ja: "観察メモ {observations} 件", en: "{observations} observations"}
+  of_three: {ja: "ミッション {n} / {total}", en: "Mission {n} of {total}"}
+  tour_title: {ja: "このミッションの進め方", en: "How this mission works"}
+  tour_skip: {ja: "スキップ", en: "Skip"}
+  tour_next: {ja: "次へ", en: "Next"}
+  tour_start: {ja: "はじめる", en: "Start"}
+  tour_reopen: {ja: "進め方をもう一度見る", en: "Show me how this works again"}
+  tour_of: {ja: "{n} / {total}", en: "{n} of {total}"}
+  tour_1: {ja: "まず資料を開いて確認します。各資料ページに読み方が書かれています。", en: "Start by opening the sources. Each source page explains how to work with it."}
+  tour_2: {ja: "気づいたことをその場で書き留めます。投稿はチーム全員にすぐ共有されます。", en: "Record observations as you work. Posts are shared with the whole team immediately."}
+  tour_3: {ja: "設問に答え、根拠となる資料を選びます。必要に応じて該当箇所を引用してください。入力は自動保存されます。行き詰まったら設問のヒントを使ってください。", en: "Answer each question and pick the source it rests on. Quote the passage if it helps. Work is autosaved. Use the question hints when needed."}
+  tour_4: {ja: "最後に抜けがないか確認してロックします。ロック後は回答を変更できません。", en: "Review the mission, then lock it. Answers cannot be changed after locking."}
+  done_title: {ja: "すべての設問に回答しました", en: "Mission complete"}
+  done_body: {ja: "{questions}問すべてに回答し、そのうち{evidence}件に根拠を付けています。ロックする前に見直すことも、そのまま作業を続けることもできます。", en: "All {questions} questions are answered, with evidence on {evidence} of them. Review before locking or keep working."}
+  done_review: {ja: "見直してロックする", en: "Review and lock"}
+  done_later: {ja: "まだ続ける", en: "Keep working"}
+  steps: {ja: "進め方", en: "How to work"}
+  step_note: {ja: "上の番号をクリックすると、どのステップにも戻れます。", en: "Click any number above to return to that step."}
+  step_of: {ja: "ステップ {n} / {total}", en: "Step {n} of {total}"}
+  step_next: {ja: "次へ", en: "Next"}
+  step_back: {ja: "戻る", en: "Back"}
+  step_explore_lead:
+    ja: "資料を開いて確認します。各資料ページに、読み方、必要なツールの手順と OS 別コマンド、行き詰まったときのヒントがあります。"
+    en: "Open the sources. Each source page contains reading guidance, tool steps and operating-system-specific commands, plus hints for that source."
+  step_record_lead: {ja: "気づいたことをチームで共有します。投稿は他のメンバーにもすぐ表示されます。", en: "Share what you notice with the team. Posts appear on your teammates' screens immediately."}
+  step_answer_lead: {ja: "回答を入力し、根拠となる資料を選んでください。必要に応じて該当箇所を引用できます。回答は自動保存され、チームで共有されます。", en: "Enter the answer and pick the source it rests on. You may quote the passage. Answers autosave and are shared with the team."}
+  step_review_lead: {ja: "提出前に抜けがないか確認します。ロック後は回答を変更できません。", en: "Check for gaps before submitting. Answers cannot be changed after locking."}
+  situation: {ja: "状況", en: "The situation"}
+  while_you_wait: {ja: "開始までにできること", en: "While you wait"}
+  while_you_wait_body: {ja: "ブリーフィングで状況を確認しておきましょう。作業分担は任意で、同じ作業を複数人で担当しても構いません。", en: "Review the briefing. Responsibilities are optional and may be shared."}
+  saved_by: {ja: "{who} が記入", en: "written by {who}"}
+  working: {ja: "根拠と考え方", en: "Evidence and reasoning"}
+  working_empty: {ja: "未記入", en: "nothing yet"}
+  working_filled: {ja: "記入あり", en: "filled in"}
+  review: {ja: "見直しとロック", en: "Review and lock"}
+  step_explore: {ja: "資料を調べる", en: "Explore the sources"}
+  step_record: {ja: "観察メモを書く", en: "Record what you notice"}
+  step_answer: {ja: "根拠をつけて答える", en: "Answer with evidence"}
+  step_review: {ja: "見直してロックする", en: "Review and lock"}
+  artifacts: {ja: "資料", en: "Sources"}
+  sources_pending: {ja: "未着の資料", en: "Not in yet"}
+  sources_pending_lead: {ja: "いま表示されている資料をすべて開くと、次の資料が届きます。", en: "Open the sources you already have, and the next one arrives."}
+  sources_left_warning: {ja: "まだ開いていない資料が{count}件あります。表示中の資料をすべて開くと、次の資料が順に届きます。先に進んでも構いません。資料はいつでも「資料を調べる」に戻って開けます。", en: "You still have {count} source(s) to discover. Opening the ones on the page brings them in, one at a time. You can carry on — and you can come back to Explore at any point to open them."}
+  source_arrived: {ja: "新しい資料が届きました：{title}", en: "New source: {title}"}
+  source_is_new: {ja: "新着", en: "New"}
+  review_more_coming: {ja: "まだ開いていない資料が{count}件あります。表示中の資料をすべて開くと、次の資料が順に届きます。今ロックすると、未確認の資料は回答に使用できません。", en: "You have not opened every source yet — {count} still to discover. Opening the ones on the page brings them in, one at a time. If you lock now, this submission cannot use them."}
+  questions: {ja: "設問", en: "Questions"}
+  observations: {ja: "観察メモ", en: "Observations"}
+  observation_placeholder: {ja: "気づいたことを1件書いてください（チーム内にのみ表示）", en: "Post one thing you noticed (visible to your team only)"}
+  post: {ja: "投稿", en: "Post"}
+  posted_by: {ja: "投稿者", en: "by"}
+  contributions: {ja: "全員が1件以上書きましたか", en: "Has everyone posted at least one observation?"}
+  not_posted_yet: {ja: "まだ投稿していません", en: "has not posted yet"}
+  qhint: {ja: "この設問のヒント", en: "Hint for this question"}
+  qhint_first: {ja: "どこを見ればよいか", en: "Where do I look?"}
+  qhint_more: {ja: "もう少し詳しく", en: "A bit more"}
+  qhint_all: {ja: "この設問のヒントはこれで全部です。答えは資料の中にあります。もう一度、この設問が指している資料に戻ってみてください。", en: "That is every hint for this question. The answer is in the sources — go back to the one this question points at and read it again."}
+  a11y_qhint: {ja: "設問{n}のヒント", en: "Hint for question {n}"}
+  look_in: {ja: "この設問で使う資料：", en: "Sources for this question:"}
+  qhint_lv1: {ja: "どこを見るか", en: "Where to look"}
+  qhint_lv2: {ja: "何を確かめるか", en: "What to check"}
+  qhint_lv3: {ja: "答えの確かめ方", en: "How to be sure"}
+  stuck_title: {ja: "行き詰まりましたか？", en: "Stuck?"}
+  stuck_lead: {ja: "ヒントを使っても減点はありません。押すたびに、より具体的な内容が表示されます。", en: "Hints do not reduce your score. Each press shows a more specific hint."}
+  stuck_first: {ja: "最初のヒントを見る", en: "Show me where to look"}
+  stuck_more: {ja: "まだ分からない：次のヒント", en: "Still stuck — next hint"}
+  stuck_used: {ja: "ヒント {used} / {total}", en: "{used} of {total} hints"}
+  stuck_all: {ja: "このミッションのヒントはこれで全部です。必要な情報はすべて資料の中にあります。まだ開いていない資料がないか確認してみてください。", en: "That is every hint for this mission. Everything you need is in the sources — check whether there is one you have not opened yet."}
+  stuck_all_source: {ja: "この資料のヒントはこれで全部です。", en: "That is every hint for this source."}
+  everyone_writes_title: {ja: "手分けして資料を調べ、気づいたことを書いてください", en: "Split the sources between you and post what you find"}
+  everyone_writes_body: {ja: "はじめに資料を分担して読むと、見落としを減らせます。ただし、分担は必須ではありません。同じ資料を複数人で一緒に読んでも、途中で担当を変えても構いません。気づいたことを投稿すると、チーム全員に共有されます。", en: "Splitting the sources between you at the start means nothing gets missed — but it is a suggestion, not a rule. Several of you can read the same source together, and you can swap at any time. What you post is shared with the whole team."}
+  everyone_writes_check: {ja: "誰がどの資料を見るか決めた", en: "We have split the starting sources"}
+  ask_colleague_title: {ja: "回答に入る前に", en: "Before you answer"}
+  ask_colleague_body: {ja: "回答を始める前に、全員の観察メモがそろっているか、調査対象の事案で何が起きたのかをチームで話し合ったか、確認してください。", en: "Before answering, check that everyone has shared an observation and that the team has discussed what happened."}
+  ask_colleague_check: {ja: "全員が投稿し、話し合いも終わった", en: "Everyone has posted, and we have discussed the findings"}
+  discussed_title: {ja: "ロックする前の最終確認", en: "Last check before you lock"}
+  discussed_body: {ja: "ロック後は回答を変更できません。全員で内容を確認し、この内容で提出することに合意していますか。", en: "Locking is final for this mission. Has the team checked the answers and agreed to submit them?"}
+  discussed_check: {ja: "全員で確認し、提出内容に合意した", en: "We checked it together and agree to submit"}
+  dont_work_alone: {ja: "担当した資料を読み終えたら、他の資料も確認できます。気づいたことがあればチームに共有してください。評価はチーム単位です。", en: "When you finish your source, you may check other sources and share anything you notice. Scoring is by team."}
+  next_mission: {ja: "次へ：{title}", en: "Next: {title}"}
+  blocked_title:
+    ja: "前のミッションを終えてから進んでください"
+    en: "Finish the mission before this one"
+  blocked_body:
+    ja: "このミッションは開始されていますが、チームがまだ提出内容をロックしていないミッションがあります。先にそちらを仕上げてロックしてください。ロックした時点で、この画面は自動的に切り替わります。ファシリテーターが終了したミッションは、その時点で保存されていた回答で採点されます。"
+    en: >-
+      This mission is open, but your team has not locked the one before it.
+      Finish that one and lock it — this screen opens by itself the moment you
+      do. A mission that is never locked is scored on whatever happened to be
+      saved when the facilitator closed it.
+  blocked_remaining: {ja: "未ロック：{missions}", en: "Not locked yet: {missions}"}
+  lock_to_continue: {ja: "先に提出内容をロックしてください", en: "Lock your submission first"}
+  locked_waiting: {ja: "ロック済み — 次のミッションが開始されるのを待っています", en: "Locked — waiting for the next mission to open"}
+  lock: {ja: "提出内容をロックする", en: "Lock the team submission"}
+  lock_confirm: {ja: "すべての回答に根拠が付いていますか。ロック後は、このミッションの回答を変更できません。", en: "Does every answer have evidence attached? After locking, this mission cannot be changed."}
+  review_title: {ja: "ロック前の確認：{mission}", en: "Review before locking: {mission}"}
+  review_counts: {ja: "{questions}問中{answered}問に回答済み。根拠を付けた回答：{evidence}件。", en: "{answered} of {questions} answered · evidence on {evidence} of them"}
+  review_all_good: {ja: "すべての設問に回答と根拠がそろっています。", en: "Every question has an answer and evidence."}
+  review_gaps: {ja: "下の項目はまだ完了していません。このままロックすることもできます。", en: "The items marked below are not complete. You may still lock the submission."}
+  review_unanswered: {ja: "未回答", en: "not answered"}
+  review_no_evidence: {ja: "根拠なし", en: "no evidence"}
+  review_ok: {ja: "回答・根拠あり", en: "answered, with evidence"}
+  review_answered_only: {ja: "回答あり", en: "answered"}
+  review_edit: {ja: "この設問へ", en: "Go to it"}
+  review_consequence: {ja: "ロック後、このチームはこのミッションの回答を変更できません。再開が必要な場合はファシリテーターに申し出てください。", en: "After locking, the team cannot change these answers. Ask the facilitator if the mission must be reopened."}
+  review_back: {ja: "戻って作業を続ける", en: "Go back and keep working"}
+  review_lock: {ja: "確認したうえでロックする", en: "I have checked - lock it"}
+  locked_banner: {ja: "このチームの提出内容はロックされています。", en: "This team's submission is locked."}
+  closed_banner: {ja: "このミッションは終了しました。", en: "This mission is closed."}
+  paused_banner: {ja: "ファシリテーターがこのミッションを一時停止しました。解除されるまで入力は保存されません。画面はそのままで、解除されると自動的に再開します。", en: "The facilitator has paused this mission. Nothing you type is saved until it resumes. Leave this page open; it comes back on its own."}
+  not_open: {ja: "このミッションはまだ開始されていません。", en: "This mission is not open yet."}
+  source_not_yet: {ja: "この設問の資料はまだ届いていません。届くとここに表示されます。先に他の設問を進めてください。", en: "The source for this question has not arrived yet. It appears here when it does — work on another question meanwhile."}
+  attach_evidence: {ja: "根拠を付ける", en: "Attach evidence"}
+  choose_artifact: {ja: "資料を選ぶ", en: "Choose the source"}
+  evidence_needs_source: {ja: "先に資料を選んでください。資料を選ぶまで、この根拠は保存されません。", en: "Choose the source first. Nothing here is saved until a source is named."}
+  open_source: {ja: "この資料を開く", en: "Open this source"}
+  a11y_answer: {ja: "設問{n}の回答", en: "Answer to question {n}"}
+  a11y_reasoning: {ja: "設問{n}の根拠の説明", en: "Reasoning for question {n}"}
+  a11y_ev_source: {ja: "設問{n}の根拠にする資料", en: "Evidence source for question {n}"}
+  a11y_ev_url: {ja: "設問{n}の根拠のURL", en: "Evidence URL for question {n}"}
+  a11y_ev_excerpt: {ja: "設問{n}の根拠となる引用箇所", en: "Evidence excerpt for question {n}"}
+  a11y_ev_open: {ja: "設問{n}の根拠にした資料を開く", en: "Open the source for question {n}"}
+  a11y_graph_from: {ja: "設問{n}の関係の始点", en: "Relationship start for question {n}"}
+  a11y_graph_rel: {ja: "設問{n}の関係の種類", en: "Relationship type for question {n}"}
+  a11y_graph_to: {ja: "設問{n}の関係の終点", en: "Relationship end for question {n}"}
+  a11y_observation: {ja: "新しい観察メモ", en: "New observation"}
+  a11y_move_up: {ja: "「{item}」を上へ", en: "Move “{item}” up"}
+  a11y_move_down: {ja: "「{item}」を下へ", en: "Move “{item}” down"}
+  first_step: {ja: "まず取り組むこと", en: "First step"}
+  first_step_done: {ja: "確認しました", en: "Got it"}
+  source_url: {ja: "参照したページのURL（https://…）", en: "URL of the page you read it on (https://…)"}
+  order_hint: {ja: "ドラッグ、または ↑ ↓ で並べ替えてください。", en: "Drag, or use the up and down buttons, to reorder."}
+  graph_add: {ja: "関係を追加", en: "Add relationship"}
+  graph_empty: {ja: "まだ関係が追加されていません。", en: "No relationships added yet."}
+
+artifact:
+  back: {ja: "ミッションに戻る", en: "Back to the mission"}
+  sha: {ja: "このファイルの SHA-256", en: "SHA-256 of this file"}
+  missing: {ja: "この資料のファイルが見つかりません。ファシリテーターに伝えてください。", en: "This artifact's file is missing. Tell the facilitator."}
+  note: {ja: "読み方", en: "How to read this"}
+  copy: {ja: "コピー", en: "Copy"}
+  copied: {ja: "コピーしました", en: "Copied"}
+  external: {ja: "外部リソース", en: "External resource"}
+  open_external: {ja: "外部サイトを開く", en: "Open externally"}
+  snapshot: {ja: "保存済みコピー", en: "Saved copy"}
+  unpublished_title: {ja: "未公開", en: "Not published"}
+  unpublished_body: {ja: "この外部リソースはまだ公開されていません。下の保存済みコピーを使って調査を続けてください。", en: "This external resource is not published yet. Continue with the saved copy below."}
+  safety: {ja: "安全上の注意", en: "Safety"}
+  shell_unavailable: {ja: "対象ホストが現在応答しないため、上のコマンドは結果を返しません。下の保存済みコピーを使ってください。ホスト復旧後は同じ手順を実行できます。", en: "The target hosts are not responding, so the commands above will not return useful results. Use the saved copy below. The same steps can be run when the hosts are back."}
+  howto_title: {ja: "この資料の調べ方", en: "How to work with this"}
+  howto_open_tool: {ja: "{tool} を開く", en: "Open {tool}"}
+  howto_no_install: {ja: "ツールをインストールできない場合：", en: "Nothing to install?"}
+  saved_copy: {ja: "保存済みコピー", en: "Saved copy"}
+  download: {ja: "ファイルをダウンロード", en: "Download the file"}
+  binary_body: {ja: "画像ファイルです。ダウンロードして、ExifTool などのツールでメタデータを確認してください。", en: "This is an image file. Download it and inspect its metadata with a tool such as ExifTool."}
+  stuck: {ja: "この資料で行き詰まったら", en: "If you are stuck on this source"}
+
+hint_level:
+  orientation: {ja: "どこを見るか", en: "Where to look"}
+  pivot: {ja: "資料同士をどう照合するか", en: "What connects"}
+  tool: {ja: "どのツールを使うか", en: "Which tool"}
+  method: {ja: "結論をどうまとめるか", en: "How to reason"}
+  recovery: {ja: "行き詰まったときの進め方", en: "Get back on track"}
+
+pivot_hint:
+  orientation: {ja: "この資料のどこを見るか", en: "Where in this source"}
+  recovery: {ja: "見ても分からないとき", en: "If that did not help"}
+
+evidence:
+  title: {ja: "エビデンスボード", en: "Evidence board"}
+  lead: {ja: "チームのメンバーが投稿した観察メモを表示しています。観察メモ自体は採点対象ではありません。", en: "Observations posted by your team. They are not scored."}
+  empty: {ja: "まだ投稿がありません。", en: "Nothing posted yet."}
+  filter_all: {ja: "すべて", en: "All"}
+
+graph:
+  title: {ja: "調査グラフ", en: "Investigation graph"}
+  lead: {ja: "回答に根拠となる資料を付けると、この図が自動的に更新されます。左側に資料、右側にチームの主張が表示されます。根拠となる資料が1つだけの場合は、追加の確認が必要か検討してください。", en: "The graph updates as evidence is attached. Sources are on the left and team claims are on the right. Review claims supported by only one source."}
+  empty: {ja: "まだ根拠となる資料が登録されていません。回答に資料を付けると、ここに表示されます。", en: "No source attached yet. Attach a source to an answer and it appears here."}
+  count: {ja: "情報源 {sources} · 主張 {findings}", en: "{sources} sources · {findings} claims"}
+
+collective:
+  title: {ja: "全体ボード（チーム間の情報共有）", en: "Collective Intelligence board"}
+  lead: {ja: "各チームが確認済みの IOC（侵害指標）を1件公開します。クラス全体で5種類（ハッシュ・ドメイン・プロセス挙動・永続化・ファイルパス）が確認済みになると、全チームに共通ボーナスが加算されます。共有プロキシの IP アドレスは投稿できますが、ボーナス対象には含めません。", en: "Each team publishes one verified indicator of compromise (IOC). When the class has validated all five categories — hash, domain, process behaviour, persistence and file path — every team receives the shared bonus. Shared-proxy IP addresses may be posted but do not count toward the five categories."}
+  closed: {ja: "全体ボードはまだ利用できません。", en: "The class board is not open yet."}
+  type: {ja: "種別", en: "Type"}
+  value: {ja: "値", en: "Value"}
+  justification: {ja: "根拠（1文）", en: "Justification (one sentence)"}
+  publish: {ja: "公開する", en: "Publish"}
+  published: {ja: "公開しました", en: "Published"}
+  coverage: {ja: "指標の種類ごとの確認状況", en: "Class coverage"}
+  awaiting: {ja: "未確認", en: "awaiting validation"}
+  validated: {ja: "確認済み", en: "validated"}
+  duplicates_ok: {ja: "他のチームと同じ値を投稿しても構いません。ただし、確認済みの指標の種類は増えません。", en: "The same value as another team is fine, but it does not widen coverage."}
+  ioc_hash: {ja: "ハッシュ", en: "Hash"}
+  ioc_domain: {ja: "ドメイン", en: "Domain"}
+  ioc_ip: {ja: "IP アドレス", en: "IP address"}
+  ioc_process: {ja: "プロセス挙動", en: "Process behaviour"}
+  ioc_persistence: {ja: "永続化", en: "Persistence"}
+  ioc_file_path: {ja: "ファイルパス", en: "File path"}
+
+final:
+  title: {ja: "ミッション4 — インシデント報告書の作成", en: "Final Incident — Synthesis"}
+  eyebrow: {ja: "ミッション4：最終報告書", en: "Synthesis"}
+  not_yet_title: {ja: "まず3つのミッションを終えてください", en: "Finish the three missions first"}
+  not_yet_body: {ja: "ミッション4では、ミッション1〜3の調査結果を報告書にまとめます。提出内容をロックしていないミッションを完了し、ロックすると、この画面に進めます。", en: "The synthesis uses your answers from Missions 1 to 3. Finish and lock the remaining missions to open it."}
+  not_yet_remaining: {ja: "未ロック：{missions}", en: "Not locked yet: {missions}"}
+  one_writer_title: {ja: "入力する人をひとり決めてください", en: "Choose one person to type"}
+  one_writer_body: {ja: "この報告書はチームで1つです。複数人が同時に入力すると上書きされる可能性があります。入力する人をひとり決め、内容は全員で相談してください。", en: "There is one report per team. Simultaneous edits can overwrite each other. Choose one person to type and discuss the content as a team."}
+  one_writer_check: {ja: "入力する人を決めた", en: "We have chosen who types"}
+  review_title: {ja: "ロック前の確認：最終報告書", en: "Review before locking: the synthesis"}
+  review_counts: {ja: "記述欄{total}件中{filled}件を記入済み。", en: "{filled} of {total} written sections filled in."}
+  review_all_good: {ja: "すべての記述欄への入力と、3つの並べ替えが完了しています。", en: "Every section and all three orderings are done."}
+  review_gaps: {ja: "下の項目はまだ完了していません。このままロックすることもできます。", en: "The items marked below are not complete. You may still lock the report."}
+  review_filled: {ja: "記入あり", en: "filled in"}
+  review_blank: {ja: "未記入", en: "blank"}
+  review_ordered: {ja: "並べ替え済み", en: "ordered"}
+  review_not_ordered: {ja: "未着手", en: "not touched"}
+  review_go: {ja: "この欄へ", en: "Go to it"}
+  review_consequence: {ja: "ロック後は報告書の内容を変更できません。発表資料はこの内容から生成されます。再開が必要な場合はファシリテーターに申し出てください。", en: "After locking, the synthesis cannot be changed and the presentation is generated from it. Ask the facilitator if it must be reopened."}
+  review_back: {ja: "戻って作業を続ける", en: "Go back and keep working"}
+  review_lock: {ja: "確認したうえでロックする", en: "I have checked - lock it"}
+  closed: {ja: "ミッション4はまだ始まっていません。ミッション1〜3を終えたあとに取り組む、最後のミッションです。", en: "Mission 4 has not started yet. It is the last mission of the day, and it comes after Missions 1 to 3."}
+  after_close: {ja: "ミッション4は終了しました。内容は閲覧できますが、変更はできません。", en: "Mission 4 is closed. You can read what your team wrote; nothing can be changed."}
+  dossier: {ja: "これまでの根拠資料", en: "Your evidence so far"}
+  dossier_empty: {ja: "このミッションでは根拠が登録されていません。", en: "No evidence was linked in this mission."}
+  timeline: {ja: "時系列", en: "Timeline"}
+  timeline_hint: {ja: "出来事を起きた順に並べてください。時刻はすべて UTC です。", en: "Put the events in the order they happened. Every timestamp is UTC."}
+  verdict: {ja: "調査の結論（2〜3文）", en: "Verdict (two or three sentences)"}
+  confirmed: {ja: "確認できた事実", en: "Confirmed facts"}
+  inferences: {ja: "妥当な推論", en: "Plausible inferences"}
+  unknowns: {ja: "まだ分からないこと", en: "Unknowns"}
+  scope: {ja: "各端末の影響状況", en: "Scope — which hosts were affected"}
+  scope_hint:
+    ja: "端末ごとに1行。SR-DEV-077・SR-FIN-014・SR-LAB-021 それぞれについて、「侵害確認済み」「ダウンロードのみ確認」「接続のみ確認」のいずれかに分類し、その根拠を書いてください。"
+    en: "One line per host. Put SR-DEV-077, SR-FIN-014 and SR-LAB-021 each into one of three classes — confirmed compromised, downloaded-only, contacted-only — and give the evidence behind it."
+  response: {ja: "対応の優先順位（上位5件）", en: "Response priorities (top five)"}
+  response_now: {ja: "いま取るべき対応（数時間以内）", en: "What you do now — the next few hours"}
+  response_later: {ja: "再発を防ぐための対応", en: "What you change to reduce recurrence"}
+  response_now_hint:
+    ja: "7つの対応から5つを選び、優先順位の高い順に並べてください。選ばない2つのうち、1つは必要な証拠を失わせる対応、もう1つは重要ですが後日行う作業です。"
+    en: "Pick five of the seven and rank them in priority order, which means leaving two out. One of them would destroy evidence you still need. The other one matters, but it belongs to the following days, not to the next few hours."
+  response_later_hint:
+    ja: "7つのうち5つを選び、優先順位の高い順に並べてください。選ばない項目は2つです。そのうち1つは、期待できる再発防止効果に比べて運用コストが非常に高い対策です。"
+    en: "Pick five of the seven and rank them in priority order. One of them carries an operational cost far out of proportion to what it prevents."
+  top_five_note: {ja: "上から{top}件が採点対象です。破線より下の2件は「選ばなかった」ことになります。", en: "The top {top} are the ones scored. The rows below the dashed line count as the ones you left out."}
+  response_other: {ja: "リストにない対応（任意）", en: "Anything not on the lists (optional)"}
+  response_other_hint: {ja: "どの対応を、なぜ、いつ行うかを書いてください。", en: "Say what you would do, why, and when."}
+  response_hint: {ja: "取るべき対応を5つ選び、優先順に並べてください。", en: "Choose five actions and rank them."}
+  limitations: {ja: "答えられなかった問い", en: "A question you could not answer"}
+  lock: {ja: "報告書をロックする", en: "Lock the report"}
+  lock_confirm: {ja: "ロック後は変更できません。発表資料はこの内容から生成されます。", en: "After locking, this cannot be changed. The presentation is generated from it."}
+  locked: {ja: "この報告書はロックされています。", en: "This report is locked."}
+  open_presentation: {ja: "発表資料を開く", en: "Open the presentation"}
+
+scoring:
+  eyebrow: {ja: "ファシリテーター用 — 参加者には表示されません", en: "Facilitator reference · not shown to participants"}
+  title: {ja: "得点の内訳", en: "How a team's score is built"}
+  lead: {ja: "満点 {total} 点 ＝ 基礎点 {base} 点 ＋ クラス全体ボーナス {bonus} 点。", en: "Maximum {total} = base {base} + class bonus {bonus}."}
+  components_title: {ja: "採点項目", en: "Scoring components"}
+  components_note: {ja: "表示される数値は演習コンテンツから読み込まれます。", en: "The numbers on this page are read from the exercise content."}
+  th_component: {ja: "採点項目", en: "Component"}
+  th_points: {ja: "配点", en: "Points"}
+  row_base: {ja: "基礎点", en: "Base"}
+  row_base_note: {ja: "上記の採点項目の合計", en: "sum of the components above"}
+  row_bonus: {ja: "クラス全体ボーナス", en: "Class bonus"}
+  row_bonus_note: {ja: "全体ボード", en: "collective board"}
+  row_max: {ja: "満点", en: "Maximum"}
+  columns_title: {ja: "各列の意味", en: "What each column means"}
+  auto: {ja: "自動", en: "auto"}
+  by_hand: {ja: "手動", en: "by hand"}
+  name_correctness: {ja: "正答", en: "Correct answers"}
+  name_evidence: {ja: "根拠", en: "Evidence"}
+  name_reasoning: {ja: "論証", en: "Reasoning"}
+  name_completeness: {ja: "網羅性", en: "Coverage"}
+  name_speed: {ja: "時間ボーナス", en: "Pace bonus"}
+  name_collective: {ja: "クラス全体ボーナス", en: "Class bonus"}
+  cat_correctness: {ja: "回答が正解データと一致しているか。", en: "The answer matches the key."}
+  cat_evidence: {ja: "正しい回答に、根拠として認められる資料が付いているか。", en: "A correct answer carries a source that counts as evidence for it."}
+  cat_reasoning: {ja: "論証の質。ルーブリックに沿って採点します。", en: "Quality of reasoning, graded with the rubric."}
+  cat_completeness: {ja: "求められた資料と手順を網羅しているか。ルーブリックに沿って採点します。", en: "Coverage of the requested sources and steps, graded with the rubric."}
+  cat_speed: {ja: "目安時間内に終え、正答率が70％以上の場合に加算されるボーナス点。", en: "A small bonus for finishing within the estimated time with at least 70% correctness."}
+  cat_collective: {ja: "クラス全体が5種類の指標をそろえたときに、全チームへ加算されます。", en: "Added to every team once the class has covered all five indicator categories."}
+  by_hand_note: {ja: "自動項目はミッション終了時にサーバーが採点します。手動項目はチームごとにルーブリックで評価します。すべての手動採点が終わるまで、スコアはロックできません。", en: "Automatic items are scored when a mission closes. Manual items are graded per team with the rubric. Scores cannot be locked until every manual item is assessed."}
+  bonus_title: {ja: "クラス全体ボーナス +15 点", en: "The class-wide +15"}
+  bonus_body: {ja: "全体ボードで、クラス全体としてドメイン・ハッシュ・プロセス挙動・永続化・ファイルパスの5種類が確認済みになると、全チームに +15 点が加算されます。共有プロキシの IP アドレスはこの5種類には含めません。", en: "When the class board has validated entries for domain, hash, process behaviour, persistence and file path, every team receives +15. Shared-proxy IP addresses do not count as one of the five categories."}
+  final_title: {ja: "同点の扱いとスコア確定", en: "Ties and score finalization"}
+  ties: {ja: "同点の場合は、まず根拠の得点を比較し、それも同じ場合はチーム名順で決めます。", en: "Ties break on evidence points first, then team name."}
+  provisional: {ja: "手動採点が終わるまでは暫定値です。", en: "Scores remain provisional until manual grading is complete."}
+  locking: {ja: "手動採点が1件でも残っている場合、スコアは確定できません。", en: "Score locking is refused while any manual assessment is missing."}
+
+presentation:
+  actions_later: {ja: "再発防止のための対応", en: "Prevention"}
+  title: {ja: "発表資料", en: "Presentation"}
+  verdict: {ja: "調査の結論", en: "Verdict"}
+  timeline: {ja: "時系列", en: "Timeline"}
+  evidence: {ja: "最も強い証拠", en: "Strongest evidence"}
+  actions: {ja: "対応の優先順位", en: "Response priorities"}
+  uncertainty: {ja: "不確実性と限界", en: "Uncertainty and limits"}
+  score: {ja: "得点の内訳", en: "Score breakdown"}
+  empty: {ja: "まだ報告書が作成されていません。", en: "The report has not been written yet."}
+
+scoreboard:
+  title: {ja: "スコアボード", en: "Scoreboard"}
+  hidden: {ja: "順位は現在非公開です。調査を続けてください。", en: "The ranking is hidden. Continue the investigation."}
+  final: {ja: "確定", en: "Final"}
+  maxima: {ja: "満点：基礎点 {base}点 ＋ クラス全体ボーナス {bonus}点 ＝ {total}点", en: "Out of {base} from the missions and synthesis + {bonus} class bonus = {total}"}
+  collective_earned: {ja: "クラス全体ボーナス {points}点", en: "Class bonus {points}"}
+  rank: {ja: "順位", en: "Rank"}
+  tiebreak: {ja: "同点の場合は根拠の得点を比較し、それも同じ場合はチーム名順で順位を決定します。", en: "Ties break on evidence points, then team name."}
+  total: {ja: "合計", en: "Total"}
+  awards: {ja: "アワード", en: "Awards"}
+  award_overall: {ja: "総合調査賞", en: "Overall Investigation"}
+  award_evidence: {ja: "ベスト・エビデンス賞", en: "Best Evidence"}
+  award_technical: {ja: "最優秀技術分析賞", en: "Best Technical Analysis"}
+  award_response: {ja: "最優秀インシデント対応賞", en: "Best Incident Response"}
+  award_teamwork: {ja: "ベスト・チームワーク賞", en: "Best Teamwork"}
+  award_presentation: {ja: "ベスト・プレゼンテーション賞", en: "Best Presentation"}
+
+facilitator:
+  title: {ja: "ファシリテーターコンソール", en: "Facilitator console"}
+  lock_blocked: {ja: "手動採点が {remaining} 件残っているため、スコアを確定できません。未完了：{teams}", en: "Scores cannot be locked: {remaining} manual assessments are still missing. Not finished: {teams}"}
+  close: {ja: "終了する", en: "Close"}
+  close_confirm_title: {ja: "「{mission}」を終了しますか？", en: "Close “{mission}”?"}
+  close_confirm_ready: {ja: "{total}チーム中{n}チームが提出内容をロック済みです。", en: "{n} of {total} teams have locked their submission."}
+  close_confirm_not_ready: {ja: "まだロックしていないチーム：{teams}", en: "Not locked yet: {teams}"}
+  close_confirm_consequence: {ja: "終了すると、未ロックのチームもその時点の内容でロックされ、採点されます。", en: "Closing locks any unfinished team at its current saved state and scores that work."}
+  close_confirm_announce: {ja: "終了する前に、口頭で予告してください。参加者側にカウントダウンは表示されません。", en: "Announce the closure to the room first. Participants do not see a countdown."}
+  close_confirm_do: {ja: "終了する", en: "Close the mission"}
+  now: {ja: "進行中", en: "Now"}
+  locked_teams: {ja: "ロック済み", en: "Teams locked"}
+  attention: {ja: "要確認チーム", en: "Needs attention"}
+  next_action: {ja: "次の操作", en: "Next action"}
+  st_no_mission: {ja: "現在進行中のミッションはありません", en: "No mission open"}
+  st_elapsed: {ja: "経過 {elapsed} ／ 残り {remaining}", en: "{elapsed} elapsed · {remaining} left"}
+  st_all_fine: {ja: "特になし", en: "Nothing flagged"}
+  st_offline_team: {ja: "全員オフライン", en: "nobody online"}
+  st_no_answers: {ja: "8分経過して回答なし", en: "no answers after 8 min"}
+  st_idle: {ja: "10分以上入力なし", en: "nothing written for 10 min"}
+  st_next_open: {ja: "次のミッションを開始する", en: "Open the next mission"}
+  st_next_close_ready: {ja: "全チームがロック済み。予告してから終了できます。", en: "All teams have locked. Announce, then close."}
+  st_next_close_wait: {ja: "{n}チームが未ロック。終了前に口頭で予告してください。", en: "{n} teams still writing. Announce before you close."}
+  st_export_at: {ja: "最後のエクスポート：{kind}（{at}）", en: "Last export: {kind} at {at}"}
+  st_export_none: {ja: "エクスポートはまだ行われていません", en: "No export taken yet"}
+  backup_note: {ja: "サーバーのバックアップはアプリ外で確認してください（deploy/backup.sh）。", en: "Server backup is verified outside the app (deploy/backup.sh)."}
+  password: {ja: "パスワード", en: "Password"}
+  sign_in: {ja: "サインイン", en: "Sign in"}
+  bad_password: {ja: "パスワードが違います。", en: "Wrong password."}
+  disabled: {ja: "ファシリテーターアクセスが無効です。SECCAP_FACILITATOR_PASSWORD_HASH を設定してください。", en: "Facilitator access is disabled. Set SECCAP_FACILITATOR_PASSWORD_HASH."}
+
+assistant:
+  title: {ja: "TA ボード", en: "TA board"}
+  lead: {ja: "担当チームの進み具合を確認する画面です。チームが書いた内容と届いている資料が表示されます。正解は表示されません。", en: "Use this board to check your team's progress, written work and available sources. Correct answers are not shown."}
+  password: {ja: "TA パスワード", en: "TA password"}
+  sign_in: {ja: "サインイン", en: "Sign in"}
+  bad_password: {ja: "パスワードが違います。", en: "Wrong password."}
+  disabled: {ja: "TA アクセスが無効です。SECCAP_ASSISTANT_PASSWORD_HASH を設定してください。", en: "TA access is disabled. Set SECCAP_ASSISTANT_PASSWORD_HASH."}
+  sign_out: {ja: "サインアウト", en: "Sign out"}
+  no_session: {ja: "現在、参加できるセッションはありません。", en: "No session is open."}
+  pick_title: {ja: "担当するチームを選ぶ", en: "Choose your team"}
+  pick_lead: {ja: "担当するテーブルのチームを選んでください。あとで切り替えられます。", en: "Choose the team at your table. You can switch later."}
+  pick: {ja: "このチームを見る", en: "Open this team"}
+  switch: {ja: "別のチームに切り替える", en: "Switch team"}
+  members: {ja: "メンバー", en: "Members"}
+  online: {ja: "接続中", en: "online"}
+  offline: {ja: "未接続", en: "away"}
+  posted: {ja: "投稿済み", en: "has posted"}
+  not_posted: {ja: "未投稿", en: "nothing posted yet"}
+  mission: {ja: "ミッション", en: "Mission"}
+  no_mission: {ja: "現在、取り組めるミッションはありません。", en: "No mission is open."}
+  elapsed: {ja: "経過 {elapsed} ／ 残り {remaining}", en: "{elapsed} elapsed · {remaining} left"}
+  team_locked: {ja: "このチームは提出内容をロック済みです。", en: "This team has locked its submission."}
+  sources: {ja: "資料", en: "Sources"}
+  observations: {ja: "観察メモ", en: "Observations"}
+  no_observations: {ja: "まだ観察メモはありません。", en: "No observations yet."}
+  answers: {ja: "回答", en: "Answers"}
+  unanswered: {ja: "未回答", en: "not answered"}
+  with_evidence: {ja: "根拠あり", en: "evidence attached"}
+  no_evidence: {ja: "根拠なし", en: "no evidence yet"}
+  reasoning: {ja: "理由", en: "Reasoning"}
+  confidence: {ja: "確信度", en: "Confidence"}
+  hints: {ja: "ヒント", en: "Hints"}
+  hints_taken: {ja: "閲覧したヒント：{n}件", en: "Hints opened: {n}"}
+  progress: {ja: "{questions}問中{answered}問に回答済み", en: "{answered} of {questions} answered"}
+  locked_short: {ja: "ロック済み", en: "locked"}
+
+announce:
+  title: {ja: "お知らせ", en: "Announcement"}
+  ok: {ja: "了解", en: "OK"}
+
+error:
+  title_404: {ja: "ページが見つかりません", en: "Page not found"}
+  title_500: {ja: "サーバーエラー", en: "Server error"}
+  title_400: {ja: "ページの有効期限が切れています", en: "This page expired"}
+  csrf_body: {ja: "前の画面を再読み込みしてから、もう一度送信してください。保存済みの内容は失われていません。", en: "Reload the previous page and send it again. Already saved work is unchanged."}
+  body: {ja: "ファシリテーターに伝えてください。作業中の内容はサーバーに保存されています。", en: "Tell the facilitator. Your work is saved on the server."}
+  home: {ja: "最初の画面へ", en: "Back to the start"}
+
+facilitator_lock:
+  blocked_title: {ja: "スコアはまだ確定できません", en: "Scores cannot be locked yet"}
+  progress: {ja: "手動採点 {done}／{total} 件", en: "Manual assessments {done} of {total}"}
+  remaining: {ja: "残り {remaining} 件", en: "{remaining} left"}
+  incomplete_teams: {ja: "未完了のチーム：{teams}", en: "Not finished: {teams}"}
+  go_to_grading: {ja: "採点画面へ", en: "Go to grading"}
+  why: {ja: "スコア確定後は手動採点を追加できません。ミッション1〜3は各30点、ミッション4は90点が手動採点の対象です。", en: "Manual assessment cannot be added after scores are locked. Each mission carries 30 manually assessed points, and the synthesis carries 90."}
+  all_done: {ja: "手動採点はすべて完了しています。", en: "Every manual assessment is in."}
+
+ta_survey:
+  title: {ja: "TA 観察フォーム", en: "TA Observation Form"}
+  lead:
+    ja: "観察に基づいて、このチームがどのように協力して作業を進めたかを記録してください。この記録は得点に影響せず、参加者には表示されません。今後のセッションの改善に使用します。午後の演習中はいつでも編集できます。"
+    en: "Record how this team worked, based on what you observed. These observations do not affect scores and are not shown to participants. They are used to improve future sessions and can be edited during the afternoon."
+  period: {ja: "ミッション／観察した時間帯", en: "Mission / observation period"}
+  scale_hint:
+    ja: "各項目について評価を選んでください。判断できるだけの場面を見ていない場合は「未観察」を選んでください。"
+    en: "For each statement, select a rating. Choose “Not observed” if you did not have enough opportunity to assess the statement."
+  scale_1: {ja: "まったく当てはまらない", en: "Not at all"}
+  scale_2: {ja: "少し当てはまる", en: "Slightly"}
+  scale_3: {ja: "ある程度当てはまる", en: "Moderately"}
+  scale_4: {ja: "おおむね当てはまる", en: "Mostly"}
+  scale_5: {ja: "完全に当てはまる", en: "Completely"}
+  na: {ja: "未観察", en: "Not observed"}
+  sec_teamwork: {ja: "チームワーク", en: "Teamwork"}
+  sec_interface: {ja: "画面と課題の分かりやすさ", en: "Interface and task clarity"}
+  sec_hints: {ja: "ヒントの利用", en: "Hint use"}
+  notes: {ja: "その他の観察（任意）", en: "Additional observations (optional)"}
+  notes_hint:
+    ja: "チームの作業を進めるうえで役立ったやり取りや、妨げになったやり取りがあれば書いてください。可能であれば具体例を挙げてください。手助けをした場合は、その内容とチームの反応を簡潔に書いてください。"
+    en: "Describe any interaction that helped or hindered the team’s progress. Include a concrete example if possible. If you intervened, briefly describe your help and how the team responded."
+  save: {ja: "保存", en: "Save"}
+  saved: {ja: "保存しました", en: "Saved"}
+  q_participation: {ja: "チーム全員が調査に積極的に参加していた。", en: "All team members actively contributed to the investigation."}
+  q_discussion: {ja: "回答を提出する前に、調査で分かったことを話し合っていた。", en: "They discussed their findings before submitting answers."}
+  q_split: {ja: "どの資料や作業を誰が担当するかを調整していた。", en: "They coordinated who would investigate which sources or tasks."}
+  q_challenge: {ja: "お互いの結論を、手元の証拠と照らし合わせて確認していた。", en: "They checked each other’s conclusions against the available evidence."}
+  q_platform: {ja: "操作に行き詰まることなく、システムを利用できていた。", en: "They could use the interface without getting stuck."}
+  q_task: {ja: "課題が何を求めているかを理解していた。", en: "They understood what the tasks asked them to do."}
+  q_hints: {ja: "チームが行き詰まったとき、どのくらいの頻度でヒントを開いていましたか。", en: "When the team got stuck, how often did they open hints?"}
+  hint_never: {ja: "一度もない", en: "Never"}
+  hint_rarely: {ja: "まれに", en: "Rarely"}
+  hint_sometimes: {ja: "ときどき", en: "Sometimes"}
+  hint_often: {ja: "よく", en: "Often"}
+  hint_always: {ja: "常に", en: "Always"}
+  hint_no_blockage: {ja: "行き詰まった場面は観察されなかった", en: "No blockage observed"}
+
+console:
+  sign_out: {ja: "サインアウト", en: "sign out"}
+  new_session: {ja: "新しいセッション", en: "New session"}
+  session_title: {ja: "セッション名", en: "Title"}
+  teams_count: {ja: "チーム数", en: "Teams"}
+  th_teams: {ja: "チーム一覧", en: "Teams"}
+  create: {ja: "作成する", en: "Create"}
+  session_code: {ja: "セッションコード", en: "Session code"}
+  scoreboard_projector: {ja: "スコアボード（投影用）", en: "scoreboard (projector)"}
+  export_scores: {ja: "得点をエクスポート", en: "export scores"}
+  export_scoring_detail: {ja: "採点の詳細をエクスポート", en: "export scoring detail"}
+  export_submissions: {ja: "提出内容をエクスポート", en: "export submissions"}
+  export_session: {ja: "セッションをエクスポート", en: "export session"}
+  export_ta_reports: {ja: "TAの観察記録をエクスポート", en: "export TA reports"}
+  switches: {ja: "セッションの設定", en: "Session switches"}
+  switch_scoreboard: {ja: "スコアボードを公開", en: "scoreboard"}
+  switch_collective: {ja: "全体ボードを公開", en: "class board"}
+  switch_lock: {ja: "スコアを確定", en: "lock scores"}
+  announce_placeholder: {ja: "全チームへのお知らせを入力…", en: "Broadcast to every team…"}
+  announce_send: {ja: "お知らせを送信", en: "announce"}
+  announce_clear: {ja: "お知らせを消去", en: "clear"}
+  close_hint: {ja: "セッションを終了しても記録は残ります。先にエクスポートしてください。", en: "Closing the session keeps every row. Export first."}
+  close_session: {ja: "セッションを終了", en: "close session"}
+  missions: {ja: "ミッション", en: "Missions"}
+  autoscore_final: {ja: "ミッション4を自動採点", en: "auto-score Mission 4"}
+  add_team: {ja: "チームを追加", en: "+ team"}
+  seats: {ja: "席数", en: "seats"}
+  seats_prompt:
+    ja: "{team} の参加人数の上限（空欄で上限なし）"
+    en: "Participant seats for {team} (leave empty for no limit)"
+  collective_summary: {ja: "全体ボード：クラス全体ボーナス15点", en: "Collective board — the class-wide +15 bonus"}
+  awards: {ja: "表彰", en: "Awards"}
+  leaderboard: {ja: "順位表（ファシリテーター用・常時表示）", en: "Leaderboard (facilitator view — always visible here)"}
+  close_confirm: {ja: "このセッションを終了しますか？記録は削除されませんが、終了後は参加や入力ができなくなります。", en: "Close this session? Nothing is deleted, but no one can join or write afterwards."}
+  toast_bonus: {ja: "クラス全体ボーナスを加算しました", en: "shared bonus awarded"}
+  toast_award: {ja: "受賞チームを設定しました", en: "award set"}
+  th_team: {ja: "チーム", en: "Team"}
+  th_online: {ja: "接続人数", en: "Online"}
+  th_obs: {ja: "観察メモ", en: "Obs"}
+  th_final: {ja: "最終報告書", en: "Final"}
+  th_score: {ja: "得点", en: "Score"}
+  unlock: {ja: "ロックを解除", en: "unlock"}
+  grade: {ja: "採点する", en: "grade"}
+  present: {ja: "発表資料を開く", en: "present"}
+  validated: {ja: "確認済み", en: "validated"}
+  validate: {ja: "確認済みにする", en: "validate"}
+  btn_open: {ja: "開始する", en: "open"}
+  btn_pause: {ja: "一時停止する", en: "pause"}
+
+grade:
+  back: {ja: "← コンソールへ", en: "← console"}
+  locked_banner: {ja: "スコアは確定済みです。採点するには、コンソールで確定を解除してください。", en: "Scores are locked. Unlock them on the console to grade."}
+  th_question: {ja: "設問", en: "question"}
+  th_answer: {ja: "回答", en: "answer"}
+  th_expected: {ja: "正答・採点基準", en: "expected"}
+  th_evidence: {ja: "根拠", en: "evidence"}
+  no_criteria: {ja: "採点基準が設定されていないため、この設問は採点できません", en: "nothing authored — this question cannot be marked"}
+  nothing_written: {ja: "— 未記入", en: "— nothing written"}
+  reason_optional: {ja: "採点理由（任意）", en: "reason (optional)"}
+  apply: {ja: "反映する", en: "apply"}
+  report_title: {ja: "最終報告書", en: "Final report"}
+  f_verdict: {ja: "調査の結論", en: "verdict"}
+  th_verdict: {ja: "判定結果", en: "verdict"}
+  f_limitations: {ja: "答えられなかった問い", en: "limitations"}
+  f_confirmed: {ja: "確認できた事実", en: "confirmed facts"}
+  f_inferences: {ja: "妥当な推論", en: "inferences"}
+  f_unknowns: {ja: "まだ分からないこと", en: "unknowns"}
+  f_scope: {ja: "各端末の影響状況", en: "scope"}
+  present: {ja: "発表資料を開く", en: "presentation view"}
+  override: {ja: "得点の手動調整", en: "Override"}
+  override_hint: {ja: "得点の調整は履歴に新しい記録として追加されます。調整理由を必ず入力してください。", en: "A correction is a new row in the ledger, never an edit. The reason is required."}
+  override_points: {ja: "加減点（±）", en: "±points"}
+  override_reason: {ja: "調整理由（必須）", en: "reason (required)"}
+  autoscore_title: {ja: "設問ごとの自動採点結果", en: "Auto-scoring, question by question"}
+  th_mission: {ja: "ミッション", en: "mission"}
+  th_awarded: {ja: "得点", en: "awarded"}
+  th_max: {ja: "配点", en: "max"}
+  ledger_title: {ja: "得点の変更履歴", en: "Score ledger"}
+  th_at: {ja: "時刻", en: "at"}
+  th_source: {ja: "記録の種類", en: "source"}
+  th_category: {ja: "採点項目", en: "category"}
+  th_points: {ja: "点数", en: "points"}
+  th_reason: {ja: "理由", en: "reason"}
+  th_actor: {ja: "実行者", en: "actor"}
+  override_reason_missing: {ja: "調整理由を入力してください", en: "reason required"}
+  autoscore_lead:
+    ja: "作成されたすべての設問を、得点が0点のものも含めて表示しています。上の記述式の項目は手動採点のため、この表には含まれません。"
+    en: "Every authored question, including the ones that scored nothing. The rubric items above are marked by hand and are not in this table; they are in the ledger."
+  ledger_lead:
+    ja: "実際に加算された得点を、1件ずつ発生順に表示しています。0点だった設問は上の表にあります。"
+    en: "One row per point actually awarded, in the order it happened. Questions that earned nothing are in the table above."

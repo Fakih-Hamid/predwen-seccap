@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Admin bypass · {{ t('app.name') }}{% endblock %}
+
+{% macro do(action, label, cls='btn sm') %}
+<form method="post" action="{{ url_for('admin.act') }}" style="display:inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="action" value="{{ action }}">
+  {{ caller() if caller is defined }}
+  <button class="{{ cls }}" type="submit">{{ label }}</button>
+</form>
+{% endmacro %}
+
+{% block content %}
+<div class="page wide">
+  <div class="eyebrow">Development</div>
+  <h1>Admin bypass</h1>
+
+  <div class="banner bad">
+    This page exists because <span class="mono">SECCAP_ADMIN_BYPASS</span> is set.
+    Anyone who reaches <span class="mono">/admin</span> becomes the facilitator
+    without a password. Unset it before the event and before any host that is
+    reachable from outside the room.
+  </div>
+
+  {% if done %}<div class="banner ok">{{ done }}</div>{% endif %}
+
+  {% if not ev %}
+  <div class="panel">
+    <p class="lead">No session in the database.</p>
+    {% call() do('new_session', 'Seed a session', 'btn primary') %}{% endcall %}
+  </div>
+  {% else %}
+
+  <div class="grid two">
+
+    <div class="panel">
+      <h2>Session</h2>
+      <table class="data">
+        <tr><th>Code</th><td class="mono">{{ ev.code }}</td></tr>
+        <tr><th>Title</th><td>{{ ev.title }}</td></tr>
+        <tr><th>State</th><td class="mono">{{ ev.state }}</td></tr>
+      </table>
+
+      <h3>Teams</h3>
+      <table class="data">
+        <thead>
+          <tr><th>Name</th><th>Code</th><th class="num">Members</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for team in teams %}
+          <tr>
+            <td>{{ team.display_name }}</td>
+            <td class="mono">{{ team.code }}</td>
+            <td class="num">{{ member_counts[team.id] }}</td>
+            <td>
+              {% call() do('sit', 'sit here' if not (my_team and my_team.id == team.id) else 'seated') %}
+                <input type="hidden" name="team_id" value="{{ team.id }}">
+              {% endcall %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="row">
+        {% call() do('populate', 'Add 5 members per team') %}{% endcall %}
+        {% call() do('stand', 'Release my seat') %}{% endcall %}
+        {% call() do('new_session', 'Seed a NEW session') %}{% endcall %}
+      </div>
+      <p class="small mut">
+        Seeding a new session leaves the old one in the database. The platform
+        serves the newest session that is not closed, so the previous one simply
+        stops being the one participants reach.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>Missions</h2>
+      <table class="data">
+        <thead>
+          <tr><th>Mission</th><th>State</th><th class="num">Left</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+          <tr>
+            <td class="mono">{{ row.slug }}</td>
+            <td class="mono">{{ row.state }}</td>
+            <td class="num mono">{{ '%d:%02d'|format(row.remaining_seconds() // 60, row.remaining_seconds() % 60) }}</td>
+            <td>
+              {% call() do('mission', 'close' if row.state == 'open' else 'open') %}
+                <input type="hidden" name="slug" value="{{ row.slug }}">
+              {% endcall %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="row">
+        {% call() do('open_all', 'Open all', 'btn sm primary') %}{% endcall %}
+        {% call() do('close_all', 'Close all + score') %}{% endcall %}
+        {% call() do('relock', 'Reset timers', 'btn sm warn') %}{% endcall %}
+      </div>
+      <p class="small mut">
+        Closing is what runs the auto-scorer, on every team, on the state it is
+        in at that moment. Reset timers puts the clocks back without touching
+        submissions or score events.
+      </p>
+
+      <h3>Switches</h3>
+      <div class="row">
+        {% for flag, value in flags.items() %}
+          {% call() do('flag', flag + (' ON' if value else ' off'), 'btn sm' + (' primary' if value else '')) %}
+            <input type="hidden" name="flag" value="{{ flag }}">
+          {% endcall %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Jump to</h2>
+    <p class="small mut">
+      Participant pages need a seat — take one above first. The facilitator
+      pages work as soon as you land on this panel.
+    </p>
+
+    <h3>Participant</h3>
+    <div class="row">
+      <a class="btn sm" href="{{ url_for('participant.join') }}">join (seat switcher)</a>
+      <a class="btn sm" href="{{ url_for('participant.briefing') }}">briefing</a>
+      <a class="btn sm" href="{{ url_for('participant.lobby') }}">lobby</a>
+      <a class="btn sm" href="{{ url_for('participant.team_home') }}">team</a>
+      {% for row in rows %}
+      <a class="btn sm" href="{{ url_for('participant.mission', slug=row.slug) }}">{{ row.slug }}</a>
+      {% endfor %}
+      <a class="btn sm" href="{{ url_for('participant.evidence_board') }}">evidence</a>
+      <a class="btn sm" href="{{ url_for('participant.collective') }}">class board</a>
+      <a class="btn sm" href="{{ url_for('participant.final') }}">final</a>
+      <a class="btn sm" href="{{ url_for('participant.presentation') }}">presentation</a>
+    </div>
+
+    <h3>Facilitator and projector</h3>
+    <div class="row">
+      <a class="btn sm" href="{{ url_for('facilitator.console') }}">console</a>
+      {% for team in teams %}
+      <a class="btn sm" href="{{ url_for('facilitator.grade', team_id=team.id) }}">grade {{ team.code }}</a>
+      {% endfor %}
+      {% for team in teams %}
+      <a class="btn sm" href="{{ url_for('facilitator.present', team_id=team.id) }}">present {{ team.code }}</a>
+      {% endfor %}
+      <a class="btn sm" href="{{ url_for('participant.scoreboard') }}">scoreboard</a>
+      <a class="btn sm" href="{{ url_for('participant.scoreboard', projector=1) }}">projector</a>
+    </div>
+
+    <h3>Exports</h3>
+    <div class="row">
+      <a class="btn sm" href="{{ url_for('facilitator.export_results') }}">results.csv</a>
+      <a class="btn sm" href="{{ url_for('facilitator.export_submissions') }}">submissions.csv</a>
+      <a class="btn sm" href="{{ url_for('facilitator.export_session') }}">session.json</a>
+    </div>
+  </div>
+
+  <div class="row">
+    {% call() do('signout', 'Sign out of everything', 'btn danger') %}{% endcall %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

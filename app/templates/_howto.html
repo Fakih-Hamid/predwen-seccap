@@ -1,0 +1,43 @@
+<div class="howto" data-howto>
+  {% set hl = heading_level | default(3) %}
+  <div class="howtohead">
+    <h{{ hl }}>{{ t('artifact.howto_title') }}{% if how_to.tool %} · <span class="mono">{{ how_to.tool }}</span>{% endif %}</h{{ hl }}>
+    {% if how_to.tool_link %}
+    <a class="btn sm" href="{{ how_to.tool_link.url }}" target="_blank" rel="noopener noreferrer">
+      {{ t('artifact.howto_open_tool', tool=how_to.tool_link.name) }} ↗
+    </a>
+    {% endif %}
+  </div>
+
+  {% if how_to.no_install %}
+  <p class="howtoalt"><strong>{{ t('artifact.howto_no_install') }}</strong> {{ how_to.no_install }}</p>
+  {% endif %}
+
+  {% if how_to.steps %}
+  <ol class="howtosteps">
+    {% for step in how_to.steps %}
+    <li>
+      {{ step.say if step is mapping else step }}
+      {% if step is mapping and step.cmd %}
+      <div class="howtocmd">
+        {% if step.os %}<div class="eyebrow mut">{{ step.os }}</div>{% endif %}
+        <div class="scrollx"><pre class="raw">{{ step.cmd }}</pre></div>
+      </div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+
+  {% if how_to.commands %}
+  <div class="howtocmds">
+    {% for c in how_to.commands %}
+    <div class="howtocmd">
+      {% if c.os %}<div class="eyebrow mut">{{ c.os }}</div>{% endif %}
+      <div class="scrollx"><pre class="raw">{{ c.cmd }}</pre></div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ team.display_name }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="eyebrow">{{ t('common.team') }} · {{ team.code }}</div>
+  <h1>{{ team.display_name }}</h1>
+
+
+  <div class="nextup">
+    {% if nav and nav.mission %}
+    <div>
+      <div class="eyebrow">{{ t('team.next_up') }}</div>
+      <p class="lead">{{ nav.mission.title }}</p>
+    </div>
+    <a class="btn primary" href="{{ url_for('participant.mission', slug=nav.mission.slug) }}">
+      {{ t('team.enter') }} →
+    </a>
+    {% else %}
+    <div>
+      <div class="eyebrow mut">{{ t('team.next_up') }}</div>
+      <p class="lead">{{ t('team.nothing_open') }}</p>
+      <p class="small mut">{{ t('team.nothing_open_do') }}</p>
+    </div>
+    <a class="btn" href="{{ url_for('participant.briefing') }}">{{ t('nav.briefing') }}</a>
+    {% endif %}
+  </div>
+
+  {% if not names_locked %}
+  <div class="panel" id="naming">
+    <h2>{{ t('team_name.title') }}</h2>
+    <p class="small mut">{{ t('team_name.hint') }}</p>
+    <div class="row">
+      <label class="field" style="flex:1;margin:0">
+        <span class="lb">{{ t('team_name.title') }}</span>
+        <input type="text" id="namebox" maxlength="{{ max_team_name }}"
+               value="{{ team.display_name }}" autocomplete="off">
+      </label>
+      <button class="btn" id="rename">{{ t('team_name.save') }}</button>
+    </div>
+    <div class="hint" id="nameerr"></div>
+  </div>
+  {% else %}
+  <p class="small mut">{{ t('team_name.locked') }}</p>
+  {% endif %}
+
+  <div class="panel">
+    <h2>{{ t('team.members') }}</h2>
+    <div class="strip">
+      {% for m in members %}
+      <span class="seat {{ 'me' if m.id == me.id }} {{ 'on' if m.online }}">
+        <span class="av">{{ m.nickname[:1] | upper }}</span>
+        {{ m.nickname }}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% with compact = true %}{% include "_guide.html" %}{% endwith %}
+
+  <h2>{{ t('team.missions') }}</h2>
+  <div class="grid two" id="cards">
+    {% for c in cards %}
+    <div class="panel" data-slug="{{ c.slug }}">
+      <div class="row" style="justify-content:space-between;align-items:baseline">
+        <div class="eyebrow {{ 'mut' if c.state == 'locked' }}">
+          {{ t('mission.of_three', n=loop.index, total=cards|length) }}
+        </div>
+        <span class="chip {{ 'ok' if c.state == 'open' else ('warn' if c.state == 'paused' else 'off') }}"
+              data-state>{{ t('team.' ~ c.state) }}</span>
+      </div>
+      <h3>{{ c.title }}</h3>
+      <p class="small mut">{{ c.subtitle }}</p>
+      <div class="row" style="justify-content:space-between">
+        <span class="mono small mut">{{ c.max_points | round | int }} {{ t('common.points') }}</span>
+        {% if admin_preview %}
+        <a class="btn sm primary" href="{{ c.href }}">
+          {{ t('team.enter') if c.state == 'open' and not c.locked_by_team
+             else t('team.preview') }}
+        </a>
+        {% elif c.state == 'locked' %}
+        <span class="btn sm disabled">{{ t('team.locked') }}</span>
+        {% elif c.locked_by_team or c.state == 'closed' %}
+        <span class="row" style="gap:0.375rem;align-items:baseline">
+          {% if c.locked_by_team %}<span class="chip ok">{{ t('team.submitted') }}</span>{% endif %}
+          <a class="btn sm ghost" href="{{ c.href }}">{{ t('team.view') }}</a>
+        </span>
+        {% else %}
+        <a class="btn sm" href="{{ c.href }}">{{ t('team.enter') }}</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if (nav and nav.collective_open) or scoreboard_open %}
+  <div class="row" style="margin-top:1.125rem">
+    {% if nav and nav.collective_open %}
+    <a class="btn" href="{{ url_for('participant.collective') }}">{{ t('nav.collective') }}</a>
+    {% endif %}
+    {% if scoreboard_open %}
+    <a class="btn" href="{{ url_for('participant.scoreboard') }}">{{ t('nav.scoreboard') }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if not names_locked %}
+const NAME_ERR = {
+  too_short: {{ t('team_name.err_too_short') | tojson }},
+  too_long: {{ t('team_name.err_too_long') | tojson }},
+  taken: {{ t('team_name.err_taken') | tojson }},
+  locked: {{ t('team_name.locked') | tojson }}
+};
+document.getElementById('rename').addEventListener('click', async function () {
+  const box = document.getElementById('namebox');
+  const err = document.getElementById('nameerr');
+  const r = await api('POST', '/api/team-name', {name: box.value});
+  if (r.ok) {
+    document.querySelector('h1').textContent = r.data.name;
+    box.value = r.data.name;
+    err.textContent = '';
+    toast(window.SECCAP.t.saved);
+  } else {
+    err.textContent = NAME_ERR[r.data.error] || window.SECCAP.t.error;
+  }
+});
+{% endif %}
+
+{% if cards %}
+const known = {{ cards | map(attribute='state') | list | tojson }};
+const slugs = {{ cards | map(attribute='slug') | list | tojson }};
+slugs.forEach(function (slug, i) {
+  poll('/api/mission-state?mission_slug=' + encodeURIComponent(slug), function (d) {
+    if (d.mission && d.mission.state !== known[i]) location.reload();
+  });
+});
+{% endif %}
+
+{% if not scoreboard_open %}
+poll('/api/session-state', function (d) {
+  if (d.scoreboard_visible) location.reload();
+});
+{% endif %}
+</script>
+{% endblock %}

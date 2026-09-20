@@ -1,0 +1,11 @@
+{
+  "service": "Sakura SecureConnect Update Gateway",
+  "channel": "stable",
+  "current_version": "4.2.1",
+  "published_at": "2026-09-02T00:10:00Z",
+  "manifest_url": "https://cdn.sakura-vpn-update.com/manifest.json",
+  "package_url": "https://cdn.sakura-vpn-update.com/releases/SakuraVPNUpdate_4.2.1.bin",
+  "region": "JP-NRT",
+  "node": "nrt-update-02",
+  "status": "operational"
+}

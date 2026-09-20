@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}{{ t('evidence.title') }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="eyebrow">{{ team.display_name }}</div>
+  <h1>{{ t('evidence.title') }}</h1>
+  <p class="lead">{{ t('evidence.lead') }}</p>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div class="eyebrow mut">{{ t('graph.title') }}</div>
+      <div class="small mut" id="gcount"></div>
+    </div>
+    <p class="hint">{{ t('graph.lead') }}</p>
+    <div class="graph" id="graph"><div class="mut small">{{ t('common.loading') }}</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('evidence.title') }}</div>
+    <div class="obs" id="obs"><div class="mut small">{{ t('common.loading') }}</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CONF = {low: {{ t('common.conf_low') | tojson }},
+              medium: {{ t('common.conf_medium') | tojson }},
+              high: {{ t('common.conf_high') | tojson }}};
+const G_EMPTY = {{ t('graph.empty') | tojson }};
+const G_COUNT = {{ t('graph.count') | tojson }};
+const G_OPEN = {{ t('artifact.open_external') | tojson }};
+
+poll('/api/investigation-graph', function (d) {
+  const box = document.getElementById('graph');
+  const count = document.getElementById('gcount');
+  box.textContent = '';
+  count.textContent = G_COUNT.replace('{sources}', d.sources).replace('{findings}', d.findings);
+
+  if (!d.edges.length) {
+    const e = document.createElement('div');
+    e.className = 'mut small'; e.textContent = G_EMPTY;
+    box.appendChild(e);
+    return;
+  }
+
+  const byId = {};
+  d.nodes.forEach(function (n) { byId[n.id] = n; });
+
+  const byFinding = {};
+  d.edges.forEach(function (e) {
+    (byFinding[e.dst] = byFinding[e.dst] || []).push(e);
+  });
+
+  Object.keys(byFinding).forEach(function (fid) {
+    const finding = byId[fid] || {label: fid};
+    const row = document.createElement('div');
+    row.className = 'gedge' + (byFinding[fid].length > 1 ? ' corroborated' : '');
+
+    const left = document.createElement('div');
+    left.className = 'gsources';
+    byFinding[fid].forEach(function (e) {
+      const src = byId[e.src] || {label: e.src};
+      const chip = document.createElement('div');
+      chip.className = 'gnode source' + (src.external ? ' ext' : '');
+      const t = document.createElement('span');
+      t.className = 'gl'; t.textContent = src.label;
+      chip.appendChild(t);
+      if (e.url) {
+        const a = document.createElement('a');
+        a.className = 'gurl'; a.href = e.url; a.target = '_blank';
+        a.rel = 'noopener noreferrer'; a.textContent = G_OPEN + ' ↗';
+        chip.appendChild(a);
+      }
+      if (e.excerpt) {
+        const x = document.createElement('div');
+        x.className = 'gx'; x.textContent = e.excerpt;
+        chip.appendChild(x);
+      }
+      left.appendChild(chip);
+    });
+
+    const arrow = document.createElement('div');
+    arrow.className = 'garrow'; arrow.textContent = '→';
+
+    const right = document.createElement('div');
+    right.className = 'gnode finding' + (finding.answered ? ' answered' : '');
+    const ft = document.createElement('span');
+    ft.className = 'gl';
+    ft.textContent = finding.answer || finding.label;
+    right.appendChild(ft);
+    if (finding.answer) {
+      const q = document.createElement('div');
+      q.className = 'gx'; q.textContent = finding.label;
+      right.appendChild(q);
+    }
+    if (finding.confidence) {
+      const c = document.createElement('span');
+      c.className = 'gc';
+      c.textContent = CONF[finding.confidence] || finding.confidence;
+      right.appendChild(c);
+    }
+
+    row.appendChild(left); row.appendChild(arrow); row.appendChild(right);
+    box.appendChild(row);
+  });
+});
+
+const EMPTY = {{ t('evidence.empty') | tojson }};
+poll('/api/observations', function (d) {
+  const box = document.getElementById('obs');
+  box.textContent = '';
+  if (!d.observations.length) {
+    const e = document.createElement('div');
+    e.className = 'mut small'; e.textContent = EMPTY;
+    box.appendChild(e);
+    return;
+  }
+  d.observations.forEach(function (o) {
+    const el = document.createElement('div'); el.className = 'ob';
+    const head = document.createElement('div');
+    const who = document.createElement('span'); who.className = 'who'; who.textContent = o.nickname;
+    const when = document.createElement('span'); when.className = 'when';
+    when.textContent = new Date(o.at).toLocaleTimeString() + ' · '
+                     + (o.mission_title || o.mission_slug);
+    head.appendChild(who); head.appendChild(when);
+    const tx = document.createElement('div'); tx.className = 'tx'; tx.textContent = o.text;
+    el.appendChild(head); el.appendChild(tx);
+    if (o.artifact_id) {
+      const a = document.createElement('span'); a.className = 'art'; a.textContent = o.artifact_title || o.artifact_id;
+      el.appendChild(a);
+    }
+    box.appendChild(el);
+  });
+});
+</script>
+{% endblock %}

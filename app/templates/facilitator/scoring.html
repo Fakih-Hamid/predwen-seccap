@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ t('scoring.title') }} · {{ t('app.name') }}{% endblock %}
+{% block content %}
+{% set CATS = [
+   ('correctness', true,  t('scoring.cat_correctness')),
+   ('evidence',    true,  t('scoring.cat_evidence')),
+   ('reasoning',   false, t('scoring.cat_reasoning')),
+   ('completeness',false, t('scoring.cat_completeness')),
+   ('speed',       true,  t('scoring.cat_speed')),
+] %}
+<div class="page">
+  <div class="eyebrow mut">{{ t('scoring.eyebrow') }}</div>
+  <h1>{{ t('scoring.title') }}</h1>
+  <p class="lead">{{ t('scoring.lead',
+                       total=maxima.total | round | int,
+                       base=maxima.base | round | int,
+                       bonus=maxima.collective_bonus | round | int) }}</p>
+
+  <div class="panel">
+    <h2>{{ t('scoring.components_title') }}</h2>
+    <p class="small mut">{{ t('scoring.components_note') }}</p>
+    <div class="scrollx">
+    <table class="data">
+      <tr>
+        <th>{{ t('scoring.th_component') }}</th><th>{{ t('scoring.th_points') }}</th>
+        <th>correct&shy;ness</th><th>evi&shy;dence</th><th>reason&shy;ing</th><th>complete&shy;ness</th><th>speed</th>
+      </tr>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.name }}</td>
+        <td><b>{{ r.points }}</b></td>
+        <td>{{ r.budget.correctness or '—' }}</td>
+        <td>{{ r.budget.evidence or '—' }}</td>
+        <td>{{ r.budget.reasoning or '—' }}</td>
+        <td>{{ r.budget.completeness or '—' }}</td>
+        <td>{{ r.budget.speed or '—' }}</td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td><b>{{ t('scoring.row_base') }}</b></td><td><b>{{ maxima.base | round | int }}</b></td>
+        <td colspan="5" class="mut">{{ t('scoring.row_base_note') }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ t('scoring.row_bonus') }}</b></td><td><b>+{{ maxima.collective_bonus | round | int }}</b></td>
+        <td colspan="5" class="mut">{{ t('scoring.row_bonus_note') }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ t('scoring.row_max') }}</b></td><td><b>{{ maxima.total | round | int }}</b></td>
+        <td colspan="5"></td>
+      </tr>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>{{ t('scoring.columns_title') }}</h2>
+    <ul class="plain">
+    {% for key, is_auto, meaning in CATS %}
+      <li style="margin:.35rem 0">
+        <b>{{ key }}</b>
+        <span class="chip {{ 'ok' if is_auto else 'warn' }}">{{ t('scoring.auto') if is_auto else t('scoring.by_hand') }}</span>
+        — {{ meaning }}
+      </li>
+    {% endfor %}
+    </ul>
+    <p class="small mut">{{ t('scoring.by_hand_note') }}</p>
+  </div>
+
+  <div class="panel">
+    <h2>{{ t('scoring.bonus_title') }}</h2>
+    <p>{{ t('scoring.bonus_body') }}</p>
+  </div>
+
+  <div class="panel">
+    <h2>{{ t('scoring.final_title') }}</h2>
+    <ul>
+      <li>{{ t('scoring.ties') }}</li>
+      <li>{{ t('scoring.provisional') }}</li>
+      <li>{{ t('scoring.locking') }}</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

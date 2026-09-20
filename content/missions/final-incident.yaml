@@ -1,0 +1,382 @@
+slug: final-incident
+kind: final
+order: 99
+version: "2.0"
+duration_seconds: 900
+max_points: 150
+
+budget:
+  correctness: 60
+  reasoning: 60
+  completeness: 30
+
+short_label: {ja: "M4", en: "M4"}
+title:
+  ja: "ミッション4 — インシデント報告書の作成"
+  en: "Mission 4 — Incident Report Synthesis"
+subtitle:
+  ja: "3つのミッションで集めた証拠を、1つの報告書にまとめる"
+  en: "Turn the evidence from the three missions into one report"
+
+narrative:
+  ja: |-
+    これまでに集めた証拠は、画面左側に表示されています。ここでは新しい調査は行いません。
+
+    次の5点をまとめてください。①出来事を、時刻を UTC にそろえて起きた順に並べる。②何が起きたかを2〜3文で説明する。③「確認できた事実」「妥当な推論」「まだ分からないこと」を分ける。④どの端末がどのような影響を受けたかを判断する。⑤次に取るべき対応を優先順位の高い順に並べる。
+
+    この調査だけでは答えられなかった問いを、少なくとも1つ書いてください。あわせて、その問いに答えるために必要な証拠を書いてください。
+  en: |-
+    Everything you collected is shown on the left. Do not start a new investigation here.
+
+    Complete five parts: order the events in UTC, explain what happened in two or three sentences, separate confirmed facts from inferences and unknowns, decide the affected-host scope, and rank the next actions.
+
+    Also give at least one question this investigation could not answer, and say what evidence would be needed to answer it.
+
+objectives:
+  - ja: "証拠に基づいて、出来事をUTCの日時順に整理する"
+    en: "Build a UTC timeline from the evidence"
+  - ja: "事実・推論・不明点を分けて書く"
+    en: "Separate facts, inferences and unknowns"
+  - ja: "証拠の強さに基づいて端末を分類する"
+    en: "Scope the hosts using the strength of the evidence"
+  - ja: "封じ込め・証拠保全・復旧の優先順位を決める"
+    en: "Prioritise containment, evidence preservation and recovery"
+
+timeline_events:
+  - id: e_registration
+    label:
+      ja: "08-27 18:15Z — ドメインが登録される（登録者情報は非公開）"
+      en: "08-27 18:15Z — the exercise domain is registered, with no registrant identity exposed"
+  - id: e_commit
+    label:
+      ja: "09-01 14:52Z — 侵害されたトークンでプッシュされたコミット 85902d17 が、更新先URLと署名ポリシーを変更する"
+      en: "09-01 14:52Z — commit 85902d17 is pushed with a compromised token and changes the update URL and signature policy"
+  - id: e_publish
+    label:
+      ja: "09-02 00:10Z — 署名のないバージョン 4.2.1 が配布チャネルで公開される"
+      en: "09-02 00:10Z — unsigned version 4.2.1 is published on the update channel"
+  - id: e_download
+    label:
+      ja: "09-02 00:19:03Z — SR-DEV-077 がパッケージを取得する"
+      en: "09-02 00:19:03Z — SR-DEV-077 downloads the package"
+  - id: e_execute
+    label:
+      ja: "09-02 00:19:16Z — SR-DEV-077 で検体が実行される"
+      en: "09-02 00:19:16Z — the sample executes on SR-DEV-077"
+  - id: e_persist
+    label:
+      ja: "09-02 00:20:11Z — Run キーが作成され、続いてスケジュールされたタスクが作成される"
+      en: "09-02 00:20:11Z — the Run key is created, then the scheduled task"
+  - id: e_collect
+    label:
+      ja: "09-02 00:32:08Z — 文書の収集が始まる"
+      en: "09-02 00:32:08Z — document collection begins"
+  - id: e_upload
+    label:
+      ja: "09-02 00:42:19Z — 23個のファイルを含むアーカイブのアップロードが完了する"
+      en: "09-02 00:42:19Z — the upload of a 23-file archive completes"
+
+response_actions:
+  - id: a_isolate
+    category: containment
+    label:
+      ja: "SR-DEV-077 をネットワークから隔離する（電源は切らない）"
+      en: "Isolate SR-DEV-077 from the network without powering it off"
+  - id: a_preserve
+    category: preservation
+    label:
+      ja: "端末・プロキシ・GitHub 監査ログ・更新サービスの証拠を保全する"
+      en: "Preserve the endpoint, proxy, GitHub audit and update-service evidence"
+  - id: a_revoke
+    category: credentials
+    label:
+      ja: "侵害された GitHub トークンを失効させ、関連セッションを終了し、関連する認証情報を更新する"
+      en: "Revoke the compromised GitHub token and sessions, and rotate related credentials"
+  - id: a_channel
+    category: recovery
+    label:
+      ja: "更新設定を復元し、SR-REL-2019 による署名検証を再度必須にする"
+      en: "Restore the update configuration and require a valid SR-REL-2019 signature"
+  - id: a_block
+    category: blocking
+    label:
+      ja: "3つのドメイン、検体ハッシュ、Run キー、スケジュールされたタスク、ステージング用パスをブロックする"
+      en: "Block the three domains, sample hash, Run value, scheduled task and staging paths"
+  - id: a_scope
+    category: scope
+    label:
+      ja: "全端末を対象に、ハッシュ、実行、永続化、チェックイン、アップロードの痕跡を検索する"
+      en: "Hunt across the estate for the hash, execution, persistence, check-ins and upload"
+  - id: a_rebuild
+    category: recovery
+    label:
+      ja: "証拠保全後、侵害が確認された端末を再構築し、信頼できる正規のソースから復旧する"
+      en: "After preservation, rebuild the confirmed compromised host from trusted sources"
+  - id: a_notify
+    category: notification
+    label:
+      ja: "確認された流出データの種類に基づいて、報告義務の有無を検討する"
+      en: "Assess notification obligations from the verified categories of exposed data"
+  - id: a_monitor
+    category: recovery
+    label:
+      ja: "再発を監視し、教訓を記録する"
+      en: "Monitor for recurrence and document lessons learned"
+  - id: a_wipe
+    category: harmful
+    label:
+      ja: "証拠保全の前に SR-DEV-077 を初期化する"
+      en: "Wipe SR-DEV-077 before preserving the evidence"
+  - id: a_all_hosts
+    category: harmful
+    label:
+      ja: "ドメインに接続した端末をすべて侵害済みとして再構築する"
+      en: "Declare every host that contacted the domain compromised and rebuild them all"
+  - id: a_contact
+    category: harmful
+    label:
+      ja: "ドメイン登録者に連絡を取り、意図を確かめる"
+      en: "Contact the domain registrant and ask what they intended"
+
+questions:
+  - key: final_timeline
+    type: order
+    category: correctness
+    points: 30
+    prompt:
+      ja: "出来事を、起きた順（UTC）に並べてください。"
+      en: "Put the events in the order they happened, in UTC."
+    items:
+      - id: e_execute
+        label: {ja: "09-02 00:19:16Z — SR-DEV-077 で検体が実行される", en: "09-02 00:19:16Z — the sample executes on SR-DEV-077"}
+      - id: e_registration
+        label: {ja: "08-27 18:15Z — ドメインが登録される", en: "08-27 18:15Z — the exercise domain is registered"}
+      - id: e_upload
+        label: {ja: "09-02 00:42:19Z — アップロードが完了する", en: "09-02 00:42:19Z — the upload completes"}
+      - id: e_commit
+        label: {ja: "09-01 14:52Z — コミット 85902d17 が更新設定を変更する", en: "09-01 14:52Z — commit 85902d17 changes the update configuration"}
+      - id: e_collect
+        label: {ja: "09-02 00:32:08Z — 文書の収集が始まる", en: "09-02 00:32:08Z — document collection begins"}
+      - id: e_publish
+        label: {ja: "09-02 00:10Z — 署名のない 4.2.1 が公開される", en: "09-02 00:10Z — unsigned 4.2.1 is published"}
+      - id: e_persist
+        label: {ja: "09-02 00:20:11Z — 永続化の仕組みが作成される", en: "09-02 00:20:11Z — persistence is created"}
+      - id: e_download
+        label: {ja: "09-02 00:19:03Z — SR-DEV-077 がパッケージを取得する", en: "09-02 00:19:03Z — SR-DEV-077 downloads the package"}
+    validator:
+      kind: ordered
+      accept: [e_registration, e_commit, e_publish, e_download, e_execute, e_persist, e_collect, e_upload]
+    hints:
+      - id: final_timeline_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "各出来事の時刻を、ミッション1〜3の資料から集めてください。集め終わってから並べ替えます。"
+          en: "Collect the timestamp for every event from Missions 1 to 3. Then put them in order."
+      - id: final_timeline_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "時刻はすべて UTC にそろえてください。UTC 以外の時刻は、並べる前に変換します。"
+          en: "Use UTC for every timestamp. Convert any local time before ordering the events."
+      - id: final_timeline_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "順序に迷った2件があれば、推測せず元の時刻を確認してください。"
+          en: "If two events are hard to order, check their original timestamps instead of guessing."
+
+  - key: final_response_now
+    type: order
+    category: correctness
+    points: 18
+    prompt:
+      ja: "いま（数時間以内）に取るべき対応を、優先順に5つ選んで並べてください。"
+      en: "Choose and rank the five actions you would take now, within the next few hours."
+    help:
+      ja: "7つの対応から5つを選び、優先順位の高い順に並べてください。選ばない2つのうち、1つは必要な証拠を失わせる対応、もう1つは重要ですが後日行う作業です。"
+      en: "Five of seven, ranked, which leaves two out: one would destroy evidence still needed, the other matters but belongs to the following days."
+    items:
+      - id: a_isolate
+        label: {ja: "SR-DEV-077 をネットワークから隔離する（電源は切らない）", en: "Isolate SR-DEV-077 from the network without powering it off"}
+      - id: a_channel
+        label: {ja: "偽の更新プログラムの配布を停止し、バージョン4.2.1をインストールしないよう全社に周知する", en: "Take the fake update offline and tell everyone not to install 4.2.1"}
+      - id: a_preserve
+        label: {ja: "端末・プロキシ・監査ログを保全する", en: "Preserve endpoint, proxy and audit evidence"}
+      - id: a_revoke
+        label: {ja: "開発者アカウントのトークンとセッションを失効させる", en: "Revoke the developer account's tokens and sessions"}
+      - id: a_block
+        label: {ja: "対象ドメインへの通信をブロックし、ハッシュを検知対象に登録し、新たに作成された永続化の仕組み（Run キー・タスク）を削除する", en: "Block the domains, add the hash to endpoint detection, and remove the persistence that was created (Run key and scheduled task)"}
+      - id: a_scope
+        label: {ja: "すべての端末で、該当する Run キー・タスク・ハッシュの痕跡を調べる", en: "Hunt the Run key, task and hash across the estate"}
+      - id: a_wipe
+        label: {ja: "保全前に端末を初期化する", en: "Wipe the host before preserving it"}
+    validator:
+      kind: constraints
+      exact_count: 5
+      first: a_isolate
+      must_include: [a_isolate, a_channel, a_preserve, a_revoke, a_block]
+      before:
+        - [a_isolate, a_preserve]
+      must_not: [a_wipe]
+    hints:
+      - id: final_now_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "まず、今は実行しない対応を除外してください。その後で残りを並べます。"
+          en: "First remove the action you should not take now. Then rank the remaining actions."
+      - id: final_now_h2
+        level: method
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "最初に被害の継続を止めます。取り消せない変更を行う前に、必要な証拠を保全してください。"
+          en: "Stop the ongoing harm first. Preserve the evidence before making an irreversible change."
+
+  - key: final_response_later
+    type: order
+    category: correctness
+    points: 12
+    prompt:
+      ja: "同じことが再び起きないようにするための対応を、優先順に5つ選んで並べてください。"
+      en: "Choose and rank five changes that would reduce the chance of this happening again."
+    help:
+      ja: "7つのうち5つを選び、優先順位の高い順に並べてください。選ばない項目は2つです。そのうち1つは、期待できる再発防止効果に比べて運用コストが非常に高い対策です。"
+      en: "Five of seven, ranked. The one to leave out carries an operational cost far out of proportion to what it prevents."
+    items:
+      - id: f_signing
+        label: {ja: "パッケージの署名検証を必須にし、無効化できる経路をなくす", en: "Require signed packages and remove the path that disables the check"}
+      - id: f_internal
+        label: {ja: "更新は資産台帳にある社内ホストからのみ配布する", en: "Serve updates only from an internal host on the asset inventory"}
+      - id: f_mfa
+        label: {ja: "開発者アカウントにフィッシング耐性のある多要素認証を必須にする", en: "Require phishing-resistant MFA on developer and code-hosting accounts"}
+      - id: f_tokens
+        label: {ja: "開発者トークンの有効期間を短くし、定期的に更新する", en: "Make developer tokens short-lived and rotate them"}
+      - id: f_review
+        label: {ja: "リリースに含めるコミットのレビューを必須にする", en: "Require review on commits that go into a release"}
+      - id: f_egress
+        label: {ja: "未知の宛先への通信と、一定間隔の通信を検知できるようにする", en: "Alert on traffic to unknown destinations and fixed-interval beaconing"}
+      - id: f_blockall
+        label: {ja: "社内で利用実績のないドメインをすべて遮断する", en: "Block every domain the company has not seen before"}
+    validator:
+      kind: constraints
+      exact_count: 5
+      first: f_signing
+      must_include: [f_signing, f_internal, f_mfa]
+      must_not: [f_blockall]
+    hints:
+      - id: final_later_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "この事案を事前に防げた対策から考えてください。"
+          en: "Start with the control that could have prevented this incident."
+      - id: final_later_h2
+        level: method
+        cost: 0
+        unlock_after: 0
+        text:
+          ja: "まず予防策を優先し、その後に検知策を並べてください。"
+          en: "Prioritise prevention first, then detection."
+
+  - key: final_response_other
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt:
+      ja: "上記の14項目にない対応で、実施すべきだと考えるものがあれば書いてください（任意）。"
+      en: "Add any action you would take that is not listed above (optional)."
+    help:
+      ja: "どの対応を、なぜ、いつ行うかを書いてください。任意の設問で、配点はありません。"
+      en: "Look for what they would do, why, and when. Optional, and worth no points."
+    placeholder:
+      ja: "対応の内容、実施する理由、実施時期を書いてください。"
+      en: "For example: what, why, and when."
+
+rubric:
+  - key: final_verdict
+    report_field: verdict
+    category: reasoning
+    points: 20
+    prompt: {ja: "調査の結論（2〜3文）", en: "Verdict (two or three sentences)"}
+    placeholder: {ja: "何が起きたのかを、証拠に基づいて2〜3文で書いてください。", en: "Explain what happened in two or three evidence-backed sentences."}
+    criteria:
+      - ja: "侵害されたトークンによる更新設定の変更と、署名のないパッケージの配布に触れている（8点）"
+        en: "Covers the compromised token, update-configuration change and unsigned package (8 pts)"
+      - ja: "SR-DEV-077 の実行・永続化・収集・アップロードに触れている（7点）"
+        en: "Covers execution, persistence, collection and upload on SR-DEV-077 (7 pts)"
+      - ja: "人物の特定ができないことを明示している（5点）"
+        en: "States that the human operator is not identified (5 pts)"
+    facilitator_note:
+      ja: "「Sora Nakamura が実行者である」と断定している場合、3番目の基準は0点です。"
+      en: "If the team states that Sora Nakamura is the operator, score zero on the third criterion."
+
+  - key: final_confidence
+    report_field: [confirmed_facts, inferences, unknowns]
+    category: reasoning
+    points: 25
+    prompt: {ja: "確認できた事実／妥当な推論／まだ分からないこと", en: "Confirmed facts / plausible inferences / unknowns"}
+    criteria:
+      - ja: "3つの欄が、それぞれ異なる種類の主張として書き分けられている（10点）"
+        en: "The three boxes contain three different kinds of claim (10 pts)"
+      - ja: "「事実」欄の各項目が資料で確認できる（10点）"
+        en: "Each item in the facts box can be checked against an artifact (10 pts)"
+      - ja: "誰がトークンを使用したかについては、確認済みの事実ではなく、推論または不明点として扱っている（5点）"
+        en: "Who used the token is treated as an inference or unknown, not a fact (5 pts)"
+    facilitator_note:
+      ja: "誰がトークンを使用したかを「事実」として記載した場合、この項目は最大15点です。"
+      en: "If attribution is listed as a fact, cap this item at 15 points."
+
+  - key: final_scope
+    report_field: scope
+    category: reasoning
+    points: 10
+    prompt: {ja: "各端末の影響状況（端末ごとに分類と根拠を記入）", en: "Affected-host scope: classification and evidence for each host"}
+    placeholder: {ja: "SR-DEV-077 / SR-FIN-014 / SR-LAB-021 について1行ずつ、「侵害確認済み」「ダウンロードのみ確認」「接続のみ確認」のいずれかで分類し、根拠を添えてください。", en: "Write one line each for SR-DEV-077, SR-FIN-014 and SR-LAB-021. Classify each as confirmed compromised, downloaded-only or contacted-only, and give the evidence."}
+    criteria:
+      - ja: "3台すべてを分類している（4点）"
+        en: "All three hosts are classified (4 pts)"
+      - ja: "侵害確認済みを1台だけとし、その根拠に実行または永続化の記録を使っている（4点）"
+        en: "Exactly one host is confirmed compromised using execution or persistence evidence (4 pts)"
+      - ja: "接続やダウンロードだけを侵害の根拠にしていない（2点）"
+        en: "Contact or download alone is not treated as proof of compromise (2 pts)"
+    facilitator_note:
+      ja: "3台すべてを侵害済みとした場合、この項目は0点です。"
+      en: "If all three hosts are declared compromised, score zero on this item."
+
+  - key: final_limitation
+    report_field: limitations
+    category: reasoning
+    points: 5
+    prompt: {ja: "答えられなかった問い（少なくとも1件）", en: "A question you could not answer (at least one)"}
+    criteria:
+      - ja: "この調査の証拠だけでは答えられない問いである（3点）"
+        en: "The question cannot be answered from the available evidence (3 pts)"
+      - ja: "答えるために必要な証拠が書かれている（2点）"
+        en: "It states what evidence would be needed to answer it (2 pts)"
+
+  - key: final_presentation
+    category: completeness
+    points: 30
+    prompt: {ja: "発表（6分枠：発表約4分＋質疑2分・ファシリテーター採点）", en: "Presentation (six-minute slot: about four minutes plus two minutes of questions, graded by the facilitator)"}
+    criteria:
+      - ja: "開始後30秒以内に調査の結論を明確に述べている（6点）"
+        en: "The verdict is delivered in the first 30 seconds (6 pts)"
+      - ja: "時系列がUTCで、資料と一致している（8点）"
+        en: "The timeline is in UTC and matches the evidence (8 pts)"
+      - ja: "示した3つの証拠が調査の結論を裏づけている（8点）"
+        en: "The three pieces of evidence shown support the verdict (8 pts)"
+      - ja: "端末の分類に理由がある（5点）"
+        en: "The host scoping is justified (5 pts)"
+      - ja: "不確実性に触れている（3点）"
+        en: "Uncertainty is acknowledged (3 pts)"
+
+facilitator_notes:
+  ja: "時系列：e_registration → e_commit → e_publish → e_download → e_execute → e_persist → e_collect → e_upload。侵害が確認された端末は SR-DEV-077 のみ。対応の参考順は、隔離 → 保全 → トークン失効 → 偽の更新配布の停止と全社周知 → ブロックです。ただし、中間の順序は理由が妥当なら入れ替えて構いません。採点では、隔離が最初であること、破壊的な作業より前に保全すること、5つだけ選ぶこと、有害な項目を含めないことを確認してください。"
+  en: "Timeline: e_registration → e_commit → e_publish → e_download → e_execute → e_persist → e_collect → e_upload. The only host confirmed compromised is SR-DEV-077. Reference response order: isolate → preserve → revoke → take the fake update offline and tell everyone → block. Revoke, the channel action and block may be reordered if the team gives a sound reason. Check that isolation is first, preservation comes before destructive action, exactly five actions are selected, and harmful options are excluded."

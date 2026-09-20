@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ t('landing.title') }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow">{{ t('app.tagline') }}</div>
+  <h1>{{ t('landing.title') }}</h1>
+  <p class="lead">{{ t('landing.lead') }}</p>
+
+  {% if ev %}
+  <div class="panel">
+    <div class="eyebrow mut">{{ ev.title }}</div>
+    <p class="small mut">{{ t('landing.codes_from_the_room') }}</p>
+    <a class="btn primary wide" href="{{ url_for('participant.join') }}">{{ t('landing.join_cta') }}</a>
+  </div>
+  {% else %}
+  <div class="banner">{{ t('landing.no_session') }}</div>
+  {% endif %}
+
+</div>
+{% endblock %}

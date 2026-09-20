@@ -1,0 +1,599 @@
+slug: digital-footprint
+kind: mission
+order: 1
+version: "2.0"
+duration_seconds: 3600
+max_points: 100
+
+budget:
+  correctness: 35
+  evidence: 30
+  reasoning: 20
+  completeness: 10
+  speed: 5
+
+short_label: {ja: "M1", en: "M1"}
+title:
+  ja: "ミッション1 — デジタルフットプリント"
+  en: "Mission 1 — Digital Footprint"
+subtitle:
+  ja: "公開情報と監査ログから、更新設定が変更された経緯をたどる"
+  en: "Trace the change that rewrote the update configuration"
+
+narrative:
+  ja: |-
+    Sakura Robotics の VPN クライアント「SecureConnect」で、更新先が社外ホストに変更されていることが判明しました。この変更はリポジトリの公開履歴に残っており、開発者アカウント sora-dev77 のコミットとして記録されています。
+
+    提供された公開情報と Sakura Robotics の監査ログを使い、何が、いつ、どのように変更されたのかを調べてください。
+  en: |-
+    The update configuration of Sakura Robotics' SecureConnect VPN client was changed to point at an outside host. The change appears in the repository history under the developer account sora-dev77.
+
+    Use the provided public sources and Sakura Robotics audit records to establish what changed, when it changed, and how the change was made.
+
+objectives:
+  - ja: "リポジトリの履歴から、コミットの変更内容を確認する"
+    en: "Identify what the commit changed from the repository history"
+  - ja: "公開プロフィール・技術メモ・画像メタデータを照合する"
+    en: "Compare the public profile, developer notes and image metadata"
+  - ja: "同じ名前のアカウントが同一人物かどうかを、証拠から判断する"
+    en: "Decide whether accounts with the same name belong to the same person"
+  - ja: "どのアカウントが使われたかと、誰が使ったかを分けて考える"
+    en: "Separate account use from identifying the person who used it"
+
+loop:
+  - ja: "5分：資料を分担して読み、各自が気づいたことを最低1件ボードに書く"
+    en: "5 min — split the sources, read, and each post at least one observation"
+    seconds: 300
+  - ja: "35分：チームで手がかりをたどり、仮説を確認する"
+    en: "35 min — follow the evidence as a team and test your hypotheses"
+    seconds: 2100
+  - ja: "12分：回答と確信度を決める"
+    en: "12 min — decide the answers and confidence"
+    seconds: 720
+  - ja: "8分：回答と根拠を見直して提出内容をロックする"
+    en: "8 min — review the answers and evidence, then lock the submission"
+    seconds: 480
+
+first_step:
+  ja: "まずリポジトリのコミット履歴を開き、更新設定に関する最新コミットと親コミットの差分を確認してください。変更されたファイルは2つです。"
+  en: "Open the repository commit history and compare the newest update-related commit with its parent. Two files changed."
+
+artifacts:
+  - id: commit
+    type: gitlog
+    icon: "⑂"
+    tool: "commit diff"
+    path: digital-footprint/commit_85902d17.txt
+    external_url: "${m1_repository}"
+    tool_name: "GitHub"
+    resource_type: first_party
+    title: {ja: "更新設定を変更したコミット", en: "The commit that changed the update configuration"}
+    note:
+      ja: "このコミットと親コミットとの差分です。現在のファイルの内容を示すものではありません。"
+      en: "The change as it was committed, with its parent alongside it — not the file as it stands now."
+    expected_pivot:
+      ja: "このコミットがクライアントの更新動作をどう変えたか確認してください。"
+      en: "Identify how this commit changed the client's update behaviour."
+    hints:
+      - id: pv_commit_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "親コミットとの差分を開き、追加・削除された行を確認してください。変更されたファイルは2つです。"
+          en: "Open the diff against the parent and read the added and removed lines. Two files changed."
+      - id: pv_commit_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "設定ファイルの変更を2つに分けて確認してください。1つは接続先、もう1つは検証に関する設定です。"
+          en: "Check the two changed settings separately: one changes the destination and one changes verification."
+
+  - id: github-account
+    type: json
+    icon: "◈"
+    tool: "profile viewer"
+    path: digital-footprint/github_account.json
+    external_url: "${m1_github_profile}"
+    tool_name: "GitHub"
+    resource_type: first_party
+    title: {ja: "開発者アカウント（sora-dev77）", en: "Developer account (sora-dev77)"}
+    note:
+      ja: "プロフィールから確認できるのは、アカウントが公開している情報です。"
+      en: "The profile shows the information published by the account."
+    expected_pivot:
+      ja: "リポジトリとメモサイトへのリンクを確認し、このプロフィールだけで分かる範囲を整理してください。"
+      en: "Confirm the links to the repository and notes site, and note what this profile can establish."
+    hints:
+      - id: pv_github_account_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "プロフィール項目、リンク先、コミットに記録されたアドレスを確認してください。人物を直接特定できる情報があるかも確認します。"
+          en: "Check the profile fields, linked pages and the address recorded on the commits. Note whether any field directly identifies a person."
+      - id: pv_account_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "「アカウントの活動について確認できること」と「人物について確認できること」を分けて書いてください。人物を特定できる情報がなければ、その点も記録してください。"
+          en: "Make two lists: what the page supports about the account's activity, and what it supports about a person. If it cannot identify a person, record that."
+
+  - id: dev-notes
+    type: json
+    icon: "▤"
+    tool: "web browser"
+    path: digital-footprint/developer_notes.json
+    external_url: "${m1_developer_notes}"
+    tool_name: "Web browser"
+    resource_type: first_party
+    title: {ja: "開発者の技術メモ（bench notes）", en: "Developer bench notes"}
+    note:
+      ja: "日付付きの作業メモです。ほかの記録と比べる前にタイムゾーンを確認してください。"
+      en: "These are dated work notes. Check the timezone before comparing times with other records."
+    expected_pivot:
+      ja: "メモの時刻とコミットの時刻を比較してください。"
+      en: "Compare the note timestamps with the commit time."
+    hints:
+      - id: pv_dev_notes_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "日付付きのメモを読み、下にある2つのリンクを開いてください。1つはリポジトリ、もう1つは元の写真です。"
+          en: "Read the dated entries and open the two links at the bottom: the repository and the original photograph."
+      - id: pv_notes_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "メモの時刻をコミット時刻と同じタイムゾーンにそろえて比較してください。時刻が近いだけで、同じ人物が操作したとは断定できません。"
+          en: "Put the note and commit times in the same timezone and compare them. Similar timing alone does not identify the operator."
+
+  - id: photo-exif
+    how_to:
+      tool: "ExifTool"
+      tool_link: "${tool_exiftool}"
+      steps:
+        - ja: "メモサイトから元の JPEG ファイルをダウンロードしてください。"
+          en: "Download the original JPEG from the notes site."
+        - ja: "保存したファイルを調べてください。ブラウザ上の表示画像は使いません。"
+          en: "Inspect the saved file. Do not use the image rendered in the browser."
+        - say:
+            ja: "ExifTool がない場合はインストールしてください。macOS は下の brew コマンドを使えます。Windows は exiftool.org から Windows Executable をダウンロードして展開し、ファイル名を exiftool(-k).exe から exiftool.exe に変更してください。"
+            en: "If ExifTool is not installed, install it first. On macOS use the brew command below. On Windows download the Windows Executable from exiftool.org, unzip it, and rename exiftool(-k).exe to exiftool.exe."
+          os: {ja: "macOS — インストール", en: "macOS — install"}
+          cmd: "brew install exiftool"
+        - ja: "ターミナルで保存先フォルダに移動し、下のコマンドを実行してください。"
+          en: "Open a terminal in the folder containing the image and run the command below."
+        - ja: "表示されたタグを記録し、選択肢にあるタグが存在するか確認してください。"
+          en: "Record the tags shown and check which options are actually present."
+      commands:
+        - os: {ja: "macOS / Linux — 読み取り", en: "macOS / Linux — read the file"}
+          cmd: "exiftool -s apac-fallback-bench.jpg"
+        - os: {ja: "Windows (PowerShell) — 読み取り", en: "Windows (PowerShell) — read the file"}
+          cmd: '.\exiftool.exe -s apac-fallback-bench.jpg'
+      no_install:
+        ja: "インストールできない場合はブラウザの EXIF ビューアも使えます。アップロードしてよいのは、この資料の画像だけです。"
+        en: "If you cannot install ExifTool, you may use a browser-based EXIF viewer. Upload nothing but the image from this source."
+    type: image
+    icon: "◧"
+    tool: "exiftool"
+    path: digital-footprint/apac-fallback-bench.jpg
+    external_url: "${m1_photo}"
+    tool_name: "ExifTool"
+    resource_type: first_party
+    title: {ja: "写真のメタデータ（apac-fallback-bench.jpg）", en: "Image metadata (apac-fallback-bench.jpg)"}
+    note: {ja: "メモサイトに掲載された写真の元ファイルです。ブラウザ表示用に再エンコードされたものではありません。", en: "The original photograph as it was uploaded to the notes site, not the copy the browser re-encodes for display."}
+    expected_pivot:
+      ja: "ファイルに記録されているメタデータを確認してください。"
+      en: "Check which metadata fields are present in the file."
+    safety_notice:
+      ja: "オンラインの解析サイトを使う場合も、アップロードしてよいのは、この資料の画像だけです。"
+      en: "If you use an online metadata reader, upload only the image from this source."
+    hints:
+      - id: pv_photo_exif_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "元の JPEG をダウンロードし、ExifTool でタグ一覧を表示してください。"
+          en: "Download the original JPEG and list its tags with ExifTool."
+      - id: pv_photo_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "表示されたタグだけを根拠にしてください。場所について主張する場合は、位置情報を示すタグが実際にあるか確認してください。"
+          en: "Use only tags that are actually present. For a location claim, check whether the file contains location metadata."
+
+  - id: token-audit
+    external_url: "${m1_token_audit}"
+    tool_name: Web browser
+    resource_type: first_party
+    type: json
+    icon: "⚿"
+    tool: "audit log"
+    path: digital-footprint/token_audit.json
+    title: {ja: "GitHub 監査ログ（抜粋）", en: "GitHub audit log (extract)"}
+    note:
+      ja: "監査ログには、使用された認証情報の識別子やアドレスが記録されています。実際の使用者を直接特定できる記録ではありません。"
+      en: "The audit log records credentials and addresses. It does not directly identify a person."
+    expected_pivot:
+      ja: "このアカウントで起きたことを、監査記録から確認してください。"
+      en: "Use the audit record to establish what happened on this account."
+    hints:
+      - id: pv_token_audit_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "まず repository_events を開き、ミッション1のコミットを含むプッシュを探してください。認証方法、レビューの有無、使われた認証情報IDを確認します。"
+          en: "Open repository_events and find the push containing the Mission 1 commit. Check the authentication method, review status and credential id."
+      - id: pv_token_audit_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "同じ認証情報IDを credential_inventory と security_events で追ってください。認証情報に何が起きたかは確認できますが、誰が使ったかはこのログだけでは分かりません。"
+          en: "Follow the same credential id into credential_inventory and security_events. The log shows what happened to the credential, but it does not identify the person who used it."
+
+  - id: username-collision
+    external_url: "${m1_username_collision}"
+    tool_name: Web browser
+    resource_type: first_party
+    type: json
+    icon: "⊘"
+    tool: "profile capture"
+    path: digital-footprint/username_collision.json
+    title: {ja: "初動対応で収集されたプロフィール記録", en: "Profile record collected during triage"}
+    note: {ja: "別のプラットフォーム上のプロフィール記録です。開発者アカウントと比較してください。", en: "A profile record from another platform. Compare it with the developer account."}
+    expected_pivot:
+      ja: "同一人物と判断できるかどうかを決め、その判断の根拠になった項目を書き出してください。"
+      en: "Decide whether one person is behind both, and write down what your decision rests on."
+    hints:
+      - id: pv_username_collision_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "この記録には、開発者アカウントとどこが食い違うかを挙げた項目があります。まずそこを読み、次に開発者アカウント側で実際に確認できること（リポジトリ、コミット、メモサイトへのリンク）と突き合わせてください。"
+          en: "Open the block that lists where this profile disagrees with the developer account. Read those lines first, then check them against what the account itself actually shows: a repository, commits, and a link to the notes site."
+      - id: pv_username_collision_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "一致している項目と、食い違っている項目を分けてください。同一人物と判断するなら、それを裏づける項目が必要です。"
+          en: "Separate the matching fields from the conflicting fields. A same-person conclusion needs evidence beyond the username."
+
+questions:
+  - key: m1_key_id
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [commit]
+    prompt: {ja: "変更されたファイルの中で、クライアントが信頼する署名鍵のIDは何ですか。", en: "In the changed file, what signing key id does the client trust?"}
+    placeholder: {ja: "鍵ID", en: "key id"}
+    validator:
+      kind: contains
+      accept: ["SR-REL-2019"]
+    hints:
+      - id: m1_key_id_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "コミットの設定ファイルを開いてください。この設定項目は、変更された行の近くにある、変更されていない行に記載されています。ファイルの上のほうです。", en: "Open the changed configuration file. This setting is NOT on one of the changed lines — it is on an unchanged line near them, towards the top of the file."}
+      - id: m1_key_id_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "署名鍵を示す識別子を探してください。URL や true/false の値ではありません。", en: "Look for the identifier that names the signing key. It is not a URL or a true/false value."}
+      - id: m1_key_id_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "大文字とハイフンを含め、ファイルの表記どおりに入力してください。", en: "Copy the identifier exactly, including capitals and the dash."}
+
+  - key: m1_update_url
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [commit]
+    prompt: {ja: "変更後、クライアントが更新情報を取得するURLを答えてください。", en: "After the change, which URL does the client use to fetch update information?"}
+    placeholder: {ja: "https://…", en: "https://…"}
+    validator:
+      kind: contains
+      accept: ["update.sakura-vpn-update.com/api/channel.json"]
+    hints:
+      - id: m1_update_url_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "前の設問と同じ設定ファイルを見てください。値がURLになっている設定項目のうち、変更されたものを探してください。", en: "Use the same configuration file. Find the changed setting whose value is a URL."}
+      - id: m1_update_url_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "差分で追加された行に記載されている値を使ってください。", en: "Use the value from the added line in the diff."}
+      - id: m1_update_url_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "パスまで含め、行に書かれているURLをそのまま入力してください。", en: "Copy the full URL, including the path."}
+
+  - key: m1_flag
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [commit]
+    prompt: {ja: "同じコミットで、値が True に変更された設定項目名を答えてください。", en: "Name the setting the same commit switched to True."}
+    placeholder: {ja: "設定名", en: "setting name"}
+    validator:
+      kind: contains
+      accept: ["ALLOW_UNSIGNED_RECOVERY"]
+    hints:
+      - id: m1_flag_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "同じ設定ファイルで、真偽値が変更された行を探してください。", en: "In the same configuration file, find the changed boolean setting."}
+      - id: m1_flag_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "値ではなく設定名を答えてください。", en: "Give the setting name, not its value."}
+      - id: m1_flag_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "コードの表記どおりに入力してください。", en: "Copy the name exactly as it appears in the code."}
+
+  - key: m1_test
+    type: choice
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [commit]
+    prompt: {ja: "同じコミットで、テストファイルにどのような変更が加えられましたか。", en: "What happened to the test file in the same commit?"}
+    help:
+      ja: "差分の記号を確認してください。削除された行には「-」、追加された行には「+」が付いています。どの行が削除され、どの行が追加されたかを確認し、変更内容に合う選択肢を選んでください。"
+      en: "The diff marks tell these apart. Count the removed lines and the added lines. Removals only, additions only, or neither — which of those you see is what rules the other options out."
+    options:
+      - id: assertions_removed
+        correct: true
+        label: {ja: "署名を検証する2つのアサーションが削除され、URLの形式を確認するテストに置き換えられた", en: "Two signature-policy assertions were removed and replaced by a check on the URL scheme"}
+      - id: test_added
+        label: {ja: "新しいテストが追加された", en: "A new test was added"}
+      - id: test_unchanged
+        label: {ja: "テストは変更されていない", en: "The test was not changed"}
+      - id: test_deleted
+        label: {ja: "テストファイルごと削除された", en: "The whole test file was deleted"}
+    hints:
+      - id: m1_test_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "コミットで変更されたテストファイルを開いてください。", en: "Open the test file changed in the commit."}
+      - id: m1_test_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "削除された行を確認し、消えたチェックの数と内容を見てください。", en: "Read the removed lines. Count the checks that disappeared and see what they checked."}
+      - id: m1_test_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "削除された内容だけでなく、代わりに追加された内容も確認してください。", en: "Also check what was added in place of the removed checks."}
+
+  - key: m1_collision
+    type: choice
+    category: correctness
+    points: 6
+    evidence_points: 5
+    accepted_evidence: [username-collision]
+    needs_reasoning: true
+    prompt: {ja: "対応チームから届いたプロフィール記録について、根拠から言えることはどれですか。", en: "What does the evidence support about the profile record sent by the responders?"}
+    help:
+      ja: "選択肢ごとに、その内容を裏づける項目が記録にあるか確認してください。この記録には、開発者アカウントとの相違点が示されています。一方、誰がこのアカウントを作成したかは記載されていません。記録にないことは、この資料だけでは判断できません。"
+      en: "For each option, look for the field in the record that would say it. The record lists where it conflicts with the developer account. Nothing in it says who created the account or why — and what the record does not carry, it cannot support."
+    options:
+      - id: unrelated
+        correct: true
+        label: {ja: "開発者アカウントとは無関係と判断できるアカウント。作成年、連絡先、活動内容が一致しない", en: "An unrelated account: creation year, contact and activity conflict"}
+      - id: same_person_alt
+        label: {ja: "同一人物の別アカウント", en: "A second account of the same person"}
+      - id: attacker
+        label: {ja: "攻撃者が用意したアカウント", en: "An account created by the attacker"}
+      - id: undecidable
+        label: {ja: "判断材料が何もない", en: "There is no evidence to compare"}
+    hints:
+      - id: m1_collision_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "プロフィール記録と開発者アカウントを並べてください。", en: "Put the profile record beside the developer account."}
+      - id: m1_collision_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "この記録に列挙されている相違点を読み、開発者アカウントで確認できるソフトウェア開発の活動歴と比較してください。", en: "Read the conflicts listed in the record itself, then compare them with what the developer account actually has: a history of software activity."}
+      - id: m1_collision_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ユーザー名以外に、同一人物だと示す情報があるか確認してください。", en: "Check whether any field besides the username supports a same-person conclusion."}
+
+  - key: m1_exif
+    type: multi_choice
+    category: correctness
+    points: 4
+    evidence_points: 4
+    accepted_evidence: [photo-exif]
+    prompt: {ja: "画像のメタデータに実際に存在し、根拠として使えるものをすべて選んでください。", en: "Select every field that is actually present in the image metadata and can be used as evidence."}
+    help:
+      ja: "ツールが出力したタグの一覧と照らし合わせてください。一覧にない項目は、根拠として使えません。「無い」こと自体も発見のひとつです。"
+      en: "Check each option against the list the tool actually printed. A field that is not on that list is not evidence — and noticing that it is missing is itself a finding."
+    validator:
+      kind: set_equal
+    options:
+      - id: artist
+        correct: true
+        label: {ja: "Artist（作成者名）", en: "Artist"}
+      - id: datetime
+        correct: true
+        label: {ja: "DateTimeOriginal（撮影日時）", en: "DateTimeOriginal"}
+      - id: model
+        correct: true
+        label: {ja: "Model（機種名）", en: "Model"}
+      - id: gps
+        label: {ja: "GPS 座標", en: "GPS coordinates"}
+      - id: serial
+        label: {ja: "端末のシリアル番号", en: "Device serial number"}
+    hints:
+      - id: m1_exif_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "元の写真をダウンロードし、ExifTool で保存したファイルを確認してください。資料ページに OS 別の手順があります。", en: "Download the original photograph and inspect the saved file with ExifTool. The source page has steps for each operating system."}
+      - id: m1_exif_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ExifTool が表示したタグを一覧にし、選択肢と照合してください。", en: "List the tags shown by ExifTool and compare them with the options."}
+      - id: m1_exif_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "表示されなかったタグは選ばないでください。", en: "Do not select a tag that is not present in the output."}
+
+  - key: m1_attribution
+    type: choice
+    category: correctness
+    points: 5
+    evidence_points: 5
+    accepted_evidence: [token-audit, commit, github-account]
+    needs_confidence: true
+    needs_reasoning: true
+    prompt: {ja: "この時点で、証拠によって最も強く裏づけられる主張はどれですか。", en: "Which is the strongest claim supported by the evidence at this point?"}
+    help:
+      ja: "確信度も選んでください。監査ログで確認できることと、確認できないことを分けて考えてください。"
+      en: "Choose a confidence level too. Separate what the audit log shows from what it does not show."
+    options:
+      - id: compromised_token
+        correct: true
+        label: {ja: "sora-dev77 にひも付いたトークンが侵害され、未承認のコミットに使用された。実際の使用者は特定できない", en: "A compromised GitHub token associated with sora-dev77 was used for the unauthorized commit; the human operator cannot be identified"}
+      - id: stolen_token
+        label: {ja: "トークンは Sora から盗まれた", en: "The token was stolen from Sora"}
+      - id: sora_did_it
+        label: {ja: "Sora Nakamura 本人が変更を行った", en: "Sora Nakamura personally made the change"}
+      - id: nothing
+        label: {ja: "アカウントとの結びつきも証明できない", en: "Not even the link to the account can be supported"}
+    hints:
+      - id: m1_attribution_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "監査ログ、コミット、開発者アカウントを一緒に確認してください。", en: "Compare the audit log, commit and developer account together."}
+      - id: m1_attribution_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "「どの認証情報が使われたか」と「誰が使ったか」を別の問いとして考えてください。", en: "Treat these as two separate questions: which credential was used, and who used it."}
+      - id: m1_attribution_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "各選択肢を裏づける証拠が、実際に資料にあるか確認してください。証拠から言える範囲で、最も強く裏づけられる主張を選んでください。", en: "For each option, check whether the required evidence is actually present. Choose the strongest claim the records support."}
+
+  - key: m1_w_separation
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "認証情報やアカウントの使用について確認できることと、実際の使用者について確認できないことを、どのように書き分けましたか。", en: "How did you separate what the evidence shows about the credential and the account from what it cannot show about a person?"}
+    placeholder: {ja: "証拠で裏づけられる主張と、裏づけられない主張を分けて書いてください。", en: "Write the claim you can support, and the claim you cannot."}
+
+  - key: m1_w_disconfirm
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "同じユーザー名のアカウントを調査対象から除外した理由を、記録上の相違点を挙げて説明してください。", en: "Explain how you ruled out the same-handle account, naming the attributes that conflict."}
+    placeholder: {ja: "作成年・連絡先・活動内容などのうち、どれが食い違いましたか。", en: "Which attributes conflicted — creation year, contact, activity?"}
+
+  - key: m1_w_coverage
+    type: free_text
+    category: completeness
+    points: 0
+    prompt: {ja: "使った資料と、そこから得た事実を一覧にしてください。", en: "List the sources you used and the fact you took from each."}
+    placeholder: {ja: "資料ごとに1行。", en: "One line per source."}
+
+hints:
+  - id: m1_h1
+    level: orientation
+    cost: 0
+    label: {ja: "どこから見ればいい？", en: "Where should we look?"}
+    text:
+      ja: "リポジトリの履歴から始めて、更新設定に関する最新コミットの差分を確認してください。"
+      en: "Start with the repository history and open the diff for the newest update-related commit."
+  - id: m1_h2
+    level: pivot
+    cost: 0
+    label: {ja: "何と何をつなげばいい？", en: "What connects to what?"}
+    text:
+      ja: "コミットによる設定変更、監査ログの認証記録、GitHub にリンクされたメモサイト、追加のプロフィール記録を照合してください。"
+      en: "Connect the configuration change, the authentication record in the audit log, the GitHub-linked notes site and the additional profile record."
+  - id: m1_h3
+    level: tool
+    cost: 0
+    label: {ja: "どのツールで何を確認する？", en: "Which tool should we use?"}
+    text:
+      ja: "ツールが必要なのは写真のメタデータ確認です。資料ページに ExifTool の手順と OS 別コマンドがあります。"
+      en: "The photograph is the source that needs a tool. Its source page has the ExifTool steps and commands for each operating system."
+  - id: m1_h4
+    level: method
+    cost: 0
+    label: {ja: "主張の組み立て方が分からない", en: "How should we structure the claim?"}
+    text:
+      ja: "認証情報、アカウント、端末、インフラ、人物を分けて考えてください。それぞれについて、資料で確認できることだけを書き、不明な点は不明のまま残します。"
+      en: "Separate credential, account, device, infrastructure and person. For each one, write only what the evidence supports and leave unsupported points as unknown."
+  - id: m1_h5
+    level: recovery
+    cost: 0
+    label: {ja: "行き詰まった：詳しいヒント", en: "Stuck: detailed hint"}
+    text:
+      ja: "4つに分けて確認してください。①コミット差分で設定ファイルとテストファイルの変更を見る。②元の JPEG を ExifTool で確認する。③監査ログでプッシュの認証方法と認証情報IDを追う。④プロフィール記録に記載された相違点を読み、開発者アカウントの活動歴と突き合わせる。値は必ず元の資料から取ってください。"
+      en: "Work through four checks: (1) read the configuration and test changes in the commit diff; (2) inspect the original JPEG with ExifTool; (3) trace the push authentication and credential id in the audit log; (4) read the conflicts the captured record lists and set them against the developer account's software activity. Take all values from the source records."
+
+rubric:
+  - key: m1_r_separation
+    response_key: m1_w_separation
+    category: reasoning
+    points: 12
+    prompt: {ja: "認証情報やアカウントについて確認できることと、実際の使用者について確認できないことを、どのように分けましたか。", en: "How did you separate what the evidence shows about the credential and account from what it cannot show about the person?"}
+    placeholder: {ja: "証拠で裏づけられる主張と、裏づけられない主張を分けて書いてください。", en: "Write the supported claim and the unsupported claim separately."}
+    criteria:
+      ja: "侵害されたトークンが使用されたことを高い確信度で示し、実際の使用者は特定できないと明示していれば満点。「盗まれた」と断定していれば減点。"
+      en: "Full marks for high confidence that the compromised token was used and an explicit statement that the operator is unknown. Deduct for asserting that the token was stolen without evidence."
+  - key: m1_r_disconfirm
+    response_key: m1_w_disconfirm
+    category: reasoning
+    points: 8
+    prompt: {ja: "同じユーザー名のアカウントを開発者アカウントとは無関係と判断した根拠を、食い違う属性を挙げて説明してください。", en: "Explain why you treated the same-handle account as unrelated, naming the conflicting attributes."}
+    placeholder: {ja: "作成年・連絡先・活動内容など、食い違った項目を書いてください。", en: "List the conflicting fields, such as creation year, contact or activity."}
+    criteria:
+      ja: "少なくとも2つの食い違う属性を挙げていれば満点。ユーザー名の一致だけを根拠にしていれば0点。"
+      en: "Full marks for at least two conflicting attributes. Zero if the username match is the only reasoning."
+  - key: m1_r_coverage
+    response_key: m1_w_coverage
+    category: completeness
+    points: 10
+    prompt: {ja: "使った資料と、そこから得た事実を一覧にしてください。", en: "List the sources you used and the fact taken from each."}
+    placeholder: {ja: "資料ごとに1行。", en: "One line per source."}
+    criteria:
+      ja: "コミット・監査ログ・アカウント・メモ・画像メタデータ・同じユーザー名の別アカウントの6種類すべてに触れていれば満点。"
+      en: "Full marks for all six: commit, audit log, account, notes, image metadata and same-handle account."

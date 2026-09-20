@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ t('final.title') }} · {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow mut">{{ team.display_name }}</div>
+  <h1>{{ t('final.title') }}</h1>
+  <div class="banner info">{{ t('final.closed') }}</div>
+  <a class="btn" href="{{ url_for('participant.team_home') }}">{{ t('nav.team') }}</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+poll('/api/session-state', function (d) { if (d.final_open) location.reload(); });
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{
+  "command": "curl -I https://update.sakura-vpn-update.com/",
+  "captured": "2026-09-02",
+  "status": "200",
+  "headers": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "X-Frame-Options": "DENY",
+    "X-Sakura-Edge": "nrt-update-02",
+    "X-Sakura-Manifest": "https://cdn.sakura-vpn-update.com/manifest.json",
+    "X-Sakura-Failover": "archive.sakura-vpn-update.com",
+    "Cache-Control": "no-store",
+    "Server": "cloudflare"
+  },
+  "cdn_headers": {
+    "X-Sakura-Node": "nrt-edge-03",
+    "X-Sakura-Channel": "stable"
+  },
+  "archive_headers": {
+    "X-Archive-Node": "arc-kumo-01",
+    "X-Panel-Build": "0.8.4"
+  },
+  "reading_note": "Two custom headers name other hosts. That is an application-level link between services, which a shared proxy address is not."
+}

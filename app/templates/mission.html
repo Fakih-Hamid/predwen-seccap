@@ -1,0 +1,1226 @@
+{% extends "base.html" %}
+{% block title %}{{ mission.title }} · {{ t('app.name') }}{% endblock %}
+
+{% block bar %}
+<div class="timerbar">
+  <div class="strip" id="seats"></div>
+  <span class="chip" id="mstate"
+        data-labels="{{ {'locked': t('team.locked'), 'open': t('team.open'),
+                         'paused': t('team.paused'), 'closed': t('team.closed')} | tojson }}"
+        >{{ t('team.' ~ row.state) }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page wide">
+  <div class="eyebrow">{{ t('mission.of_three', n=mission.index, total=mission.total) }}</div>
+  <h1>{{ mission.title }}</h1>
+
+  <p class="progress" id="progress" role="status" aria-live="polite"
+     data-t-answered="{{ t('mission.progress_answered',
+                          answered='{answered}', questions='{questions}') }}"
+     data-t-evidence="{{ t('mission.progress_evidence', evidence='{evidence}') }}"
+     data-t-observations="{{ t('mission.progress_observations',
+                              observations='{observations}') }}">
+    <span data-answered>{{ t('mission.progress_answered',
+                            answered=progress.answered, questions=progress.questions) }}</span>
+    {% if progress.evidence_wanted %}
+    <span class="sep" aria-hidden="true">·</span>
+    <span data-evidence>{{ t('mission.progress_evidence', evidence=progress.with_evidence) }}</span>
+    {% endif %}
+    <span class="sep" aria-hidden="true">·</span>
+    <span data-observations>{{ t('mission.progress_observations',
+                                 observations=progress.observations) }}</span>
+  </p>
+
+  <nav class="steps" id="steprail" aria-label="{{ t('mission.steps') }}">
+    <ol>
+      <li><a href="#step-explore" data-goto="explore">{{ t('mission.step_explore') }}</a></li>
+      <li><a href="#step-record" data-goto="record">{{ t('mission.step_record') }}</a></li>
+      <li><a href="#step-answer" data-goto="answer">{{ t('mission.step_answer') }}</a></li>
+      <li><a href="#step-review" data-goto="review">{{ t('mission.step_review') }}</a></li>
+    </ol>
+    <div class="railfoot">
+      <p class="hint">{{ t('mission.step_note') }}</p>
+      <button class="btn sm ghost" type="button" id="retour">{{ t('mission.tour_reopen') }}</button>
+    </div>
+  </nav>
+
+  <div id="tourdata" hidden
+       data-title="{{ t('mission.tour_title') }}"
+       data-skip="{{ t('mission.tour_skip') }}"
+       data-next="{{ t('mission.tour_next') }}"
+       data-start="{{ t('mission.tour_start') }}"
+       data-of="{{ t('mission.tour_of', n='{n}', total='{total}') }}"
+       data-done-title="{{ t('mission.done_title') }}"
+       data-done-body="{{ t('mission.done_body', questions='{questions}', evidence='{evidence}') }}"
+       data-done-review="{{ t('mission.done_review') }}"
+       data-done-later="{{ t('mission.done_later') }}">
+    {% for n in [1, 2, 3, 4] %}
+    <span data-card
+          data-step-title="{{ t('mission.step_' ~ ['explore', 'record', 'answer', 'review'][n - 1]) }}"
+          data-body="{{ t('mission.tour_' ~ n) }}"></span>
+    {% endfor %}
+  </div>
+
+  <div id="banners">
+    {% if locked %}<div class="banner ok">{{ t('mission.locked_banner') }}</div>{% endif %}
+    {% if row.state == 'closed' %}<div class="banner">{{ t('mission.closed_banner') }}</div>{% endif %}
+    {% if row.state == 'paused' %}<div class="banner">{{ t('mission.paused_banner') }}</div>{% endif %}
+  </div>
+
+  <section class="step" id="step-explore" data-step="explore" tabindex="-1"
+           aria-labelledby="h-explore">
+    <div class="stephead">
+      <span class="stepn">1</span>
+      <div>
+        <h2 id="h-explore">{{ t('mission.step_explore') }}</h2>
+        <p class="small mut">{{ t('mission.step_explore_lead') }}</p>
+        <p class="small">{{ t('mission.dont_work_alone') }}</p>
+      </div>
+    </div>
+
+    {% if mission.first_step %}
+    <div class="firststep" id="firststep">
+      <div>
+        <div class="eyebrow">{{ t('mission.first_step') }}</div>
+        <p class="lead">{{ mission.first_step }}</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="work">
+      <div class="side">
+        <details class="panel tight disclose" id="situation"
+                 {% if not progress.answered and not progress.observations %}open{% endif %}>
+          <summary><h3 class="eyebrow mut">{{ t('mission.situation') }}</h3></summary>
+          {% for para in mission.narrative.split('\n\n') %}<p class="small">{{ para }}</p>{% endfor %}
+        </details>
+      </div>
+
+      <div class="main">
+        <div class="panel tight" id="sources">
+          <h3 class="eyebrow mut">{{ t('mission.artifacts') }}</h3>
+          <div class="arts" id="artlist"
+               data-t-new="{{ t('mission.source_is_new') }}"
+               data-t-ext="{{ t('artifact.external') }}"
+               data-t-arrived="{{ t('mission.source_arrived', title='{title}') }}"
+               data-href="{{ url_for('participant.artifact', artifact_id='ID') }}">
+            {% for a in mission.artifacts %}
+            <a class="art" data-src="{{ a.id }}"
+               href="{{ url_for('participant.artifact', artifact_id=a.id) }}">
+              <span class="ic">{{ a.icon }}</span>
+              <span class="txt">
+                <span class="tl">{{ a.title }}</span>
+                {% if a.external %}
+                <span class="tool ext">{{ a.external.tool_name or t('artifact.external') }} ↗</span>
+                {% elif a.tool %}<span class="tool">{{ a.tool }}</span>{% endif %}
+              </span>
+            </a>
+            {% endfor %}
+          </div>
+
+          {% if mission.pending %}
+          <div class="pending" id="pending">
+            <h4 class="eyebrow mut">{{ t('mission.sources_pending') }}</h4>
+            {% for p in mission.pending %}
+            <div class="pend" data-pending="{{ p.id }}"
+                 data-remaining="{{ p.remaining }}">
+              <span class="ic" aria-hidden="true">◌</span>
+              <span class="tl">{{ t('mission.sources_pending_lead') }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="step-record" data-step="record" tabindex="-1"
+           aria-labelledby="h-record">
+    <div class="stephead">
+      <span class="stepn">2</span>
+      <div>
+        <h2 id="h-record">{{ t('mission.step_record') }}</h2>
+        <p class="small mut">{{ t('mission.step_record_lead') }}</p>
+      </div>
+    </div>
+
+    <div class="panel tight" id="observations">
+      <textarea id="obtext" rows="3" placeholder="{{ t('mission.observation_placeholder') }}"
+                maxlength="2000" aria-label="{{ t('mission.a11y_observation') }}"></textarea>
+      <div class="row" style="margin-top:0.4375rem">
+        <select id="obart" style="flex:1" aria-label="{{ t('mission.choose_artifact') }}">
+          <option value="">{{ t('mission.choose_artifact') }}</option>
+          {% for a in mission.artifacts %}<option value="{{ a.id }}">{{ a.title }}</option>{% endfor %}
+        </select>
+        <button class="btn sm primary" id="obpost">{{ t('mission.post') }}</button>
+      </div>
+      <hr class="rule">
+      <div class="obs" id="obs"></div>
+    </div>
+  </section>
+
+  <section class="step" id="step-answer" data-step="answer" tabindex="-1"
+           aria-labelledby="h-answer">
+    <div class="stephead">
+      <span class="stepn">3</span>
+      <div>
+        <h2 id="h-answer">{{ t('mission.step_answer') }}</h2>
+        <p class="small mut">{{ t('mission.step_answer_lead') }}</p>
+      </div>
+    </div>
+
+      <div id="questionlist">
+        {% for q in mission.questions %}
+        <div class="q" id="q-{{ q.key }}" tabindex="-1" data-key="{{ q.key }}" data-type="{{ q.type }}">
+          <div class="qhead">
+            <span class="qn">Q{{ loop.index }}</span>
+            <h3 class="prompt">{{ q.prompt }}</h3>
+            {% set shown = q.facilitator_points if (q.points == 0 and q.facilitator_points)
+                           else (q.points + q.evidence_points) %}
+            <span class="qp">{{ shown | round | int }} {{ t('common.points') }}</span>
+          </div>
+          <div class="savedstate" data-saved hidden>✓ <span data-savedtext></span></div>
+          {% if q.help %}<div class="help">{{ q.help }}</div>{% endif %}
+
+          {% if q.hints %}
+          {% with loop_index = loop.index %}{% include "_qhint.html" %}{% endwith %}
+          {% endif %}
+
+          {% set srcs = (mission.artifacts | selectattr('id', 'in', q.accepted_evidence) | list)
+                        if q.accepted_evidence else [] %}
+          {% if srcs %}
+          <div class="lookin">
+            <span class="lb">{{ t('mission.look_in') }}</span>
+            {% for s in srcs %}
+            <a class="chip src" href="{{ url_for('participant.artifact', artifact_id=s.id) }}">{{ s.icon or '▤' }} {{ s.title }}</a>
+            {% endfor %}
+          </div>
+          {% elif q.accepted_evidence %}
+          <div class="lookin pending">
+            <span class="lb">{{ t('mission.look_in') }}</span>
+            <span class="small mut">{{ t('mission.source_not_yet') }}</span>
+          </div>
+          {% endif %}
+
+          {% if q.type == 'short_text' %}
+          <input type="text" data-answer maxlength="300" placeholder="{{ q.placeholder or '' }}"
+                 aria-label="{{ t('mission.a11y_answer', n=loop.index) }}">
+
+          {% elif q.type == 'choice' %}
+          <div class="opts">
+            {% for o in q.options %}
+            <label class="opt">
+              <input type="radio" name="{{ q.key }}" value="{{ o.id }}" data-answer>
+              <span>{{ o.label }}</span>
+              {% if o.link %}
+              <a class="optref" href="{{ o.link }}" target="_blank" rel="noopener noreferrer"
+                 aria-label="{{ o.label }} — {{ t('common.reference') }}">↗</a>
+              {% elif srcs %}
+              <a class="optref" href="{{ url_for('participant.artifact', artifact_id=srcs[0].id) }}"
+                 aria-label="{{ o.label }} — {{ t('mission.look_in') }} {{ srcs[0].title }}">↗</a>
+              {% endif %}
+            </label>
+            {% endfor %}
+          </div>
+
+          {% elif q.type == 'multi_choice' %}
+          <div class="opts">
+            {% for o in q.options %}
+            <label class="opt">
+              <input type="checkbox" name="{{ q.key }}" value="{{ o.id }}" data-answer>
+              <span>{{ o.label }}</span>
+              {% if o.link %}
+              <a class="optref" href="{{ o.link }}" target="_blank" rel="noopener noreferrer"
+                 aria-label="{{ o.label }} — {{ t('common.reference') }}">↗</a>
+              {% elif srcs %}
+              <a class="optref" href="{{ url_for('participant.artifact', artifact_id=srcs[0].id) }}"
+                 aria-label="{{ o.label }} — {{ t('mission.look_in') }} {{ srcs[0].title }}">↗</a>
+              {% endif %}
+            </label>
+            {% endfor %}
+          </div>
+
+          {% elif q.type == 'confidence' %}
+          <div class="seg" data-conf>
+            <button type="button" data-v="low">{{ t('common.conf_low') }}</button>
+            <button type="button" data-v="medium">{{ t('common.conf_medium') }}</button>
+            <button type="button" data-v="high">{{ t('common.conf_high') }}</button>
+          </div>
+
+          {% elif q.type == 'order' %}
+          <div class="hint">{{ t('mission.order_hint') }}</div>
+          <div class="orderlist" data-order>
+            {% for it in q['items'] %}
+            <div class="orderitem" data-id="{{ it.id }}">
+              <span class="no"></span>
+              <span class="lbl">{{ it.label }}</span>
+              <span class="mv">
+                <button type="button" class="btn sm ghost" data-move="up"
+                        aria-label="{{ t('mission.a11y_move_up', item=it.label) }}">↑</button>
+                <button type="button" class="btn sm ghost" data-move="down"
+                        aria-label="{{ t('mission.a11y_move_down', item=it.label) }}">↓</button>
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+
+          {% elif q.type == 'graph' %}
+          <div class="row" style="margin-top:0.5rem">
+            <select data-gsrc style="flex:1" aria-label="{{ t('mission.a11y_graph_from', n=loop.index) }}">
+              {% for n in q.nodes %}<option value="{{ n.id }}">{{ n.label }}</option>{% endfor %}
+            </select>
+            <select data-grel style="flex:1" aria-label="{{ t('mission.a11y_graph_rel', n=loop.index) }}">
+              {% for r in q.relations %}<option value="{{ r.id }}">{{ r.label }}</option>{% endfor %}
+            </select>
+            <select data-gdst style="flex:1" aria-label="{{ t('mission.a11y_graph_to', n=loop.index) }}">
+              {% for n in q.nodes %}<option value="{{ n.id }}">{{ n.label }}</option>{% endfor %}
+            </select>
+            <button type="button" class="btn sm" data-gadd>{{ t('mission.graph_add') }}</button>
+          </div>
+          <div class="grid" style="margin-top:0.5625rem;gap:0.375rem" data-gedges></div>
+
+          {% elif q.type == 'free_text' %}
+          <textarea data-answer rows="4" maxlength="2000" placeholder="{{ q.placeholder or '' }}"
+                    aria-label="{{ t('mission.a11y_answer', n=loop.index) }}"></textarea>
+          {% endif %}
+
+          {% if q.needs_reasoning or q.evidence_required %}
+          <details class="working" data-working open>
+            <summary>
+              <span class="lb">{{ t('mission.working') }}</span>
+              <span class="workstate" data-workstate>{{ t('mission.working_empty') }}</span>
+            </summary>
+
+            {% if q.needs_reasoning %}
+            <label class="field" style="margin-top:0.625rem">
+              <span class="lb">{{ t('common.reasoning') }}</span>
+              <textarea data-reasoning rows="2" maxlength="2000"
+                        aria-label="{{ t('mission.a11y_reasoning', n=loop.index) }}"></textarea>
+            </label>
+            {% endif %}
+
+            {% if q.evidence_required %}
+            <div class="evbox" data-ev
+                 data-t-needsrc="{{ t('mission.evidence_needs_source') }}">
+              <div class="lb">{{ t('mission.attach_evidence') }}</div>
+              <div class="row">
+                <select data-evart style="flex:1" aria-label="{{ t('mission.a11y_ev_source', n=loop.index) }}">
+                  <option value="">{{ t('mission.choose_artifact') }}</option>
+                  {% for a in mission.artifacts %}<option value="{{ a.id }}">{{ a.title }}</option>{% endfor %}
+                </select>
+                <a class="btn sm ghost" data-evopen hidden target="_blank"
+                   rel="noopener"
+                   aria-label="{{ t('mission.a11y_ev_open', n=loop.index) }}"
+                   >{{ t('mission.open_source') }} ↗</a>
+              </div>
+              <input type="url" data-evurl maxlength="500" style="margin-top:0.4375rem"
+                     placeholder="{{ t('mission.source_url') }}"
+                     aria-label="{{ t('mission.a11y_ev_url', n=loop.index) }}">
+              <textarea data-evexcerpt rows="2" maxlength="2000" style="margin-top:0.4375rem"
+                        placeholder="{{ t('common.excerpt') }}"
+                        aria-label="{{ t('mission.a11y_ev_excerpt', n=loop.index) }}"></textarea>
+            </div>
+            {% endif %}
+          </details>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+  </section>
+
+  <section class="step" id="step-review" data-step="review" tabindex="-1"
+           aria-labelledby="h-review">
+    <div class="stephead">
+      <span class="stepn">4</span>
+      <div>
+        <h2 id="h-review">{{ t('mission.step_review') }}</h2>
+        <p class="small mut">{{ t('mission.step_review_lead') }}</p>
+      </div>
+    </div>
+
+    <div class="panel" id="review">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div class="small">{{ t('mission.contributions') }}</div>
+          <div class="small mut" id="contrib"></div>
+        </div>
+        {% if not locked %}
+        <button class="btn warn" id="lock">{{ t('mission.lock') }}</button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel tight estimate" id="estimate">
+      <p class="small">{{ t('mission.estimated_time') }}</p>
+    </div>
+  </section>
+
+
+  <div class="stepnav" id="stepnav" hidden>
+    <button class="btn ghost" id="stepback" type="button">← {{ t('mission.step_back') }}</button>
+    <span class="stepcount small mut" id="stepcount" aria-live="polite"
+          data-t="{{ t('mission.step_of', n='{n}', total='{total}') }}"></span>
+    <button class="btn primary" id="stepnext" type="button"
+            data-t-step="{{ t('mission.step_next') }}"
+            data-t-end="{{ t('mission.lock_to_continue') }}"
+            data-t-wait="{{ t('mission.locked_waiting') }}"
+            {% if next_url %}data-t-next="{{ t('mission.next_mission', title=next_label) }}"{% endif %}
+            >{{ t('mission.step_next') }} →</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const SLUG = {{ mission.slug | tojson }};
+  const NOT_POSTED = {{ t('mission.not_posted_yet') | tojson }};
+  const WORK_EMPTY = {{ t('mission.working_empty') | tojson }};
+  const WORK_FILLED = {{ t('mission.working_filled') | tojson }};
+  const MISSION_TITLE = {{ mission.title | tojson }};
+  const LOCKED = {{ locked | tojson }};
+  const REVIEW = {
+    title: {{ t('mission.review_title', mission='{mission}') | tojson }},
+    counts: {{ t('mission.review_counts', answered='{answered}',
+                 questions='{questions}', evidence='{evidence}') | tojson }},
+    all_good: {{ t('mission.review_all_good') | tojson }},
+    gaps: {{ t('mission.review_gaps') | tojson }},
+    unanswered: {{ t('mission.review_unanswered') | tojson }},
+    no_evidence: {{ t('mission.review_no_evidence') | tojson }},
+    ok: {{ t('mission.review_ok') | tojson }},
+    answered_only: {{ t('mission.review_answered_only') | tojson }},
+    edit: {{ t('mission.review_edit') | tojson }},
+    consequence: {{ t('mission.review_consequence') | tojson }},
+    more_coming: {{ t('mission.review_more_coming', count='{count}') | tojson }},
+    back: {{ t('mission.review_back') | tojson }},
+    lock: {{ t('mission.review_lock') | tojson }}
+  };
+  const PROMPTS = {
+    record: [{
+      title: {{ t('mission.everyone_writes_title') | tojson }},
+      body: {{ t('mission.everyone_writes_body') | tojson }},
+      check: {{ t('mission.everyone_writes_check') | tojson }}
+    }],
+    answer: [{
+      title: {{ t('mission.ask_colleague_title') | tojson }},
+      body: {{ t('mission.ask_colleague_body') | tojson }},
+      check: {{ t('mission.ask_colleague_check') | tojson }}
+    }]
+  };
+  const DISCUSSED = {
+    title: {{ t('mission.discussed_title') | tojson }},
+    body: {{ t('mission.discussed_body') | tojson }},
+    check: {{ t('mission.discussed_check') | tojson }}
+  };
+  const PROMPT_OK = {{ t('common.ok') | tojson }};
+  const SOURCES_LEFT = {{ t('mission.sources_left_warning', count='{count}') | tojson }};
+  const SAVED_BY = {{ t('mission.saved_by', who='{who}') | tojson }};
+  const NEXT_URL = {{ next_url | tojson }};
+  let writable = {{ writable | tojson }};
+  const renderedPaused = {{ (row.state == 'paused') | tojson }};
+  let reloading = false;   /* one reload, ever — see the poll */
+
+  const STEPS = ['explore', 'record', 'answer', 'review'];
+  const STEP_KEY = 'seccap.step.' + SLUG;
+  const counter = document.getElementById('stepcount');
+  const STEP_OF = counter.getAttribute('data-t');
+  const rail = document.getElementById('steprail');
+  const nav = document.getElementById('stepnav');
+  const sections = {};
+  STEPS.forEach(function (name) {
+    sections[name] = document.querySelector('.step[data-step="' + name + '"]');
+  });
+  let step = 0;
+
+  function readStoredStep() {
+    try {
+      const i = STEPS.indexOf(sessionStorage.getItem(STEP_KEY));
+      return i < 0 ? 0 : i;
+    } catch (e) { return 0; }
+  }
+
+  function move(index, focus) {
+    step = Math.max(0, Math.min(STEPS.length - 1, index));
+    STEPS.forEach(function (name, i) {
+      const section = sections[name];
+      if (section) section.hidden = i !== step;
+      const tab = rail.querySelector('[data-goto="' + name + '"]');
+      if (tab) {
+        tab.classList.toggle('on', i === step);
+        if (i === step) tab.setAttribute('aria-current', 'step');
+        else tab.removeAttribute('aria-current');
+      }
+    });
+    document.getElementById('stepback').disabled = step === 0;
+    const nextButton = document.getElementById('stepnext');
+    const atEnd = step === STEPS.length - 1;
+    const leaving = atEnd && LOCKED && !!NEXT_URL;
+    nextButton.disabled = atEnd && !leaving;
+    if (leaving) nextButton.textContent = nextButton.dataset.tNext;
+    else if (atEnd && LOCKED) nextButton.textContent = nextButton.dataset.tWait;
+    else if (atEnd) nextButton.textContent = nextButton.dataset.tEnd;
+    else nextButton.textContent = nextButton.dataset.tStep;
+    counter.textContent =
+      STEP_OF.replace('{n}', step + 1).replace('{total}', STEPS.length);
+    try { sessionStorage.setItem(STEP_KEY, STEPS[step]); } catch (e) {}
+    if (focus) {
+      const section = sections[STEPS[step]];
+      if (section) { section.scrollIntoView({block: 'start'}); section.focus(); }
+    }
+  }
+
+  const TOUR = document.getElementById('tourdata');
+  const CARDS = [].slice.call(TOUR.querySelectorAll('[data-card]'));
+  const TOUR_SEEN = 'seccap.tour';
+
+  function showTour() {
+    let at = 0;
+    openModal(function (box, close) {
+      const h = document.createElement('h2');
+      h.textContent = TOUR.dataset.title;
+      box.appendChild(h);
+
+      const count = document.createElement('p');
+      count.className = 'small mut tourcount';
+      const num = document.createElement('div');
+      num.className = 'tourcard';
+      box.appendChild(count);
+      box.appendChild(num);
+
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.justifyContent = 'space-between';
+      row.style.marginTop = '1.125rem';
+      const skip = document.createElement('button');
+      skip.className = 'btn ghost';
+      skip.type = 'button';
+      skip.textContent = TOUR.dataset.skip;
+      const next = document.createElement('button');
+      next.className = 'btn primary';
+      next.type = 'button';
+      row.appendChild(skip);
+      row.appendChild(next);
+      box.appendChild(row);
+
+      function paint() {
+        const card = CARDS[at];
+        count.textContent = TOUR.dataset.of
+          .replace('{n}', at + 1).replace('{total}', CARDS.length);
+        num.textContent = '';
+        const badge = document.createElement('span');
+        badge.className = 'stepn';
+        badge.textContent = String(at + 1);
+        const title = document.createElement('b');
+        title.textContent = card.dataset.stepTitle;
+        const body = document.createElement('p');
+        body.textContent = card.dataset.body;
+        const head = document.createElement('div');
+        head.className = 'tourhead';
+        head.appendChild(badge);
+        head.appendChild(title);
+        num.appendChild(head);
+        num.appendChild(body);
+        next.textContent = at === CARDS.length - 1
+          ? TOUR.dataset.start : TOUR.dataset.next;
+      }
+
+      function remember() {
+        try { localStorage.setItem(TOUR_SEEN, '1'); } catch (e) {}
+      }
+
+      skip.addEventListener('click', function () { remember(); close(); });
+      next.addEventListener('click', function () {
+        if (at === CARDS.length - 1) { remember(); close(); move(0, true); return; }
+        at += 1;
+        paint();
+      });
+      paint();
+    }, {className: 'tour', focus: '.btn.primary'});
+  }
+
+  document.getElementById('retour').addEventListener('click', showTour);
+  try {
+    if (!localStorage.getItem(TOUR_SEEN)) showTour();
+  } catch (e) { /* private window: the tour is optional, so skip it */ }
+
+  function showStepContaining(node) {
+    const section = node && node.closest ? node.closest('.step') : null;
+    if (!section) return;
+    const i = STEPS.indexOf(section.getAttribute('data-step'));
+    if (i >= 0 && i !== step) move(i, false);
+  }
+
+  document.querySelector('.page').classList.add('js');
+  nav.hidden = false;
+  rail.addEventListener('click', function (ev) {
+    const a = ev.target.closest('[data-goto]');
+    if (!a) return;
+    ev.preventDefault();
+    move(STEPS.indexOf(a.getAttribute('data-goto')), true);
+  });
+  document.getElementById('stepback').addEventListener('click', function () { move(step - 1, true); });
+  document.getElementById('stepnext').addEventListener('click', function () {
+    if (LOCKED && NEXT_URL && step === STEPS.length - 1) {
+      location.href = NEXT_URL;
+      return;
+    }
+    move(step + 1, true);
+  });
+  move(readStoredStep(), false);
+
+  function promptSeen(which) {
+    try { return sessionStorage.getItem('seccap.prompt.' + SLUG + '.' + which) === '1'; }
+    catch (e) { return true; }
+  }
+  function keepPrompt(which) {
+    try { sessionStorage.setItem('seccap.prompt.' + SLUG + '.' + which, '1'); } catch (e) {}
+  }
+
+  function sourcesLeft() {
+    const slot = document.querySelector('[data-pending]');
+    if (!slot) return 0;
+    const n = parseInt(slot.getAttribute('data-remaining'), 10);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function teamPrompt(copy, onDone, warn) {
+    openModal(function (box, close) {
+      const h = document.createElement('h2');
+      h.textContent = copy.title;
+      const p = document.createElement('p');
+      p.className = 'lead';
+      p.textContent = copy.body;
+      box.appendChild(h); box.appendChild(p);
+      if (warn) {
+        const w = document.createElement('p');
+        w.className = 'small warn';
+        w.textContent = warn;
+        box.appendChild(w);
+      }
+      const label = document.createElement('label');
+      label.className = 'checkline';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      const span = document.createElement('span');
+      span.textContent = copy.check;
+      label.appendChild(cb);
+      label.appendChild(span);
+      const ok = document.createElement('button');
+      ok.className = 'btn primary';
+      ok.textContent = PROMPT_OK;
+      ok.disabled = true;
+      cb.addEventListener('change', function () { ok.disabled = !cb.checked; });
+      ok.addEventListener('click', function () { close(); if (onDone) onDone(); });
+      box.appendChild(label); box.appendChild(ok);
+    }, {focus: 'input'});
+  }
+
+  if (!LOCKED) {
+    const originalMove = move;
+    move = function (index, focus) {
+      const name = STEPS[Math.max(0, Math.min(STEPS.length - 1, index))];
+      const queue = PROMPTS[name];
+      if (queue && queue.length && !promptSeen(name)) {
+        keepPrompt(name);
+        const left = sourcesLeft();
+        const warn = left > 0
+          ? SOURCES_LEFT.replace('{count}', left) : null;
+        (function ask(i) {
+          if (i >= queue.length) { originalMove(index, focus); return; }
+          teamPrompt(queue[i], function () { ask(i + 1); },
+                     i === 0 ? warn : null);
+        })(0);
+        return;
+      }
+      originalMove(index, focus);
+    };
+  }
+
+
+  function focusRequestedQuestion() {
+    if (location.hash.length < 2) return;
+    let id = location.hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) {}
+    const q = document.getElementById(id);
+    if (!q || !q.classList.contains('q')) return;
+    showStepContaining(q);
+    q.scrollIntoView({block: 'center'});
+    q.focus();
+  }
+
+  function payload(q) {
+    const type = q.getAttribute('data-type');
+    if (type === 'short_text' || type === 'free_text') {
+      const el = q.querySelector('[data-answer]');
+      return el ? el.value : null;
+    }
+    if (type === 'choice') {
+      const el = q.querySelector('[data-answer]:checked');
+      return el ? el.value : null;
+    }
+    if (type === 'multi_choice') {
+      return Array.prototype.map.call(q.querySelectorAll('[data-answer]:checked'),
+                                      function (e) { return e.value; });
+    }
+    if (type === 'confidence') {
+      const on = q.querySelector('[data-conf] button.on');
+      return on ? on.getAttribute('data-v') : null;
+    }
+    if (type === 'order') {
+      return currentOrder(q.querySelector('[data-order]'));
+    }
+    if (type === 'graph') {
+      return Array.prototype.map.call(q.querySelectorAll('[data-gedges] .edge'),
+                                      function (e) { return e.getAttribute('data-edge'); });
+    }
+    return null;
+  }
+
+  const savers = new Map();
+  function debouncedFor(q, key, fn) {
+    const id = key + ':' + q.getAttribute('data-key');
+    if (!savers.has(id)) savers.set(id, debounce(fn, 600));
+    return savers.get(id);
+  }
+
+  async function writeAnswer(q) {
+    if (!writable) return;
+    const reasoning = q.querySelector('[data-reasoning]');
+    const body = {
+      mission_slug: SLUG,
+      question_key: q.getAttribute('data-key'),
+      answer: payload(q)
+    };
+    if (reasoning) body.reasoning = reasoning.value;
+    if (q.getAttribute('data-type') === 'confidence') body.confidence = payload(q);
+    const r = await api('POST', '/api/submission', body);
+    if (r.ok) { q.classList.add('answered'); markSaved(q); toast(window.SECCAP.t.saved); }
+    else if (r.status === 409) { writable = false; toast(window.SECCAP.t.error); }
+  }
+
+  function markSaved(q, at, who) {
+    const box = q.querySelector('[data-saved]');
+    if (!box) return;
+    const when = at ? new Date(at) : new Date();
+    const hh = String(when.getHours()).padStart(2, '0');
+    const mm = String(when.getMinutes()).padStart(2, '0');
+    let line = window.SECCAP.t.saved + ' ' + hh + ':' + mm;
+    if (who) line = SAVED_BY.replace('{who}', who) + ' · ' + line;
+    q.querySelector('[data-savedtext]').textContent = line;
+    box.hidden = false;
+  }
+
+  async function writeEvidence(q) {
+    if (!writable) return;
+    const box = q.querySelector('[data-ev]');
+    if (!box) return;
+    const artifact = box.querySelector('[data-evart]').value;
+    if (!artifact) {
+      const typed = (box.querySelector('[data-evexcerpt]').value || '').trim()
+                 || ((box.querySelector('[data-evurl]') || {}).value || '').trim();
+      if (typed) {
+        box.classList.add('needsrc');
+        toast(box.getAttribute('data-t-needsrc'));
+      }
+      return;
+    }
+    box.classList.remove('needsrc');
+    const r = await api('POST', '/api/evidence', {
+      mission_slug: SLUG,
+      question_key: q.getAttribute('data-key'),
+      artifact_id: artifact,
+      source_url: (box.querySelector('[data-evurl]') || {}).value || null,
+      excerpt: box.querySelector('[data-evexcerpt]').value
+    });
+    if (r.ok) {
+      box.classList.add('filled');
+      showWorking(q, true);   /* the summary now says there is something here */
+      toast(window.SECCAP.t.saved);
+    }
+  }
+
+  function save(q) { debouncedFor(q, 'a', writeAnswer)(q); }
+  function saveEvidence(q) { debouncedFor(q, 'e', writeEvidence)(q); }
+
+  document.getElementById('questionlist').addEventListener('input', function (ev) {
+    const q = ev.target.closest('.q');
+    if (!q) return;
+    if (ev.target.closest('[data-ev]')) saveEvidence(q); else save(q);
+  });
+  document.getElementById('questionlist').addEventListener('change', function (ev) {
+    const q = ev.target.closest('.q');
+    if (!q) return;
+    const opt = ev.target.closest('.opt');
+    if (opt) {
+      if (ev.target.type === 'radio') {
+        q.querySelectorAll('.opt').forEach(function (o) { o.classList.remove('sel'); });
+      }
+      opt.classList.toggle('sel', ev.target.checked);
+    }
+    if (ev.target.matches('[data-evart]')) wireOpenSource(ev.target.closest('[data-ev]'));
+    if (ev.target.closest('[data-ev]')) saveEvidence(q); else save(q);
+  });
+
+  function wireOpenSource(box) {
+    const select = box.querySelector('[data-evart]');
+    const link = box.querySelector('[data-evopen]');
+    if (!select || !link) return;
+    const id = select.value;
+    link.hidden = !id;
+    if (id) link.href = '/artifacts/' + encodeURIComponent(id);
+  }
+  document.querySelectorAll('[data-ev]').forEach(wireOpenSource);
+
+  document.querySelectorAll('[data-conf]').forEach(function (seg) {
+    seg.addEventListener('click', function (ev) {
+      const b = ev.target.closest('button');
+      if (!b) return;
+      seg.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      save(b.closest('.q'));
+    });
+  });
+
+  document.querySelectorAll('[data-order]').forEach(function (list) {
+    wireReorder(list, function () { save(list.closest('.q')); });
+  });
+
+  document.querySelectorAll('.q[data-type="graph"]').forEach(function (q) {
+    const box = q.querySelector('[data-gedges]');
+    function addEdge(id, labels) {
+      if (box.querySelector('[data-edge="' + CSS.escape(id) + '"]')) return;
+      const row = document.createElement('div');
+      row.className = 'edge';
+      row.setAttribute('data-edge', id);
+      const span = document.createElement('span');
+      span.textContent = labels;            /* textContent: labels are content, but never trusted as markup */
+      const x = document.createElement('button');
+      x.className = 'x'; x.type = 'button'; x.textContent = '✕';
+      x.addEventListener('click', function () { row.remove(); save(q); });
+      row.appendChild(span); row.appendChild(x);
+      box.appendChild(row);
+    }
+    q.querySelector('[data-gadd]').addEventListener('click', function () {
+      const s = q.querySelector('[data-gsrc]'), r = q.querySelector('[data-grel]'), d = q.querySelector('[data-gdst]');
+      if (s.value === d.value) return;
+      addEdge(s.value + '|' + r.value + '|' + d.value,
+              s.options[s.selectedIndex].text + '  ' + r.options[r.selectedIndex].text + '  ' + d.options[d.selectedIndex].text);
+      save(q);
+    });
+    q._addEdge = addEdge;
+  });
+
+  document.getElementById('obpost').addEventListener('click', async function () {
+    const text = document.getElementById('obtext');
+    if (!text.value.trim()) return;
+    const r = await api('POST', '/api/observation', {
+      mission_slug: SLUG, text: text.value,
+      artifact_id: document.getElementById('obart').value || null
+    });
+    if (r.ok) { text.value = ''; refreshObs(); }
+  });
+
+  async function refreshObs() {
+    const r = await api('GET', '/api/observations?mission_slug=' + encodeURIComponent(SLUG));
+    if (!r.ok) return;
+    const box = document.getElementById('obs');
+    box.textContent = '';
+    r.data.observations.forEach(function (o) {
+      const el = document.createElement('div'); el.className = 'ob';
+      const who = document.createElement('div');
+      const w = document.createElement('span'); w.className = 'who'; w.textContent = o.nickname;
+      const when = document.createElement('span'); when.className = 'when';
+      when.textContent = new Date(o.at).toLocaleTimeString();
+      who.appendChild(w); who.appendChild(when);
+      const tx = document.createElement('div'); tx.className = 'tx'; tx.textContent = o.text;
+      el.appendChild(who); el.appendChild(tx);
+      if (o.artifact_id) {
+        const a = document.createElement('span'); a.className = 'art'; a.textContent = o.artifact_title || o.artifact_id;
+        el.appendChild(a);
+      }
+      box.appendChild(el);
+    });
+  }
+  refreshObs();
+
+  const stuckBoxes = [].slice.call(document.querySelectorAll('[data-stuck]'));
+  stuckBoxes.forEach(function (box) { wireStuck(box, SLUG); });
+  (async function () {
+    const r = await api('GET', '/api/mission-state?mission_slug='
+                        + encodeURIComponent(SLUG));
+    if (!r.ok || !r.data || !r.data.hints_taken || !r.data.hints_taken.length) return;
+    for (const box of stuckBoxes) {
+      if (box.restore) await box.restore(r.data.hints_taken);
+    }
+  })();
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function reviewRows(answers) {
+    return [].map.call(document.querySelectorAll('.q'), function (q, i) {
+      const key = q.getAttribute('data-key');
+      const saved = answers[key] || {};
+      let value = saved.answer;
+      if (typeof value === 'string') value = value.trim();
+      const heading = q.querySelector('.prompt');
+      return {
+        n: i + 1,
+        key: key,
+        prompt: heading ? heading.textContent : key,
+        answered: !(value === null || value === undefined || value === ''
+                    || (Array.isArray(value) && !value.length)),
+        wantsEvidence: !!q.querySelector('[data-ev]'),
+        hasEvidence: !!(saved.evidence && saved.evidence.length)
+      };
+    });
+  }
+
+  function reviewBeforeLock(answers, progress) {
+    const rows = reviewRows(answers);
+    const gaps = rows.filter(function (r) {
+      return !r.answered || (r.wantsEvidence && !r.hasEvidence);
+    });
+
+    openModal(function (box, closeReview) {
+    const h = el('h2', null, REVIEW.title.replace('{mission}', MISSION_TITLE));
+    box.appendChild(h);
+
+    box.appendChild(el('p', 'small', REVIEW.counts
+      .replace('{answered}', progress.answered)
+      .replace('{questions}', progress.questions)
+      .replace('{evidence}', progress.with_evidence)));
+    box.appendChild(el('p', gaps.length ? 'small warn' : 'small ok',
+                       gaps.length ? REVIEW.gaps : REVIEW.all_good));
+
+    const slot = document.querySelector('[data-pending]');
+    const waiting = slot ? parseInt(slot.getAttribute('data-remaining'), 10) : 0;
+    if (waiting > 0) {
+      box.appendChild(el('p', 'small warn',
+                         REVIEW.more_coming.replace('{count}', waiting)));
+    }
+
+    const list = el('ul', 'reviewlist');
+    rows.forEach(function (r) {
+      const li = el('li', r.answered && (!r.wantsEvidence || r.hasEvidence)
+                         ? 'ok' : 'gap');
+      li.appendChild(el('span', 'rn', 'Q' + r.n));
+      li.appendChild(el('span', 'rp', r.prompt));
+
+      let mark, words;
+      if (!r.answered) { mark = '—'; words = REVIEW.unanswered; }
+      else if (r.wantsEvidence && !r.hasEvidence) { mark = '!'; words = REVIEW.no_evidence; }
+      else if (r.wantsEvidence) { mark = '✓'; words = REVIEW.ok; }
+      else { mark = '✓'; words = REVIEW.answered_only; }
+      const state = el('span', 'rs');
+      state.appendChild(el('span', 'rmark', mark));
+      state.appendChild(el('span', null, words));
+      li.appendChild(state);
+
+      const go = el('button', 'btn sm ghost', REVIEW.edit);
+      go.setAttribute('aria-label', REVIEW.edit + ' Q' + r.n + ' — ' + r.prompt);
+      go.addEventListener('click', function () {
+        closeReview();
+        const target = document.getElementById('q-' + r.key);
+        if (!target) return;
+        showStepContaining(target);
+        target.scrollIntoView({block: 'center'});
+        target.focus();
+      });
+      li.appendChild(go);
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+
+    box.appendChild(el('p', 'small mut', REVIEW.consequence));
+
+    const row = el('div', 'row');
+    row.style.justifyContent = 'flex-end';
+    row.style.marginTop = '1rem';
+    const agreed = el('label', 'checkline');
+    const agreedBox = el('input');
+    agreedBox.type = 'checkbox';
+    agreed.appendChild(agreedBox);
+    agreed.appendChild(el('span', null, DISCUSSED.check));
+    box.appendChild(el('p', 'small', DISCUSSED.body));
+    box.appendChild(agreed);
+
+    const cancel = el('button', 'btn primary', REVIEW.back);
+    const go = el('button', 'btn warn', REVIEW.lock);
+    go.disabled = true;
+    agreedBox.addEventListener('change', function () { go.disabled = !agreedBox.checked; });
+    cancel.addEventListener('click', closeReview);
+    go.addEventListener('click', async function () {
+      closeReview();
+      const r = await api('POST', '/api/lock', {mission_slug: SLUG});
+      if (r.ok) location.reload(); else toast(window.SECCAP.t.error);
+    });
+    row.appendChild(cancel);
+    row.appendChild(go);
+    box.appendChild(row);
+
+
+    }, {wide: true, focus: '.btn.primary'});
+  }
+
+  const lockButton = document.getElementById('lock');
+  if (lockButton) lockButton.addEventListener('click', async function () {
+    const r = await api('GET', '/api/mission-state?mission_slug='
+                        + encodeURIComponent(SLUG));
+    if (!r.ok) { toast(window.SECCAP.t.error); return; }
+    reviewBeforeLock(r.data.answers || {}, r.data.progress);
+  });
+
+
+  focusRequestedQuestion();
+  poll('/api/mission-state?mission_slug=' + encodeURIComponent(SLUG), function (d) {
+    if (!d.mission) return;
+    const mstate = document.getElementById('mstate');
+    let stateLabels = {};
+    try { stateLabels = JSON.parse(mstate.dataset.labels || '{}'); } catch (e) {}
+    mstate.textContent = stateLabels[d.mission.state] || d.mission.state;
+
+    const nowWritable = d.mission.writable;
+    if (writable && !nowWritable && !reloading) { reloading = true; location.reload(); }
+    if (renderedPaused && d.mission.state !== 'paused' && !reloading) {
+      reloading = true; location.reload();
+    }
+    writable = nowWritable;
+
+    const seats = document.getElementById('seats');
+    seats.textContent = '';
+    const missing = [];
+    d.members.forEach(function (m) {
+      const s = document.createElement('span');
+      s.className = 'seat' + (m.online ? ' on' : '') + (m.is_me ? ' me' : '') + (m.posted ? ' posted' : '');
+      const av = document.createElement('span'); av.className = 'av';
+      av.textContent = (m.nickname || '?').slice(0, 1).toUpperCase();
+      s.appendChild(av);
+      s.appendChild(document.createTextNode(m.nickname));
+      seats.appendChild(s);
+      if (!m.posted) missing.push(m.nickname);
+    });
+    const contrib = document.getElementById('contrib');
+    contrib.textContent = missing.length
+      ? missing.join(', ') + ' — ' + NOT_POSTED
+      : '';
+
+    paintSources(d.sources);
+    paintPending(d.pending, d.pending_remaining);
+    paintProgress(d.progress);
+    maybeCelebrate(d.progress);
+
+    Object.keys(d.answers || {}).forEach(function (key) {
+      const q = document.querySelector('.q[data-key="' + CSS.escape(key) + '"]');
+      if (!q || q.contains(document.activeElement)) return;   /* never fight a typing member */
+      restore(q, d.answers[key]);
+    });
+  });
+
+  const artlist = document.getElementById('artlist');
+  const T_NEW = artlist.getAttribute('data-t-new');
+  const T_EXT = artlist.getAttribute('data-t-ext');
+  const T_ARRIVED = artlist.getAttribute('data-t-arrived');
+  const HREF = artlist.getAttribute('data-href');
+  let firstSourcePoll = true;
+
+  function sourceCard(s) {
+    const a = document.createElement('a');
+    a.className = 'art fresh';
+    a.setAttribute('data-src', s.id);
+    a.href = HREF.replace('ID', encodeURIComponent(s.id));
+    const ic = document.createElement('span');
+    ic.className = 'ic';
+    ic.textContent = s.icon || '▤';
+    const body = document.createElement('span');
+    body.className = 'txt';
+    const tl = document.createElement('span');
+    tl.className = 'tl';
+    tl.textContent = s.title;
+    body.appendChild(tl);
+    const tool = document.createElement('span');
+    if (s.tool_name) { tool.className = 'tool ext'; tool.textContent = s.tool_name + ' ↗'; }
+    else if (s.tool) { tool.className = 'tool'; tool.textContent = s.tool; }
+    if (tool.textContent) body.appendChild(tool);
+    a.appendChild(ic);
+    a.appendChild(body);
+    return a;
+  }
+
+  function addToPickers(s) {
+    document.querySelectorAll('#obart, [data-evart]').forEach(function (sel) {
+      if (sel.querySelector('option[value="' + CSS.escape(s.id) + '"]')) return;
+      const o = document.createElement('option');
+      o.value = s.id;
+      o.textContent = s.title;
+      sel.appendChild(o);
+    });
+  }
+
+  function paintPending(id, remaining) {
+    const box = document.getElementById('pending');
+    if (!box) return;
+    const slot = box.querySelector('[data-pending]');
+    if (id === null || id === undefined) { box.remove(); return; }
+    if (slot) {
+      slot.setAttribute('data-pending', id);
+      slot.setAttribute('data-remaining', remaining);
+    }
+  }
+
+  function paintSources(list) {
+    if (!Array.isArray(list)) return;
+    const arrived = [];
+    list.forEach(function (s) {
+      if (artlist.querySelector('[data-src="' + CSS.escape(s.id) + '"]')) return;
+      artlist.appendChild(sourceCard(s));
+      addToPickers(s);
+      arrived.push(s);
+    });
+    if (firstSourcePoll) { firstSourcePoll = false; return; }
+    arrived.forEach(function (s) {
+      toast(T_ARRIVED.replace('{title}', s.title));
+    });
+  }
+
+  function paintProgress(p) {
+    if (!p) return;
+    const box = document.getElementById('progress');
+    const fill = function (sel, template, values) {
+      const el = box.querySelector(sel);
+      if (!el) return;
+      let text = box.getAttribute(template);
+      Object.keys(values).forEach(function (k) {
+        text = text.split('{' + k + '}').join(values[k]);
+      });
+      if (el.textContent !== text) el.textContent = text;
+    };
+    fill('[data-answered]', 'data-t-answered',
+         {answered: p.answered, questions: p.questions});
+    fill('[data-evidence]', 'data-t-evidence', {evidence: p.with_evidence});
+    fill('[data-observations]', 'data-t-observations',
+         {observations: p.observations});
+  }
+
+  const DONE_KEY = 'seccap.done.' + SLUG;
+  let celebrated = false;
+
+  function maybeCelebrate(p) {
+    if (celebrated || !p || locked() ) return;
+    if (!p.questions || p.answered < p.questions) return;
+    if (p.evidence_wanted && p.with_evidence < p.evidence_wanted) return;
+    celebrated = true;
+    try {
+      if (sessionStorage.getItem(DONE_KEY)) return;
+      sessionStorage.setItem(DONE_KEY, '1');
+    } catch (e) { /* no storage: show it once this page life, which is fine */ }
+
+    openModal(function (box, close) {
+      const h = document.createElement('h2');
+      h.textContent = TOUR.dataset.doneTitle;
+      box.appendChild(h);
+      const body = document.createElement('p');
+      body.textContent = TOUR.dataset.doneBody
+        .replace('{questions}', p.questions)
+        .replace('{evidence}', p.evidence_wanted || p.with_evidence);
+      box.appendChild(body);
+
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.justifyContent = 'flex-end';
+      row.style.marginTop = '1.125rem';
+      const later = document.createElement('button');
+      later.className = 'btn ghost';
+      later.type = 'button';
+      later.textContent = TOUR.dataset.doneLater;
+      const go = document.createElement('button');
+      go.className = 'btn primary';
+      go.type = 'button';
+      go.textContent = TOUR.dataset.doneReview;
+      later.addEventListener('click', close);
+      go.addEventListener('click', function () {
+        close();
+        move(STEPS.indexOf('review'), true);
+      });
+      row.appendChild(later);
+      row.appendChild(go);
+      box.appendChild(row);
+    }, {className: 'done', focus: '.btn.primary'});
+  }
+
+  function locked() {
+    return !writable;
+  }
+
+  function showWorking(q, filled) {
+    const box = q.querySelector('[data-working]');
+    if (!box) return;
+    if (filled) box.open = true;
+    const state = box.querySelector('[data-workstate]');
+    if (state) {
+      const text = filled ? WORK_FILLED : WORK_EMPTY;
+      if (state.textContent !== text) state.textContent = text;
+      state.classList.toggle('on', !!filled);
+    }
+  }
+
+  function restore(q, saved) {
+    const type = q.getAttribute('data-type');
+    const a = saved.answer;
+    if (a !== null && a !== undefined) {
+      q.classList.add('answered');
+      markSaved(q, saved.updated_at, saved.updated_by);
+    }
+    if (type === 'short_text' || type === 'free_text') {
+      const el = q.querySelector('[data-answer]');
+      if (el && a !== null && a !== undefined) el.value = a;
+    } else if (type === 'choice' || type === 'multi_choice') {
+      const want = Array.isArray(a) ? a : (a === null || a === undefined ? [] : [a]);
+      q.querySelectorAll('[data-answer]').forEach(function (el) {
+        el.checked = want.indexOf(el.value) >= 0;
+        const opt = el.closest('.opt');
+        if (opt) opt.classList.toggle('sel', el.checked);
+      });
+    } else if (type === 'confidence') {
+      q.querySelectorAll('[data-conf] button').forEach(function (b) {
+        b.classList.toggle('on', b.getAttribute('data-v') === a);
+      });
+    } else if (type === 'order' && Array.isArray(a)) {
+      const list = q.querySelector('[data-order]');
+      a.forEach(function (id) {
+        const el = list.querySelector('.orderitem[data-id="' + CSS.escape(id) + '"]');
+        if (el) list.appendChild(el);
+      });
+    } else if (type === 'graph' && Array.isArray(a) && q._addEdge) {
+      a.forEach(function (edge) { q._addEdge(edge, edge); });
+    }
+    const reasoning = q.querySelector('[data-reasoning]');
+    if (reasoning && saved.reasoning && document.activeElement !== reasoning) {
+      reasoning.value = saved.reasoning;
+    }
+    const hasEvidence = !!(saved.evidence && saved.evidence.length);
+    showWorking(q, hasEvidence || !!saved.reasoning);
+
+    const box = q.querySelector('[data-ev]');
+    if (box && hasEvidence) {
+      const ev = saved.evidence[0];
+      const sel = box.querySelector('[data-evart]');
+      const ex = box.querySelector('[data-evexcerpt]');
+      const url = box.querySelector('[data-evurl]');
+      if (sel && document.activeElement !== sel) sel.value = ev.artifact_id || '';
+      if (ex && document.activeElement !== ex) ex.value = ev.excerpt || '';
+      if (url && document.activeElement !== url) url.value = ev.source_url || '';
+      wireOpenSource(box);
+      box.classList.add('filled');
+    }
+  }
+})();
+</script>
+{% endblock %}

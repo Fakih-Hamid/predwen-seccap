@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}{{ data.team.name }} · {{ t('assistant.title') }}{% endblock %}
+{% block content %}
+<div class="page wide" id="taboard"
+     data-poll="{{ url_for('assistant.api_board') }}"
+     data-t-online="{{ t('assistant.online') }}"
+     data-t-offline="{{ t('assistant.offline') }}"
+     data-t-posted="{{ t('assistant.posted') }}"
+     data-t-not-posted="{{ t('assistant.not_posted') }}"
+     data-t-unanswered="{{ t('assistant.unanswered') }}"
+     data-t-with-evidence="{{ t('assistant.with_evidence') }}"
+     data-t-no-evidence="{{ t('assistant.no_evidence') }}"
+     data-t-reasoning="{{ t('assistant.reasoning') }}"
+     data-t-confidence="{{ t('assistant.confidence') }}"
+     data-t-conf-low="{{ t('common.conf_low') }}"
+     data-t-conf-medium="{{ t('common.conf_medium') }}"
+     data-t-conf-high="{{ t('common.conf_high') }}"
+     data-t-no-observations="{{ t('assistant.no_observations') }}"
+     data-t-hints-taken="{{ t('assistant.hints_taken', n='{n}') }}"
+     data-t-elapsed="{{ t('assistant.elapsed', elapsed='{elapsed}', remaining='{remaining}') }}"
+     data-t-no-mission="{{ t('assistant.no_mission') }}"
+     data-t-team-locked="{{ t('assistant.team_locked') }}"
+     data-t-progress="{{ t('assistant.progress', answered='{answered}', questions='{questions}') }}"
+     data-t-locked-short="{{ t('assistant.locked_short') }}">
+
+  <div class="row" style="justify-content:space-between;align-items:baseline">
+    <div>
+      <div class="eyebrow">{{ t('assistant.title') }}</div>
+      <h1><span class="swatch {{ data.team.color }}" aria-hidden="true"></span> {{ data.team.name }}</h1>
+    </div>
+    <div class="row">
+      <a class="btn sm ghost" href="{{ url_for('assistant.pick') }}">{{ t('assistant.switch') }}</a>
+      {% if not lead %}
+      <form method="post" action="{{ url_for('assistant.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn sm ghost" type="submit">{{ t('assistant.sign_out') }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  <p class="small mut">{{ t('assistant.lead') }}</p>
+
+  <div class="panel tight">
+    <div class="row" id="ta-missions" style="gap:1rem;flex-wrap:wrap"></div>
+  </div>
+
+  <div class="work">
+    <div class="side">
+      <div class="panel tight">
+        <h3 class="eyebrow mut">{{ t('assistant.members') }}</h3>
+        <ul class="plain" id="ta-members"></ul>
+      </div>
+
+      <div class="panel tight">
+        <h3 class="eyebrow mut">{{ t('assistant.sources') }}</h3>
+        <ul class="plain" id="ta-sources"></ul>
+      </div>
+
+      <div class="panel tight">
+        <h3 class="eyebrow mut">{{ t('assistant.hints') }}</h3>
+        <p class="small" id="ta-hints"></p>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="panel tight">
+        <div class="row" style="justify-content:space-between;align-items:baseline">
+          <h3 class="eyebrow mut" id="ta-mission-title"></h3>
+          <span class="small mut" id="ta-clock"></span>
+        </div>
+        <div class="banner ok" id="ta-locked" hidden>{{ t('assistant.team_locked') }}</div>
+      </div>
+
+      <div class="panel tight">
+        <h3 class="eyebrow mut">{{ t('assistant.answers') }}</h3>
+        <div id="ta-answers"></div>
+      </div>
+
+      <div class="panel tight">
+        <h3 class="eyebrow mut">{{ t('assistant.observations') }}</h3>
+        <div class="obs" id="ta-obs"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="tasurvey">
+    <h2>{{ t('ta_survey.title') }}</h2>
+    <p class="small mut">{{ t('ta_survey.lead') }}</p>
+
+    <div class="field" style="max-width:26rem">
+      <span class="lb">{{ t('common.team') }}</span>
+      <div><span class="swatch {{ data.team.color }}" aria-hidden="true"></span> {{ data.team.name }}</div>
+    </div>
+
+    <label class="field" style="max-width:26rem">
+      <span class="lb">{{ t('ta_survey.period') }}</span>
+      <input type="text" id="ta-period" maxlength="120" value="{{ survey.period }}"
+             autocomplete="off">
+    </label>
+
+    <p class="hint">{{ t('ta_survey.scale_hint') }}</p>
+    <p class="small mut">
+      {%- for n in ['1', '2', '3', '4', '5'] -%}
+      {{ n }} = {{ t('ta_survey.scale_' ~ n) }}{% if not loop.last %} · {% endif %}
+      {%- endfor -%}
+    </p>
+
+    {% for name, keys in sections %}
+    <h3 class="eyebrow mut" style="margin-top:1.125rem">{{ t('ta_survey.sec_' ~ name) }}</h3>
+    <div class="scrollx">
+      <table class="data">
+        <tbody>
+          {% for q in keys %}
+          <tr>
+            <td style="width:52%">{{ t('ta_survey.q_' ~ q) }}</td>
+            <td>
+              <div class="seg" data-q="{{ q }}">
+                {% if q in frequency %}
+                {% for v in hint_scale %}
+                <button type="button" data-v="{{ v }}"
+                        class="{{ 'on' if survey.answers.get(q) == v }}">
+                  {{ t('ta_survey.na') if v == 'na' else t('ta_survey.hint_' ~ v) }}
+                </button>
+                {% endfor %}
+                {% else %}
+                {% for v in scale %}
+                <button type="button" data-v="{{ v }}"
+                        class="{{ 'on' if survey.answers.get(q) == v }}"
+                        title="{{ t('ta_survey.na') if v == 'na' else t('ta_survey.scale_' ~ v) }}">
+                  {{ t('ta_survey.na') if v == 'na' else v }}
+                </button>
+                {% endfor %}
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+
+    <label class="field" style="margin-top:1rem">
+      <span class="lb">{{ t('ta_survey.notes') }}</span>
+      <span class="hint small mut">{{ t('ta_survey.notes_hint') }}</span>
+      <textarea id="ta-notes" rows="4" maxlength="4000">{{ survey.notes }}</textarea>
+    </label>
+    <div class="row">
+      <button class="btn primary" id="ta-save">{{ t('ta_survey.save') }}</button>
+      <span class="small mut" id="ta-saved"></span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const root = document.getElementById('taboard');
+  const T = function (k) { return root.getAttribute('data-t-' + k) || ''; };
+  const fill = function (s, v) {
+    Object.keys(v).forEach(function (k) { s = s.split('{' + k + '}').join(v[k]); });
+    return s;
+  };
+  const el = function (tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  };
+  const minutes = function (sec) { return Math.max(1, Math.ceil(sec / 60)); };
+
+  function paint(d) {
+    const strip = document.getElementById('ta-missions');
+    strip.textContent = '';
+    d.missions.forEach(function (m) {
+      const chip = el('span', 'chip' + (m.state === 'open' ? ' on' : ''));
+      chip.textContent = m.title + ' · ' + fill(T('progress'), {answered: m.answered, questions: m.questions})
+        + (m.locked ? ' · ' + T('locked-short') : '');
+      strip.appendChild(chip);
+    });
+
+    const members = document.getElementById('ta-members');
+    members.textContent = '';
+    d.team.members.forEach(function (m) {
+      const li = el('li', 'small');
+      li.appendChild(el('b', null, m.nickname));
+      li.appendChild(document.createTextNode(' · ' + (m.online ? T('online') : T('offline'))
+        + ' · ' + (m.posted ? T('posted') : T('not-posted'))));
+      members.appendChild(li);
+    });
+
+    const cur = d.current;
+    document.getElementById('ta-mission-title').textContent = cur ? cur.title : T('no-mission');
+    document.getElementById('ta-clock').textContent = cur
+      ? fill(T('elapsed'), {elapsed: fmtTime(cur.elapsed), remaining: fmtTime(cur.remaining)}) : '';
+    document.getElementById('ta-locked').hidden = !(cur && cur.locked);
+
+    const sources = document.getElementById('ta-sources');
+    sources.textContent = '';
+    (cur ? cur.sources : []).forEach(function (s) {
+      const li = el('li', 'small' + (s.arrived ? '' : ' mut'));
+      li.appendChild(el('span', null, (s.arrived ? '● ' : '◌ ') + s.title));
+      sources.appendChild(li);
+    });
+
+    const hints = document.getElementById('ta-hints');
+    hints.textContent = cur ? fill(T('hints-taken'), {n: cur.hints_taken}) : '';
+
+    const answers = document.getElementById('ta-answers');
+    answers.textContent = '';
+    (cur ? cur.answers : []).forEach(function (a) {
+      const box = el('div', 'q');
+      const head = el('div', 'qhead');
+      head.appendChild(el('span', 'qn', 'Q' + a.n));
+      head.appendChild(el('span', 'prompt small', a.prompt));
+      box.appendChild(head);
+      const state = el('div', 'small');
+      if (a.answer === null || a.answer === undefined) {
+        state.className = 'small mut';
+        state.textContent = T('unanswered');
+      } else {
+        state.appendChild(el('b', null, Array.isArray(a.answer) ? a.answer.join(' · ') : String(a.answer)));
+        if (a.wants_evidence) {
+          state.appendChild(document.createTextNode(' — ' + (a.evidence.length ? T('with-evidence') : T('no-evidence'))));
+        }
+      }
+      box.appendChild(state);
+      a.evidence.forEach(function (e) {
+        const line = el('div', 'small mut', e.artifact + (e.excerpt ? ' — “' + e.excerpt + '”' : ''));
+        if (e.url) {
+          const a2 = el('a', null, ' ↗');
+          a2.href = e.url; a2.target = '_blank'; a2.rel = 'noopener noreferrer';
+          line.appendChild(a2);
+        }
+        box.appendChild(line);
+      });
+      if (a.reasoning) box.appendChild(el('div', 'small', T('reasoning') + ': ' + a.reasoning));
+      if (a.confidence) box.appendChild(el('div', 'small mut',
+        T('confidence') + ': ' + (T('conf-' + a.confidence) || a.confidence)));
+      answers.appendChild(box);
+    });
+
+    const obs = document.getElementById('ta-obs');
+    obs.textContent = '';
+    if (!cur || !cur.observations.length) obs.appendChild(el('p', 'small mut', T('no-observations')));
+    (cur ? cur.observations : []).forEach(function (o) {
+      const row = el('div', 'ob');
+      const who = el('div');
+      who.appendChild(el('span', 'who', o.nickname));
+      who.appendChild(el('span', 'when', new Date(o.at).toLocaleTimeString()));
+      row.appendChild(who);
+      row.appendChild(el('div', 'tx', o.text));
+      if (o.artifact) row.appendChild(el('span', 'art', o.artifact));
+      obs.appendChild(row);
+    });
+  }
+
+  paint({{ data | tojson }});
+  poll(root.getAttribute('data-poll'), paint);
+
+  const SAVED = {{ t('ta_survey.saved') | tojson }};
+  const answers = {};
+  const savedNote = document.getElementById('ta-saved');
+
+  const pushSurvey = debounce(async function () {
+    const r = await api('POST', '/assistant/api/survey', {
+      answers: answers,
+      period: document.getElementById('ta-period').value,
+      notes: document.getElementById('ta-notes').value
+    });
+    if (r.ok) savedNote.textContent = SAVED;
+  }, 600);
+
+  document.querySelectorAll('#tasurvey .seg[data-q]').forEach(function (seg) {
+    seg.addEventListener('click', function (ev) {
+      const b = ev.target.closest('button');
+      if (!b) return;
+      seg.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      answers[seg.getAttribute('data-q')] = b.getAttribute('data-v');
+      pushSurvey();
+    });
+  });
+  document.getElementById('ta-notes').addEventListener('input', pushSurvey);
+  document.getElementById('ta-save').addEventListener('click', pushSurvey);
+})();
+</script>
+{% endblock %}

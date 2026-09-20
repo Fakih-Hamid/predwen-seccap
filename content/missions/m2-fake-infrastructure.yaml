@@ -1,0 +1,727 @@
+slug: fake-infrastructure
+kind: mission
+order: 2
+version: "2.0"
+duration_seconds: 3600
+max_points: 100
+
+budget:
+  correctness: 35
+  evidence: 30
+  reasoning: 20
+  completeness: 10
+  speed: 5
+
+short_label: {ja: "M2", en: "M2"}
+title:
+  ja: "ミッション2 — 配布インフラ"
+  en: "Mission 2 — Distribution Infrastructure"
+subtitle:
+  ja: "公開情報と公開サービスから取得できる情報を使って、更新の配布先を調べる"
+  en: "Map the update distribution path from published records alone"
+
+narrative:
+  ja: |-
+    ミッション1で、クライアントの更新先が update.sakura-vpn-update.com に変更されていることが分かりました。次に、このホストに関連する配布インフラを調査してください。
+
+    この調査で行う操作は次の4つです。①DNS の名前解決、②RDAP／whois の登録情報照会、③公開URLへの通常の GET リクエスト（ヘッダーと本文の読み取り）、④公開アーカイブの閲覧。
+
+    ホスト同士を直接つなぐ強い根拠と、補助的な情報を分けて考えてください。
+  en: |-
+    Mission 1 showed that the client's update path was changed to update.sakura-vpn-update.com. Now investigate the distribution infrastructure connected to that host.
+
+    Four operations: (1) DNS name resolution; (2) RDAP or whois registration lookups; (3) an ordinary GET to a published URL, reading its headers and body; (4) reading a public archive.
+
+    Separate direct links from supporting context.
+
+objectives:
+  - ja: "レスポンスヘッダーから、他のホストへのリンクを確認する"
+    en: "Find links to other hosts in the response headers"
+  - ja: "配布マニフェストの記載内容を、実際のファイルと照合する"
+    en: "Read the distribution manifest and verify its claims"
+  - ja: "登録・コミット・公開の時刻を並べる"
+    en: "Compare the registration, commit and publication times"
+  - ja: "共有インフラから言えることと、言えないことを分ける"
+    en: "Separate what shared infrastructure can establish from what it cannot"
+
+loop:
+  - ja: "5分：資料を分担して読み、各自が気づいたことを最低1件ボードに書く"
+    en: "5 min — split the sources, read, and each post at least one observation"
+    seconds: 300
+  - ja: "35分：ホスト間のつながりを根拠付きでたどる"
+    en: "35 min — trace the links between hosts and record the evidence for each"
+    seconds: 2100
+  - ja: "12分：回答と確信度を決める"
+    en: "12 min — decide the answers and confidence"
+    seconds: 720
+  - ja: "8分：回答と根拠を見直して提出内容をロックする"
+    en: "8 min — review the answers and evidence, then lock the submission"
+    seconds: 480
+
+first_step:
+  ja: "まず update.sakura-vpn-update.com のレスポンスヘッダーを確認してください。資料ページに取得手順と記録済みのレスポンスがあります。次に見るべきホストの情報が含まれています。"
+  en: "Start with the response headers from update.sakura-vpn-update.com. The source page has the steps for fetching them and the recorded response. They contain the next leads."
+
+artifacts:
+  - id: update-service
+    how_to:
+      tool: {ja: "curl ／ ブラウザの開発者ツール（ネットワーク）", en: "curl / browser network panel"}
+      steps:
+        - ja: "必要な情報は HTTP レスポンスヘッダーにあります。"
+          en: "The information you need is in the HTTP response headers."
+        - ja: "ブラウザだけで確認する場合は、F12 →「ネットワーク」→ ページ再読み込み → 最初のリクエスト →「レスポンスヘッダー」の順に開いてください。"
+          en: "To do this in the browser alone: F12 → Network → reload the page → select the first request → Response Headers."
+        - ja: "ターミナルで取得する場合は、下のコマンドを実行してください。"
+          en: "To fetch it from a terminal, run the command below."
+        - ja: "X-Sakura- で始まるヘッダーを探し、値を記録してください。"
+          en: "Find the headers beginning with X-Sakura- and record their values."
+      commands:
+        - os: {ja: "macOS / Linux", en: "macOS / Linux"}
+          cmd: "curl -I https://sakura-update.pages.dev/"
+        - os: {ja: "Windows (PowerShell)", en: "Windows (PowerShell)"}
+          cmd: "(Invoke-WebRequest -Uri https://sakura-update.pages.dev/ -Method Head).Headers"
+      no_install:
+        ja: "読み込めない場合や、アクセスがブロックされたことを示すページが表示された場合は、スマートフォンのテザリングに接続して、もう一度試してください。curl が使えない場合は、ブラウザの開発者ツールだけで確認できます。"
+        en: "If this does not load, or you get a page saying it is blocked, connect to a phone hotspot and try again. If curl is unavailable, use the browser developer tools."
+    type: headers
+    icon: "⇄"
+    tool: "curl"
+    path: infrastructure/update_headers.json
+    external_url: "${m2_update_service}"
+    tool_name: "curl"
+    resource_type: first_party
+    title: {ja: "更新ゲートウェイのレスポンスヘッダー", en: "Update gateway response headers"}
+    note: {ja: "更新配布サービスの HTTP レスポンスで、ヘッダーと本文を含みます。このページに記載された配信元URLにアクセスすると、同じレスポンスを取得できます。", en: "The update gateway's HTTP response, headers and body together. The address this page is served from returns that same response unchanged."}
+    expected_pivot:
+      ja: "他のホストやリソースを示す独自ヘッダーを記録してください。"
+      en: "Record the custom headers that point to another host or resource."
+    safety_notice:
+      ja: "このミッションで案内された情報照会と、公開URLへの通常のアクセスだけを行ってください。スキャンや侵入テストは行わないでください。"
+      en: "Use only the lookups this mission describes and ordinary requests to published URLs. Do not scan or perform intrusion testing."
+    hints:
+      - id: pv_update_service_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "HTTP レスポンスヘッダーを開き、X-Sakura- で始まる項目を探してください。"
+          en: "Open the HTTP response headers and find the entries beginning with X-Sakura-."
+      - id: pv_update_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "X-Sakura- で始まるヘッダーのうち、値に別のホスト名が含まれるものを、それぞれ記録してください。各ヘッダーは、役割の異なるホストを示しています。"
+          en: "Of the X-Sakura- headers, record each one whose value contains another hostname. Each points at a host with a different role."
+
+  - id: channel-api
+    type: json
+    icon: "◈"
+    tool: "web browser"
+    path: infrastructure/update_channel.json
+    external_url: "${m2_channel_api}"
+    tool_name: "Web browser"
+    resource_type: first_party
+    title: {ja: "更新チャンネル API", en: "Update channel API"}
+    note: {ja: "クライアントが更新の有無を確認するために取得する情報です。", en: "The document the client fetches to decide what, if anything, to install."}
+    expected_pivot:
+      ja: "公開時刻とパッケージ URL を確認し、公開時刻をミッション1のコミット時刻と比較してください。"
+      en: "Take the publication time and package URL and compare them with the Mission 1 commit time."
+    hints:
+      - id: pv_channel_api_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "バージョン、公開時刻、2つの URL を確認してください。"
+          en: "Read the version, publication time and the two URLs."
+      - id: pv_channel_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "公開時刻とミッション1のコミット時刻を同じタイムゾーンにそろえて比較し、どちらが先か確認してください。コミット時刻を控えていない場合は、ミッション1のページを再度開いて確認できます。"
+          en: "Compare the publication time with the Mission 1 commit time in the same timezone and note which came first. If nobody wrote the commit time down, the Mission 1 page stays open and you can look it up there."
+
+  - id: cdn-manifest
+    type: json
+    icon: "▣"
+    tool: "web browser"
+    path: infrastructure/cdn_manifest.json
+    external_url: "${m2_cdn_manifest}"
+    tool_name: "Web browser"
+    resource_type: first_party
+    title: {ja: "配布マニフェスト（4.2.1）", en: "Distribution manifest (4.2.1)"}
+    note: {ja: "4.2.1 のリリースとともに公開された配布マニフェストです。", en: "The distribution manifest published alongside the 4.2.1 release."}
+    expected_pivot:
+      ja: "パッケージ URL、バージョン、SHA-256、署名の状態を確認してください。"
+      en: "Check the payload URL, version, SHA-256 and signature status."
+    hints:
+      - id: pv_cdn_manifest_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "署名ブロックと、パッケージの SHA-256 として記載されている値を確認してください。"
+          en: "Check the signature block and the SHA-256 declared for the package."
+      - id: pv_manifest_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "署名の有無と鍵IDは、別々の項目として確認してください。記載されたハッシュは、あとで自分たちが計算した値と照合してください。"
+          en: "Treat presence and key id as two separate findings. What the manifest declares is a claim; you settle it later against the value you compute yourself."
+
+  - id: payload
+    how_to:
+      tool: "sha256sum / Get-FileHash / certutil"
+      steps:
+        - ja: "ファイルをダウンロードしてください。実行しないでください。"
+          en: "Download the file. Do not run it."
+        - ja: "ダウンロード先のフォルダで、下のコマンドを使って SHA-256 を計算してください。"
+          en: "In the download folder, compute the SHA-256 with one of the commands below."
+        - ja: "表示された64桁の16進数を記録し、マニフェストの値と比較してください。"
+          en: "Record the 64-character hexadecimal value and compare it with the manifest."
+      commands:
+        - os: "macOS / Linux"
+          cmd: "sha256sum SakuraVPNUpdate_4.2.1.bin"
+        - os: {ja: "macOS（sha256sum が無い場合）", en: "macOS (if sha256sum is unavailable)"}
+          cmd: "shasum -a 256 SakuraVPNUpdate_4.2.1.bin"
+        - os: "Windows (PowerShell)"
+          cmd: 'Get-FileHash .\SakuraVPNUpdate_4.2.1.bin -Algorithm SHA256'
+        - os: "Windows (cmd)"
+          cmd: "certutil -hashfile SakuraVPNUpdate_4.2.1.bin SHA256"
+      no_install:
+        ja: "ハッシュ計算のためにファイルをオンラインサービスへアップロードしないでください。"
+        en: "Do not upload the file to an online service to calculate its hash."
+    type: text
+    icon: "⬢"
+    tool: "hash tool"
+    path: infrastructure/SakuraVPNUpdate_4.2.1.bin
+    external_url: "${m2_payload}"
+    tool_name: "sha256sum / Get-FileHash"
+    resource_type: first_party
+    title: {ja: "配布パッケージ", en: "Distributed package"}
+    note: {ja: "無害化されたファイルです。実行せず、ハッシュだけを確認してください。", en: "The file has been rendered harmless. Do not run it; take its hash."}
+    expected_pivot:
+      ja: "ファイルの SHA-256 を計算し、マニフェストの値と一致するか確認してください。"
+      en: "Compute the file's SHA-256 and compare it with the manifest value."
+    safety_notice:
+      ja: "ダウンロードしたファイルは実行しないでください。"
+      en: "Do not run the downloaded file."
+    hints:
+      - id: pv_payload_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "ファイルをダウンロードし、ターミナルから SHA-256 を計算してください。"
+          en: "Download the file and calculate its SHA-256 from a terminal."
+      - id: pv_payload_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "自分で計算したハッシュをマニフェストの値と比較してください。一致はファイルの同一性を示します。"
+          en: "Compare your calculated hash with the manifest value. A match shows that the files are identical."
+
+  - id: archive
+    type: json
+    icon: "≡"
+    tool: "web browser"
+    path: infrastructure/archive_index.json
+    external_url: "${m2_archive}"
+    tool_name: "Web browser"
+    resource_type: first_party
+    title: {ja: "フェイルオーバー先として指定されたホスト", en: "The host named as failover"}
+    note: {ja: "ディレクトリ一覧から、サイト自身が公開しているリンクだけをたどってください。", en: "Use the directory listing and follow only links published by the site."}
+    expected_pivot:
+      ja: "キャンペーン、ホスト、時刻、転送記録を照合してください。"
+      en: "Compare the campaign, host, timestamps and transfer records."
+    safety_notice:
+      ja: "公開されている情報だけを確認してください。パスの推測、総当たり、アップロードは行わないでください。"
+      en: "Read only exposed information. Do not guess paths, brute-force anything or upload files."
+    hints:
+      - id: pv_archive_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "jobs と logs のディレクトリを開き、それぞれの記録を確認してください。"
+          en: "Open the jobs and logs directories and inspect the records in each."
+      - id: pv_archive_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "ジョブ記録と転送ログを並べ、開始した転送と完了した転送を区別してください。"
+          en: "Put the job record beside the transfer log and distinguish transfer attempts from completed transfers."
+
+  - id: rdap
+    how_to:
+      tool: "ICANN Lookup (RDAP)"
+      steps:
+        - ja: "リンクを開くと ICANN Lookup の検索画面が表示されます。記録はまだ表示されません。"
+          en: "Opening the link gives you the ICANN Lookup search page. No record is shown yet."
+        - ja: "検索欄に sakura-vpn-update.com と入力し、「Lookup」を押してください。"
+          en: "Type sakura-vpn-update.com into the search box and press Lookup."
+        - ja: "表示された記録から、登録日、レジストラ、ネームサーバーを確認してください。"
+          en: "In the record it returns, check the creation date, the registrar and the nameservers."
+        - ja: "登録者名が公開されているかも確認してください。"
+          en: "Also check whether a registrant name is published."
+      commands:
+        - os: {ja: "macOS / Linux（任意）", en: "macOS / Linux (optional)"}
+          cmd: "whois sakura-vpn-update.com | grep -Ei 'creation|registrar:|name server|registrant'"
+      no_install:
+        ja: "コマンドは不要です。リンク先の ICANN Lookup だけでも確認できます。"
+        en: "No command is required. The linked ICANN Lookup page is enough."
+    type: json
+    icon: "◍"
+    tool: "ICANN Lookup (RDAP)"
+    path: infrastructure/rdap_snapshot.json
+    external_url: "${m2_rdap}"
+    tool_name: "ICANN Lookup (RDAP)"
+    resource_type: third_party_tool
+    title: {ja: "ドメイン登録情報（RDAP）", en: "Domain registration data (RDAP)"}
+    note: {ja: "このドメインに関するレジストリの記録です。登録日が記載されており、登録者情報の代わりにプライバシー保護サービスの情報が表示されています。", en: "The registry's own record for this domain: a registration date, and registrant details a privacy service stands in for."}
+    expected_pivot:
+      ja: "登録日を、コミットとパッケージ公開の時刻と比較してください。"
+      en: "Compare the registration date with the commit and package publication times."
+    hints:
+      - id: pv_rdap_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "登録日、レジストラ、ネームサーバーを探してください。"
+          en: "Find the creation date, registrar and nameservers."
+      - id: pv_rdap_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "登録日を時系列に含めてください。登録者を特定できる情報が公開されていない場合は、その点も記録してください。"
+          en: "Use the registration date in the timeline. If the record does not identify a registrant, record that limitation."
+
+  - id: dns
+    type: json
+    icon: "◉"
+    tool: "dig / nslookup"
+    path: infrastructure/dns_snapshot.json
+    run_it_yourself: "${m2_update_service}"
+    how_to:
+      tool: "dig / nslookup"
+      steps:
+        - ja: "調べるホスト名は3つです。1つは update.sakura-vpn-update.com です。残りの2つは、資料「更新ゲートウェイのレスポンスヘッダー」で確認してください。X-Sakura-Manifest のURLに含まれるホスト名と、X-Sakura-Failover に記載されたホスト名を使います。"
+          en: "Three hostnames to look up. One is update.sakura-vpn-update.com. The other two are on the source called \"Update gateway response headers\": the hostname inside the X-Sakura-Manifest URL, and the hostname X-Sakura-Failover gives directly."
+        - ja: "ターミナルまたは PowerShell を開いてください。"
+          en: "Open a terminal or PowerShell."
+        - ja: "下のコマンドの update.sakura-vpn-update.com を、それぞれのホスト名に置き換えて3回実行してください。"
+          en: "Run the command below three times, replacing update.sakura-vpn-update.com with each hostname in turn."
+        - ja: "返ってきた IP アドレスをホストごとに記録してください。"
+          en: "Record the returned IP addresses for each host."
+      commands:
+        - os: "macOS / Linux"
+          cmd: "dig +short update.sakura-vpn-update.com A"
+        - os: "Windows (PowerShell)"
+          cmd: "Resolve-DnsName update.sakura-vpn-update.com -Type A"
+        - os: "Windows (cmd)"
+          cmd: "nslookup -type=A update.sakura-vpn-update.com"
+      no_install:
+        ja: "ブラウザの DNS 参照サイトを使っても構いません。"
+        en: "You may also use a browser-based DNS lookup site."
+    title: {ja: "3つのホスト名の名前解決", en: "Resolve the three hosts"}
+    note: {ja: "3つのホストを名前解決し、返ってきた IP アドレスを記録してください。", en: "Resolve the three hostnames and record the IP addresses returned by each."}
+    hints:
+      - id: pv_dns_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "3つのホスト名を1つずつ名前解決し、結果を並べてください。"
+          en: "Resolve the three hostnames one at a time and put the results side by side."
+      - id: pv_dns_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "コマンドが使えない場合は DNS 参照サイトを使ってください。3つのホストについて、返された IP アドレスを比較してください。同じアドレスを無関係なサイトも共有しているか確認し、共有サービスのアドレスであれば、その一致だけで運用者を特定しないでください。"
+          en: "If the command is unavailable, use a DNS lookup site. All three should answer with the same addresses. Look those addresses up against an unrelated site as well: if they answer for that too, they are a large provider's shared addresses and they identify no operator."
+
+  - id: kitsune-job
+    type: json
+    icon: "◆"
+    tool: "job record"
+    path: infrastructure/kitsune42_job.json
+    external_url: "${m2_kitsune_job}"
+    tool_name: Web browser
+    resource_type: first_party
+    title: {ja: "アーカイブ上のキャンペーン記録", en: "Campaign record on the archive host"}
+    note: {ja: "archive ホストの /jobs/ から確認できる記録です。", en: "This record is available under /jobs/ on the archive host."}
+    expected_pivot:
+      ja: "archive ホストの /jobs/ を開き、キャンペーン記録を確認してください。"
+      en: "Open /jobs/ on the archive host and inspect the campaign record."
+    hints:
+      - id: pv_kitsune_job_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "記録の識別子、対象ホスト、関連する値を確認してください。"
+          en: "Check the identifiers, target host and related values in the record."
+      - id: pv_kitsune_job_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "この記録にあるホスト名を、ほかの資料に出てくるホスト名と照合してください。"
+          en: "Compare the hostname in this record with the hostnames shown in the other evidence."
+
+  - id: transfer-log
+    type: text
+    icon: "▤"
+    tool: "log viewer"
+    path: infrastructure/archive_transfer.log
+    external_url: "${m2_transfer_log}"
+    tool_name: Web browser
+    resource_type: first_party
+    title: {ja: "転送ログ（抜粋）", en: "Transfer log (extract)"}
+    note: {ja: "ステージングホストの転送記録です。1行が1件の出来事にあたり、1回の転送が複数行にまたがります。", en: "The staging host's transfer record. One line per recorded event, so a single transfer spans several lines."}
+    expected_pivot:
+      ja: "archive ホストの /logs/ を開き、転送ログを確認してください。"
+      en: "Open /logs/ on the archive host and inspect the transfer log."
+    hints:
+      - id: pv_transfer_log_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "ログを最後まで読み、event 項目を追ってください。転送の開始と完了は、それぞれ別の行に記録されています。"
+          en: "Read the log to the end and follow the event column. A transfer that started and a transfer recorded as complete are different lines."
+      - id: pv_transfer_log_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "完了した転送それぞれについて、送信元ホスト・時刻・サイズを控えてください。"
+          en: "For anything that completed, note where it came from, when, and how much left."
+
+questions:
+  - key: m2_manifest_host
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [update-service]
+    prompt: {ja: "更新ゲートウェイのレスポンスヘッダーが示すマニフェストのURLを答えてください。", en: "Give the manifest URL named in the update gateway response headers."}
+    placeholder: {ja: "https://…", en: "https://…"}
+    validator:
+      kind: contains
+      accept: ["cdn.sakura-vpn-update.com/manifest.json"]
+    hints:
+      - id: m2_manifest_host_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "更新ゲートウェイのレスポンスヘッダーを確認してください。資料ページに curl とブラウザの手順があります。", en: "Check the update gateway response headers. The source page shows both the curl and browser methods."}
+      - id: m2_manifest_host_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "X-Sakura- で始まるヘッダーのうち、別のホストを示すものは2つあります。そのうち、マニフェストを示すものを探してください。", en: "Two of the X-Sakura- headers name another host. Find the one of those that points to the manifest."}
+      - id: m2_manifest_host_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "パスまで含め、ヘッダーの値をそのまま入力してください。", en: "Copy the full header value, including the path."}
+
+  - key: m2_failover_host
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [update-service]
+    prompt: {ja: "同じレスポンスのヘッダーに、フェイルオーバー先として記載されているドメイン名を答えてください。", en: "Give the domain name shown as the failover in the same headers."}
+    placeholder: {ja: "ドメイン名", en: "domain name"}
+    validator:
+      kind: contains
+      accept: ["archive.sakura-vpn-update.com"]
+    hints:
+      - id: m2_failover_host_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "前の設問と同じレスポンスヘッダーを確認し、別のホストを示す項目を探してください。", en: "Use the same host-naming response headers as the previous question."}
+      - id: m2_failover_host_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "フェイルオーバー先を示すヘッダーの値は、パスのないドメイン名です。", en: "The failover header value is a domain name with no path."}
+      - id: m2_failover_host_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "CDN ではなく、フェイルオーバー用の値を選んでください。", en: "Use the failover value, not the CDN value."}
+
+  - key: m2_hash
+    type: short_text
+    category: correctness
+    points: 6
+    evidence_points: 5
+    accepted_evidence: [payload, cdn-manifest]
+    prompt: {ja: "配布パッケージの SHA-256 を答えてください。", en: "Give the SHA-256 of the distributed package."}
+    placeholder: {ja: "64桁の16進数", en: "64 hex characters"}
+    validator:
+      kind: contains
+      accept: ["ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31"]
+    hints:
+      - id: m2_hash_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "パッケージをダウンロードし、自分で SHA-256 を計算してください。OS 別のコマンドは資料ページにあります。", en: "Download the package and compute its SHA-256 yourself. The source page lists commands for each operating system."}
+      - id: m2_hash_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "計算した値を、マニフェストに書かれている SHA-256 と照合してください。", en: "Compare your calculated value with the SHA-256 declared in the manifest."}
+      - id: m2_hash_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "64桁の16進数だけを入力してください。", en: "Enter only the 64 hexadecimal characters."}
+
+  - key: m2_signature
+    type: choice
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [cdn-manifest]
+    prompt: {ja: "マニフェストの署名ブロックについて、正しいものはどれですか。", en: "Which statement about the manifest signature block is correct?"}
+    help:
+      ja: "署名ブロックには項目が2つあります。署名そのものの状態と、想定される鍵IDです。この2つの値を読んでから選択肢に戻ってください。「検証に失敗する」と言えるのは署名が存在する場合だけで、「ブロックが無い」と言えるのはこのブロック自体が無い場合だけです。"
+      en: "The signature block holds two fields: the state of the signature itself, and the key id it expects. Read both values, then go back to the options. \"Fails verification\" can only be said of a signature that is there, and \"no signature block at all\" can only be said if this block does not exist."
+    options:
+      - id: absent_expected_key
+        correct: true
+        label: {ja: "署名は存在しないが、想定される鍵IDとして SR-REL-2019 が記載されている", en: "No signature is present, while the expected key id SR-REL-2019 is stated"}
+      - id: invalid_sig
+        label: {ja: "署名は存在するが検証に失敗する", en: "A signature is present but fails verification"}
+      - id: valid_sig
+        label: {ja: "正しい署名が付いている", en: "A valid signature is present"}
+      - id: no_block
+        label: {ja: "署名ブロック自体が存在しない", en: "There is no signature block at all"}
+    hints:
+      - id: m2_signature_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "マニフェストの署名ブロックを開いてください。", en: "Open the signature block in the manifest."}
+      - id: m2_signature_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "署名の有無と、想定される鍵IDを別々の項目として確認してください。", en: "Check signature presence and expected key id as separate fields."}
+      - id: m2_signature_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "「署名がない」「署名があるが無効」「署名ブロックがない」を区別してください。", en: "Distinguish no signature, an invalid signature, and no signature block."}
+
+  - key: m2_campaign
+    type: short_text
+    category: correctness
+    points: 4
+    evidence_points: 4
+    accepted_evidence: [kitsune-job, archive]
+    prompt: {ja: "archive ホストの記録にあるキャンペーン識別子を答えてください。", en: "Give the campaign identifier recorded on the archive host."}
+    placeholder: {ja: "識別子", en: "identifier"}
+    validator:
+      kind: contains
+      accept: ["KITSUNE-42"]
+    hints:
+      - id: m2_campaign_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "フェイルオーバー先の archive ホストを開き、jobs ディレクトリを確認してください。", en: "Open the failover archive host and inspect the jobs directory."}
+      - id: m2_campaign_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ジョブ記録のキャンペーン識別子を探してください。", en: "Find the campaign identifier in the job record."}
+      - id: m2_campaign_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "大文字とハイフンを含め、記録どおりに入力してください。", en: "Copy it exactly, including capitals and the dash."}
+
+  - key: m2_shared_ip
+    type: choice
+    category: correctness
+    points: 6
+    evidence_points: 5
+    accepted_evidence: [dns]
+    needs_reasoning: true
+    prompt: {ja: "3つのホストを名前解決した結果から、言えることはどれですか。", en: "You resolved the three hosts. What does the result support?"}
+    help:
+      ja: "各選択肢について、無関係なサイト同士でも同じ IP アドレスが返ることがあるか考えてください。大手プロキシ事業者では、多数のサイトが IP アドレスを共有しています。そのため、IP アドレスの一致だけでは、同じ運用者であるとも、互いに無関係であるとも断定できません。"
+      en: "Ask of each option: would this also be true of two sites that have nothing to do with each other? A large proxy provider's shared addresses match between unrelated sites all the time, which is what rules out everything the match cannot carry. And since all three return the same addresses, it cannot support the opposite claim either."
+    options:
+      - id: shared_proxy
+        correct: true
+        label: {ja: "共有プロキシを利用しているという補助情報であり、運用主体の特定には使えない", en: "It is supporting context that they use a shared proxy, and it cannot identify an operator"}
+      - id: same_actor
+        label: {ja: "同一の攻撃者が運用している証拠になる", en: "It proves that one actor operates them"}
+      - id: same_server
+        label: {ja: "同じ物理サーバー上にある証拠になる", en: "It proves they are on the same physical server"}
+      - id: unrelated
+        label: {ja: "3つのホストは無関係である", en: "It proves the hosts are unrelated"}
+    hints:
+      - id: m2_shared_ip_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "3つのホスト名を名前解決し、返ってきた IP アドレスを並べてください。", en: "Resolve all three hostnames and put the returned IP addresses side by side."}
+      - id: m2_shared_ip_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "3つとも同じアドレスが返ります。次に、その同じアドレスがこの事件と無関係なサイトでも返るかどうかを確かめてください。", en: "The same addresses answer for all three. Next, check whether those same addresses also answer for a site that has nothing to do with this incident."}
+      - id: m2_shared_ip_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "大手プロキシ事業者の共有 IP なら、その一致だけでホストの運用者を特定することはできません。", en: "If it belongs to a large shared-proxy provider, the address match alone cannot identify the host operator."}
+
+  - key: m2_strongest_link
+    type: multi_choice
+    category: correctness
+    points: 4
+    evidence_points: 4
+    accepted_evidence: [update-service, cdn-manifest, kitsune-job, transfer-log, payload]
+    prompt: {ja: "3つのホストは、いずれも同じ登録ドメインのサブドメインです。それ以外に、これらのホストが共通の配布インフラを構成していることを示す強い根拠をすべて選んでください。", en: "All three hosts are subdomains of the same registered domain. Beyond that fact, select every piece of strong evidence that ties this infrastructure together."}
+    help:
+      ja: "各選択肢について、このインフラに固有の具体的な値に基づく根拠かどうかを確認してください。無関係な多数のサイトにも共通する情報だけでは、関連があるとは判断できません。"
+      en: "Ask of each option: does it rest on a specific value that only this infrastructure would carry? Anything a great many unrelated sites have in common in exactly the same way is not evidence of a link."
+    validator:
+      kind: set_equal
+    options:
+      - id: headers
+        correct: true
+        label: {ja: "他のホストを指す独自のレスポンスヘッダー", en: "Custom response headers naming the other hosts"}
+      - id: hash
+        correct: true
+        label: {ja: "マニフェストに記載された SHA-256 と、自分たちで計算したファイルのハッシュの一致", en: "The SHA-256 the manifest declares matches the file we hashed ourselves"}
+      - id: campaign
+        correct: true
+        label: {ja: "キャンペーンID・ホスト・時刻の一致", en: "Matching campaign id, host and timestamps"}
+      - id: shared_ips
+        label: {ja: "同じ Cloudflare の共有 IP アドレス", en: "The same shared Cloudflare addresses"}
+      - id: same_ns
+        label: {ja: "同じネームサーバー", en: "The same nameservers"}
+      - id: recent_reg
+        label: {ja: "最近のドメイン登録", en: "The recent domain registration"}
+    hints:
+      - id: m2_strongest_link_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ホスト間のつながりを書き出し、それぞれを裏づける資料を確認してください。", en: "List the links between the hosts and identify the source supporting each one."}
+      - id: m2_strongest_link_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ホスト自身が示すリンクや、特徴的な値の一致は強い根拠になります。共有サービスの一致は補助情報として扱います。", en: "Links published by the hosts and matching distinctive values are strong evidence. Shared-provider details are supporting context."}
+      - id: m2_strongest_link_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "無関係なサイト同士でも起こり得る一致は、強い根拠から外してください。", en: "Remove any match that could easily occur between unrelated sites."}
+
+  - key: m2_w_strength
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "強い根拠と補助的な情報を、どのように分けましたか。", en: "How did you separate strong links from supporting context?"}
+    placeholder: {ja: "ホスト間のつながりと、それを裏づける資料を書いてください。", en: "For each link, name the supporting source."}
+
+  - key: m2_w_timeline
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "ドメイン登録、コミット、パッケージ公開の順に、各出来事の日時をUTCで書いてください。", en: "Give the order of registration, commit and publication in UTC."}
+    placeholder: {ja: "1行に1件、時刻と出典を書いてください。", en: "One event per line, with its timestamp and source."}
+
+  - key: m2_w_coverage
+    type: free_text
+    category: completeness
+    points: 0
+    prompt: {ja: "調べたホストと、それぞれから得た事実を一覧にしてください。", en: "List the hosts you examined and the fact taken from each."}
+    placeholder: {ja: "ホストごとに1行。", en: "One line per host."}
+
+hints:
+  - id: m2_h1
+    level: orientation
+    cost: 0
+    label: {ja: "どこから手をつける？", en: "Where do we start?"}
+    text:
+      ja: "ミッション1で見つけた更新ホストから始め、HTTP レスポンスヘッダーを確認してください。"
+      en: "Start with the update host found in Mission 1 and inspect its HTTP response headers."
+  - id: m2_h2
+    level: pivot
+    cost: 0
+    label: {ja: "何と何をつなげばいい？", en: "What connects to what?"}
+    text:
+      ja: "更新ホストからマニフェスト、パッケージ、archive ホストへ順にたどってください。各つながりの根拠を記録します。"
+      en: "Follow the chain from update host to manifest, package and archive host. Record the evidence for each link."
+  - id: m2_h3
+    level: tool
+    cost: 0
+    label: {ja: "どのツールで何を確認する？", en: "Which tools should we use?"}
+    text:
+      ja: "HTTP レスポンスヘッダーの確認、DNS の名前解決、RDAP による登録情報の確認、ハッシュ計算を行います。各資料ページに、使用するツールと OS 別の手順があります。"
+      en: "The tools are for response headers, DNS, RDAP and hashing. Each source page has operating-system-specific steps. All checks are passive."
+  - id: m2_h4
+    level: method
+    cost: 0
+    label: {ja: "関係の強さをどう判断する？", en: "How do we judge link strength?"}
+    text:
+      ja: "ホスト間のつながりごとに、相手のホストを直接示す記録があるか確認してください。共有 IP アドレスやネームサーバーは補助情報として扱い、独自ヘッダー、ハッシュ、キャンペーンIDの一致を優先します。"
+      en: "For each link, check whether a record directly points to the other host. Treat shared IPs and nameservers as context, and give more weight to custom headers, matching hashes and campaign ids."
+  - id: m2_h5
+    level: recovery
+    cost: 0
+    label: {ja: "行き詰まった：詳しいヒント", en: "Stuck: detailed hint"}
+    text:
+      ja: "順番に確認してください。①更新ホストの X-Sakura- ヘッダーを読む。②マニフェストでバージョン、署名情報、SHA-256 を確認する。③パッケージの SHA-256 を自分で計算して照合する。④archive ホストの jobs と logs を確認する。⑤共有 IP を根拠に使う前に、その IP の所有者を調べる。"
+      en: "Work through these checks in order: (1) read the X-Sakura- headers on the update host; (2) check the version, signature information and SHA-256 in the manifest; (3) calculate the package SHA-256 and compare it; (4) inspect jobs and logs on the archive host; (5) check who owns any shared IP before using it as evidence."
+
+rubric:
+  - key: m2_r_strength
+    response_key: m2_w_strength
+    category: reasoning
+    points: 12
+    prompt: {ja: "強い根拠と補助的な情報を、どのように分けましたか。", en: "How did you separate strong links from supporting context?"}
+    placeholder: {ja: "ホスト間のつながりと、それを裏づける資料を書いてください。", en: "For each link, name the supporting source."}
+    criteria:
+      ja: "ヘッダー・ハッシュ・キャンペーンIDを強い根拠とし、共有IP・ネームサーバー・登録の新しさを補助情報としていれば満点。"
+      en: "Full marks for treating headers, hash and campaign id as strong evidence, and shared IPs, nameservers and recent registration as context."
+  - key: m2_r_timeline
+    response_key: m2_w_timeline
+    category: reasoning
+    points: 8
+    prompt: {ja: "ドメイン登録、コミット、パッケージ公開の順に、各出来事の日時をUTCで書いてください。", en: "Give the order of registration, commit and publication in UTC."}
+    placeholder: {ja: "1行に1件、時刻と出典を書いてください。", en: "One event per line, with its timestamp and source."}
+    criteria:
+      ja: "登録(08-27) → コミット(09-01 14:52Z) → 公開(09-02 00:10Z) の順で、各時刻に出典が添えられていれば満点。"
+      en: "Full marks for registration (08-27) → commit (09-01 14:52Z) → publication (09-02 00:10Z), each with the source it came from."
+  - key: m2_r_coverage
+    response_key: m2_w_coverage
+    category: completeness
+    points: 10
+    prompt: {ja: "調べたホストと、それぞれから得た事実を一覧にしてください。", en: "List the hosts you examined and the fact taken from each."}
+    placeholder: {ja: "ホストごとに1行。", en: "One line per host."}
+    criteria:
+      ja: "update・cdn・archive の3ホストすべてと、RDAP・DNS に触れていれば満点。"
+      en: "Full marks for all three hosts plus RDAP and DNS."

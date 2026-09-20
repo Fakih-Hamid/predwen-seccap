@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ t('assistant.title') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow">{{ t('app.name') }}</div>
+  <h1>{{ t('assistant.title') }}</h1>
+  <p class="small mut">{{ t('assistant.lead') }}</p>
+
+  {% if disabled %}
+  <div class="banner bad">{{ t('assistant.disabled') }}</div>
+  {% endif %}
+  {% if error %}
+  <div class="banner bad">{{ t('assistant.bad_password') }}</div>
+  {% endif %}
+
+  <form method="post" class="panel">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field">
+      <span class="lb">{{ t('assistant.password') }}</span>
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn primary wide" type="submit" {{ 'disabled' if disabled }}>{{ t('assistant.sign_in') }}</button>
+  </form>
+</div>
+{% endblock %}

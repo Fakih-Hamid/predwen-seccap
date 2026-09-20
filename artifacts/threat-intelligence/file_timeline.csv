@@ -1,0 +1,7 @@
+timestamp_utc,host,event,path,sha256,source
+2026-09-02T00:19:03Z,SR-DEV-077,download_complete,"C:\Users\s.nakamura\Downloads\SakuraVPNUpdate_4.2.1.bin",ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31,browser_cache
+2026-09-02T00:19:12Z,SR-DEV-077,rename,"C:\Users\s.nakamura\AppData\Local\Temp\SakuraVPNUpdate_4.2.1.exe",ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31,usn_journal
+2026-09-02T00:19:16Z,SR-DEV-077,process_start,"C:\Users\s.nakamura\AppData\Local\Temp\SakuraVPNUpdate_4.2.1.exe",ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31,edr
+2026-09-02T00:20:02Z,SR-DEV-077,file_create,"C:\Users\s.nakamura\AppData\Roaming\SakuraVPN\svcupd.exe",ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31,usn_journal
+2026-09-02T00:22:11Z,SR-FIN-014,download_complete,"C:\Users\a.tanaka\Downloads\SakuraVPNUpdate_4.2.1.bin",ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31,proxy_and_browser_cache
+2026-09-02T00:36:44Z,SR-DEV-077,file_create,"C:\ProgramData\SakuraVPN\cache\kumo_stage.zip",,usn_journal

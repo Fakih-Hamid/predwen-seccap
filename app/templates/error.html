@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ t('error.title_' ~ code) }} · {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow mut">{{ code }}</div>
+  <h1>{{ t('error.title_' ~ code) }}</h1>
+  <p class="lead">{{ t(body_key | default('error.body')) }}</p>
+  <a class="btn" href="{{ url_for('meta.landing') }}">{{ t('error.home') }}</a>
+</div>
+{% endblock %}

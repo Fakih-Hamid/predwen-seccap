@@ -1,0 +1,25 @@
+# PINNED EXACTLY, on purpose.
+#
+# This runs once, on one afternoon, in front of a room. `>=` means the image
+# built the week of the event is not the one that was rehearsed — a Flask or
+# SQLAlchemy minor release between the rehearsal and the day is a change nobody
+# chose, tested, or would be able to diagnose at 13:40.
+#
+# These are the versions the suite passes on. To move one: change it here, run
+# `python -m pytest -q` and the content validator, and rehearse again.
+#
+# Transitive dependencies are deliberately NOT pinned. Pinning them properly
+# means a lock file and a hash-checking install, which is the right answer for a
+# service that deploys continuously and the wrong one for a repository a
+# facilitator may have to `pip install -r` on a borrowed laptop an hour before
+# the room fills.
+Flask==3.1.3
+Flask-SQLAlchemy==3.1.1
+PyYAML==6.0.3
+python-dotenv==1.2.3
+pytest==9.1.1
+
+# Production only: the container runs Flask behind Gunicorn. Installed on a
+# developer machine too so `pip install -r` matches what the image gets —
+# except on Windows, where gunicorn has no wheel and is not used.
+gunicorn==23.0.0; platform_system != "Windows"

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}grade · {{ team.display_name }}{% endblock %}
+
+{% block content %}
+<div class="page wide">
+  <a class="btn sm ghost" href="{{ url_for('facilitator.console') }}">{{ t('grade.back') }}</a>
+  <div class="eyebrow" style="margin-top:0.75rem">{{ team.code }}</div>
+  <h1>{{ team.display_name }} · <span class="mono" id="total">{{ breakdown.total }}</span></h1>
+
+  {% if ev.scores_locked %}
+  <div class="banner">{{ t('grade.locked_banner') }}</div>
+  {% endif %}
+
+  {% for block in blocks %}
+  <div class="panel">
+    <div class="eyebrow">{{ block.slug }}</div>
+    <h2>{{ block.title }}</h2>
+
+    <div class="scrollx">
+      <table class="data">
+        <thead><tr><th>{{ t('grade.th_question') }}</th><th>{{ t('grade.th_answer') }}</th><th>{{ t('grade.th_expected') }}</th><th>{{ t('grade.th_evidence') }}</th></tr></thead>
+        <tbody>
+          {% for q in block.questions %}
+          <tr>
+            <td>
+              <div class="mono small">{{ q.key }}</div>
+              <div class="small mut">{{ q.prompt }}</div>
+            </td>
+            <td>
+              <div class="mono small">{{ q.answer }}</div>
+              {% if q.confidence %}<span class="chip">{{ q.confidence }}</span>{% endif %}
+              {% if q.reasoning %}<div class="small mut">{{ q.reasoning }}</div>{% endif %}
+            </td>
+            <td class="small mut">
+              {% if q.expected %}{{ q.expected }}
+              {% else %}<em>{{ t('grade.no_criteria') }}</em>{% endif %}
+            </td>
+            <td>
+              {% for e in q.evidence %}
+              <div class="small"><span class="art">{{ e.artifact_title }}</span></div>
+              {% if e.source_url %}<div class="small mut mono">{{ e.source_url }}</div>{% endif %}
+              <div class="small mut" style="white-space:pre-wrap">{{ e.excerpt }}</div>
+              {% if e.reasoning %}<div class="small mut">{{ e.reasoning }}</div>{% endif %}
+              {% else %}
+              <span class="mut small">—</span>
+              {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% for r in block.rubric %}
+    <div class="q" style="margin-top:0.875rem">
+      <div class="qhead">
+        <span class="qn mono">{{ r.key }}</span>
+        <span class="prompt">{{ r.prompt }}</span>
+        <span class="qp">{{ t('grade.th_max') }} {{ r.points | round | int }}</span>
+      </div>
+      {% if r.response_key %}
+      <div class="answer" data-response="{{ r.response_key }}" style="margin:.5rem 0">
+        <div class="small mut">{{ r.response_key }}</div>
+        {% if r.response %}
+        <div style="white-space:pre-wrap">{{ r.response }}</div>
+        {% else %}
+        <div class="mut">{{ t('grade.nothing_written') }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+      <ul class="small mut" style="padding-left:1.125rem">
+        {% for c in r.criteria %}<li>{{ c }}</li>{% endfor %}
+      </ul>
+      {% if r.notes %}<div class="hint">{{ r.notes }}</div>{% endif %}
+      <div class="row" style="margin-top:0.5rem">
+        <input type="text" class="mono" style="width:5.625rem" value="{{ r.awarded }}"
+               data-points data-key="{{ r.key }}" data-slug="{{ block.slug }}" data-max="{{ r.points }}">
+        <input type="text" placeholder="{{ t('grade.reason_optional') }}" data-reason style="flex:1">
+        <button class="btn sm primary" data-grade="{{ r.key }}">{{ t('grade.apply') }}</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  {% if report %}
+  <div class="panel">
+    <h2>{{ t('grade.report_title') }}</h2>
+    <div class="grid two">
+      <div><div class="eyebrow mut">{{ t('grade.f_verdict') }}</div><div style="white-space:pre-wrap">{{ report.verdict }}</div></div>
+      <div><div class="eyebrow mut">{{ t('grade.f_limitations') }}</div><div style="white-space:pre-wrap">{{ report.limitations }}</div></div>
+      <div><div class="eyebrow mut">{{ t('grade.f_confirmed') }}</div><div style="white-space:pre-wrap">{{ report.confirmed_facts }}</div></div>
+      <div><div class="eyebrow mut">{{ t('grade.f_inferences') }}</div><div style="white-space:pre-wrap">{{ report.inferences }}</div></div>
+      <div><div class="eyebrow mut">{{ t('grade.f_unknowns') }}</div><div style="white-space:pre-wrap">{{ report.unknowns }}</div></div>
+      <div><div class="eyebrow mut">{{ t('grade.f_scope') }}</div><div style="white-space:pre-wrap">{{ report.scope }}</div></div>
+    </div>
+    <a class="btn sm" href="{{ url_for('facilitator.present', team_id=team.id) }}" target="_blank">{{ t('grade.present') }}</a>
+  </div>
+  {% endif %}
+
+  <div class="panel">
+    <h2>{{ t('grade.override') }}</h2>
+    <p class="small mut">{{ t('grade.override_hint') }}</p>
+    <div class="row">
+      <select id="ovcat">
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+      <input type="text" class="mono" id="ovpoints" style="width:5.625rem" placeholder="{{ t('grade.override_points') }}">
+      <input type="text" id="ovreason" placeholder="{{ t('grade.override_reason') }}" style="flex:1">
+      <button class="btn sm warn" id="applyoverride">{{ t('grade.apply') }}</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>{{ t('grade.autoscore_title') }}</h2>
+    <p class="small mut">{{ t('grade.autoscore_lead') }}</p>
+    <div class="scrollx">
+      <table class="data">
+        <thead><tr><th>{{ t('grade.th_mission') }}</th><th>{{ t('grade.th_question') }}</th><th>{{ t('grade.th_answer') }}</th><th>{{ t('grade.th_verdict') }}</th><th class="num">{{ t('grade.th_awarded') }}</th><th class="num">{{ t('grade.th_max') }}</th></tr></thead>
+        <tbody>
+          {% for r in autoscore %}
+          <tr>
+            <td class="small mut">{{ r.mission_title }}</td>
+            <td>
+              <div class="mono small">{{ r.question }}</div>
+              <div class="small mut">{{ r.prompt }}</div>
+            </td>
+            <td class="mono small">{% if r.answered %}{{ r.answer }}{% else %}<span class="mut">—</span>{% endif %}</td>
+            <td class="small {{ 'mut' if not r.awarded }}">{{ r.why }}</td>
+            <td class="num {{ 'mut' if not r.awarded }}">{{ r.awarded }}</td>
+            <td class="num mut">{{ r.max_points }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>{{ t('grade.ledger_title') }}</h2>
+    <p class="small mut">{{ t('grade.ledger_lead') }}</p>
+    <div class="scrollx">
+      <table class="data">
+        <thead><tr><th>{{ t('grade.th_at') }}</th><th>{{ t('grade.th_mission') }}</th><th>{{ t('grade.th_source') }}</th><th>{{ t('grade.th_category') }}</th><th class="num">{{ t('grade.th_points') }}</th><th>{{ t('grade.th_reason') }}</th><th>{{ t('grade.th_actor') }}</th></tr></thead>
+        <tbody>
+          {% for e in events %}
+          <tr>
+            <td class="mono small">{{ e.created_at.strftime('%H:%M:%S') }}</td>
+            <td class="mono small">{{ e.mission_slug or '—' }}</td>
+            <td class="small">{{ e.source }}</td>
+            <td class="small">{{ e.category }}</td>
+            <td class="num" style="color:{{ 'var(--red)' if e.points < 0 else 'var(--green)' }}">{{ e.points }}</td>
+            <td class="small mut">{{ e.reason }}</td>
+            <td class="small mut">{{ e.actor }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const T_REASON = {{ t('grade.override_reason_missing') | tojson }};
+const TEAM_ID = {{ team.id | tojson }};
+
+document.querySelectorAll('[data-grade]').forEach(function (btn) {
+  btn.addEventListener('click', async function () {
+    const wrap = btn.closest('.q');
+    const input = wrap.querySelector('[data-points]');
+    const r = await api('POST', '/facilitator/api/grade', {
+      team_id: TEAM_ID,
+      mission_slug: input.getAttribute('data-slug'),
+      rubric_key: input.getAttribute('data-key'),
+      points: parseFloat(input.value || '0'),
+      reason: wrap.querySelector('[data-reason]').value
+    });
+    if (r.ok) {
+      document.getElementById('total').textContent = r.data.breakdown.total;
+      toast('applied ' + r.data.delta);
+    } else {
+      toast(r.data.error || 'error');
+    }
+  });
+});
+
+document.getElementById('applyoverride').addEventListener('click', async function () {
+  const reason = document.getElementById('ovreason').value.trim();
+  if (!reason) { toast(T_REASON); return; }
+  const r = await api('POST', '/facilitator/api/override', {
+    team_id: TEAM_ID,
+    category: document.getElementById('ovcat').value,
+    points: parseFloat(document.getElementById('ovpoints').value || '0'),
+    reason: reason
+  });
+  if (r.ok) { document.getElementById('total').textContent = r.data.breakdown.total; location.reload(); }
+  else toast(r.data.error || 'error');
+});
+</script>
+{% endblock %}

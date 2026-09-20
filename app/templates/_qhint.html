@@ -1,0 +1,24 @@
+<details class="qhint" data-stuck data-scope="q:{{ q.key }}"
+         data-total="{{ q.hints | length }}">
+  <summary>
+    <span class="lb">{{ t('mission.qhint') }}</span>
+    <span class="small mut" data-count
+          data-t="{{ t('mission.stuck_used', used='{used}', total='{total}') }}"></span>
+  </summary>
+
+  <div class="revealed" data-revealed role="status" aria-live="polite"></div>
+
+  <div class="stuckbar">
+    <button class="btn sm" type="button" data-reveal
+            data-t-first="{{ t('mission.qhint_first') }}"
+            data-t-more="{{ t('mission.qhint_more') }}"
+            aria-label="{{ t('mission.a11y_qhint', n=loop_index) }}">{{ t('mission.qhint_first') }}</button>
+  </div>
+
+  <p class="small mut" data-exhausted hidden>{{ t('mission.qhint_all') }}</p>
+
+  {% for h in q.hints %}
+  <span class="stuckrung" data-rung="{{ h.id }}"
+        data-level="{{ t('mission.qhint_lv' ~ loop.index) }}" hidden></span>
+  {% endfor %}
+</details>

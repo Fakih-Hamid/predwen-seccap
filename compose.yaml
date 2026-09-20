@@ -1,0 +1,23 @@
+services:
+  seccap:
+    build: .
+    image: predwen-seccap:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SECCAP_DATABASE_URI: sqlite:////data/seccap.db
+    ports:
+      - "127.0.0.1:8000:8000"     # bind to loopback; the proxy reaches it from the host
+    volumes:
+      - seccap-data:/data
+      - ./content:/srv/seccap/content:ro
+      - ./artifacts:/srv/seccap/artifacts:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  seccap-data:

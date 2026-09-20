@@ -1,0 +1,11 @@
+timestamp_utc,host,process,destination,port,protocol,action,bytes_out,bytes_in
+2026-09-02T00:18:42Z,SR-DEV-077,SecureConnect.exe,update.sakura-vpn-update.com,443,HTTPS,allowed,512,1843
+2026-09-02T00:19:01Z,SR-DEV-077,SecureConnect.exe,cdn.sakura-vpn-update.com,443,HTTPS,allowed,438,711
+2026-09-02T00:21:12Z,SR-DEV-077,svcupd.exe,archive.sakura-vpn-update.com,443,HTTPS,allowed,624,211
+2026-09-02T00:26:12Z,SR-DEV-077,svcupd.exe,archive.sakura-vpn-update.com,443,HTTPS,allowed,615,211
+2026-09-02T00:31:12Z,SR-DEV-077,svcupd.exe,archive.sakura-vpn-update.com,443,HTTPS,allowed,642,225
+2026-09-02T00:37:03Z,SR-DEV-077,svcupd.exe,archive.sakura-vpn-update.com,443,HTTPS,allowed,12582912,180
+2026-09-02T00:42:19Z,SR-DEV-077,svcupd.exe,archive.sakura-vpn-update.com,443,HTTPS,allowed,6928384,196
+2026-09-02T00:22:09Z,SR-FIN-014,SecureConnect.exe,cdn.sakura-vpn-update.com,443,HTTPS,allowed,438,711
+2026-09-02T00:24:51Z,SR-LAB-021,SecureConnect.exe,update.sakura-vpn-update.com,443,HTTPS,allowed,503,1843
+2026-09-02T00:25:00Z,SR-LAB-021,svchost.exe,time.windows.com,123,NTP,allowed,76,76

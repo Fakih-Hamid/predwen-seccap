@@ -1,0 +1,12 @@
+{
+  "snapshot_time": "2026-09-02T09:12:00Z",
+  "resolver": "Cloudflare DNS over HTTPS",
+  "records": {
+    "update.sakura-vpn-update.com": ["104.21.5.254", "172.67.134.25"],
+    "cdn.sakura-vpn-update.com": ["104.21.5.254", "172.67.134.25"],
+    "archive.sakura-vpn-update.com": ["104.21.5.254", "172.67.134.25"]
+  },
+  "ttl_seconds": 300,
+  "interpretation": "The three observed hosts use the same Cloudflare proxy addresses. Those addresses are shared infrastructure and must not be treated as actor attribution.",
+  "capture_note": "Cached DNS answer retained for comparison. Live answers may change while the domain remains on Cloudflare."
+}

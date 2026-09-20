@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow mut">{{ t('team.locked') }}</div>
+  <h1>{{ title }}</h1>
+  <div class="banner info">{{ t('mission.not_open') }}</div>
+
+  <div class="panel tight">
+    <h2 class="eyebrow mut">{{ t('mission.while_you_wait') }}</h2>
+    <p class="small">{{ t('mission.while_you_wait_body') }}</p>
+    <div class="row" style="gap:0.5rem;flex-wrap:wrap">
+      <a class="btn sm" href="{{ url_for('participant.briefing') }}">{{ t('nav.briefing') }}</a>
+      <a class="btn sm ghost" href="{{ url_for('participant.team_home') }}">{{ t('nav.team') }}</a>
+    </div>
+  </div>
+
+  {% if members %}
+  <div class="panel tight">
+    <h2 class="eyebrow mut">{{ t('team.members') }}</h2>
+    <div class="waitseats">
+      {% for m in members %}
+      <span class="seat{{ ' on' if m.online }}{{ ' me' if me and m.id == me.id }}">
+        <span class="av">{{ (m.nickname or '?')[0] | upper }}</span>
+        {{ m.nickname }}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

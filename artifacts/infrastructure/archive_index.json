@@ -1,0 +1,29 @@
+{
+  "source": "https://archive.sakura-vpn-update.com/",
+  "captured": "2026-09-02",
+  "directory_index_exposed": true,
+  "paths": [
+    "/jobs/",
+    "/uploads/",
+    "/logs/",
+    "/config/",
+    "/evidence/",
+    "/reports/"
+  ],
+  "jobs": [
+    "KITSUNE-42.json"
+  ],
+  "uploads": [
+    "kumo_stage_SR-DEV-077_20260902T003644Z.manifest.json"
+  ],
+  "logs": [
+    "transfer.log"
+  ],
+  "evidence_packs": [
+    "SR-DEV-077/"
+  ],
+  "reports": [
+    "SBX-K42-20260902-01.html"
+  ],
+  "reading_note": "One completed collection and upload is recorded, from SR-DEV-077. No completed upload is recorded for any other host."
+}

@@ -1,0 +1,21 @@
+{
+  "case_id": "SR-IR-2026-0902",
+  "collection_time": "2026-09-02T02:10:00Z",
+  "timezone": "UTC",
+  "primary_host": "SR-DEV-077",
+  "primary_user": "s.nakamura",
+  "scope_candidates": ["SR-DEV-077", "SR-FIN-014", "SR-LAB-021"],
+  "initial_alert": {
+    "time": "2026-09-02T00:21:19Z",
+    "source": "EDR",
+    "rule": "Signed application spawned hidden encoded PowerShell",
+    "severity": "high"
+  },
+  "known_sample": {
+    "download_name": "SakuraVPNUpdate_4.2.1.bin",
+    "execution_name": "SakuraVPNUpdate_4.2.1.exe",
+    "sha256": "ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31",
+    "note": "The updater changed the extension without changing the bytes."
+  },
+  "analyst_note": "A host appearing in network telemetry is not automatically compromised. Require execution or persistence evidence before declaring compromise."
+}

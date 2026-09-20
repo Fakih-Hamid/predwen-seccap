@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ t('join.title') }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow">{{ t('app.name') }}</div>
+  <h1>{{ t('join.title') }}</h1>
+
+  {% if error %}
+  <div class="banner bad">{{ t('join.err_' ~ error) }}</div>
+  {% endif %}
+
+  {% set pteams = preview_teams | default([]) %}
+  {% if pteams %}
+  <div class="panel tight">
+    <div class="eyebrow">Admin preview · one-click seat</div>
+    <p class="small mut">
+      Session <span class="mono">{{ ev.code }}</span>. Taking a seat here reuses
+      the same <span class="mono">admin</span> member each time, so switching
+      teams does not fill the console with abandoned seats.
+    </p>
+    <div class="row">
+      {% for team in pteams %}
+      <form method="post" action="{{ url_for('admin.act') }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="sit">
+        <input type="hidden" name="team_id" value="{{ team.id }}">
+        <input type="hidden" name="next" value="briefing">
+        <button class="btn sm {{ 'primary' if my_team and my_team.id == team.id }}" type="submit">
+          {{ team.display_name }} · <span class="mono">{{ team.code }}</span>
+        </button>
+      </form>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% set jteams = teams | default([]) %}
+  {% if not jteams %}
+  <div class="banner">{{ t('join.no_session') }}</div>
+  {% else %}
+  <form method="post" class="panel">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <fieldset class="teampick">
+      <legend class="lb">{{ t('join.pick_team') }}</legend>
+      {% for team in jteams %}
+      <label class="teamopt">
+        <input type="radio" name="team_id" value="{{ team.id }}" required>
+        <span class="swatch {{ team.color }}" aria-hidden="true"></span>
+        <span class="tl">{{ team.name }}</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+
+    <label class="field">
+      <span class="lb">{{ t('join.team_code') }}</span>
+      <span class="hint small mut">{{ t('join.team_code_hint') }}</span>
+      <input class="code" type="text" name="team_code" autocomplete="off"
+             inputmode="latin" maxlength="16" required>
+    </label>
+
+    <label class="field">
+      <span class="lb">{{ t('join.nickname') }}</span>
+      <input type="text" name="nickname" autocomplete="off" maxlength="40" required>
+    </label>
+
+    <button class="btn primary wide" type="submit">{{ t('join.submit') }}</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

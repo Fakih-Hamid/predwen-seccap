@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ slide.team.name }} · {{ t('presentation.title') }}{% endblock %}
+{% block bodyclass %}{{ 'projector slide' if projector }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="eyebrow">{{ t('presentation.title') }}</div>
+  <h1{% if slide.team.color %} style="color:var(--team-{{ slide.team.color }})"{% endif %}>{{ slide.team.name }}</h1>
+
+  {% if not slide.verdict %}
+  <div class="banner">{{ t('presentation.empty') }}</div>
+  {% endif %}
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('presentation.verdict') }}</div>
+    <div class="slide-body" style="font-size:1.25rem;font-weight:600">{{ slide.verdict }}</div>
+  </div>
+
+  <div class="grid two">
+    <div class="panel">
+      <div class="eyebrow mut">{{ t('presentation.timeline') }}</div>
+      <ol class="slide-body" style="padding-left:1.25rem;margin:0">
+        {% for line in slide.timeline %}<li>{{ line }}</li>{% endfor %}
+      </ol>
+    </div>
+
+    <div class="panel">
+      <div class="eyebrow mut">{{ t('presentation.actions') }}</div>
+      <ol class="slide-body" style="padding-left:1.25rem;margin:0">
+        {% for line in slide.actions %}<li>{{ line }}</li>{% endfor %}
+      </ol>
+      {% if slide.actions_later %}
+      <div class="eyebrow mut" style="margin-top:0.75rem">{{ t('presentation.actions_later') }}</div>
+      <ol class="slide-body" style="padding-left:1.25rem;margin:0">
+        {% for line in slide.actions_later %}<li>{{ line }}</li>{% endfor %}
+      </ol>
+      {% endif %}
+      {% if slide.response_other %}
+      <div class="small mut" style="margin-top:0.5rem;white-space:pre-wrap">{{ slide.response_other }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('presentation.evidence') }}</div>
+    {% for e in slide.evidence %}
+    <div class="ob">
+      <div class="who">{{ e.artifact }} <span class="when">{{ e.mission }}</span></div>
+      <div class="tx">{{ e.excerpt }}</div>
+      {% if e.reasoning %}<div class="small mut">{{ e.reasoning }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    {% if not slide.evidence %}<div class="mut small">{{ t('evidence.empty') }}</div>{% endif %}
+  </div>
+
+  <div class="grid three">
+    <div class="panel">
+      <div class="eyebrow mut">{{ t('final.confirmed') }}</div>
+      <div class="small" style="white-space:pre-wrap">{{ slide.confirmed_facts }}</div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow mut">{{ t('final.inferences') }}</div>
+      <div class="small" style="white-space:pre-wrap">{{ slide.inferences }}</div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow mut">{{ t('presentation.uncertainty') }}</div>
+      <div class="small" style="white-space:pre-wrap">{{ slide.unknowns }}</div>
+      <hr class="rule">
+      <div class="small" style="white-space:pre-wrap">{{ slide.limitations }}</div>
+    </div>
+  </div>
+
+  {% if is_facilitator or ev.scores_locked %}
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('presentation.score') }}</div>
+    <div class="row">
+      {% for key, value in slide.score.by_category.items() %}
+      <span class="chip">{{ t('scoring.name_' ~ key) }} · {{ value }}</span>
+      {% endfor %}
+      <span class="chip ok">{{ t('scoreboard.total') }} · {{ slide.score.total }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

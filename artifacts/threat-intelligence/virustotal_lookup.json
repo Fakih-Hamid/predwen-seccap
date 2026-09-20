@@ -1,0 +1,40 @@
+{
+  "capture_note": "A DATED CAPTURE of a public lookup, not a live report and not a sandbox result. It observes nothing about what any file does.",
+  "warning": "This is what the lookup showed at the capture time below. The live result may differ today — a report may now exist, or the detection counts may have changed. Neither outcome changes the answer to the question this artifact supports: a lookup result is not the evidence your conclusion rests on.",
+  "query": {
+    "type": "file_hash",
+    "algorithm": "sha256",
+    "value": "ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31",
+    "url_consulted": "https://www.virustotal.com/gui/file/ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31",
+    "method": "read-only page view, signed out"
+  },
+  "captured": "2026-09-02T09:41:00Z",
+  "timezone": "UTC",
+  "observed_result": {
+    "state": "not_found",
+    "displayed": "Item not found",
+    "detections": null,
+    "engines_reporting": 0,
+    "first_submission": null,
+    "last_analysis": null,
+    "note": "No account was used, nothing was submitted, and no analysis was requested. The service simply has no record of this hash."
+  },
+  "what_this_supports": [
+    "No engine on this service had a verdict on record for this hash at the capture time.",
+    "The file had not been submitted to this service by anyone before the capture time."
+  ],
+  "what_this_does_not_support": [
+    "That the file is safe. A service with no record of a file has not examined it, and 'not examined' is not 'examined and found clean'.",
+    "That the file is malicious. This result carries no verdict in either direction.",
+    "Anything about what the file does. This service aggregates verdicts from other engines; it is not an observation of behaviour.",
+    "Anything about the incident. The behaviour evidence is the SBX-K42 sandbox report and the SR-DEV-077 endpoint traces, and it stays that way whatever this lookup shows."
+  ],
+  "why_absence_is_not_evidence": "A file that nobody has ever uploaded looks exactly like a file that is harmless, because in both cases there is nothing to display. A newly built package used against one organisation is the ordinary case for the first: it is unknown because it is new and narrow, not because it is safe. Reading an empty result as a clean bill of health is the specific error this mission exists to catch.",
+  "safety": [
+    "Search by hash only.",
+    "Do not upload the file.",
+    "Do not submit a URL.",
+    "Do not click Reanalyze.",
+    "Uploading a file to a public service shares it with third parties and cannot be undone. That habit matters far more outside this room than in it."
+  ]
+}

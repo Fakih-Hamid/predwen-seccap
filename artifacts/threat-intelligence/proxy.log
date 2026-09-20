@@ -1,0 +1,12 @@
+2026-09-02T00:18:42Z host=SR-DEV-077 user=s.nakamura method=GET url=https://update.sakura-vpn-update.com/api/channel.json status=200 bytes=1843
+2026-09-02T00:19:01Z host=SR-DEV-077 user=s.nakamura method=GET url=https://cdn.sakura-vpn-update.com/releases/SakuraVPNUpdate_4.2.1.bin status=200 bytes=711 sha256=ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31
+2026-09-02T00:21:12Z host=SR-DEV-077 user=s.nakamura method=POST url=https://archive.sakura-vpn-update.com/a/checkin status=200 bytes_out=624
+2026-09-02T00:26:12Z host=SR-DEV-077 user=s.nakamura method=POST url=https://archive.sakura-vpn-update.com/a/checkin status=200 bytes_out=615
+2026-09-02T00:31:12Z host=SR-DEV-077 user=s.nakamura method=POST url=https://archive.sakura-vpn-update.com/a/checkin status=200 bytes_out=642
+2026-09-02T00:37:03Z host=SR-DEV-077 user=s.nakamura method=PUT url=https://archive.sakura-vpn-update.com/uploads/kumo_stage_SR-DEV-077_20260902T003644Z.zip status=202 bytes_out=12582912
+2026-09-02T00:42:19Z host=SR-DEV-077 user=s.nakamura method=PUT url=https://archive.sakura-vpn-update.com/uploads/kumo_stage_SR-DEV-077_20260902T003644Z.zip status=201 bytes_out=6928384
+2026-09-02T00:22:09Z host=SR-FIN-014 user=a.tanaka method=GET url=https://cdn.sakura-vpn-update.com/releases/SakuraVPNUpdate_4.2.1.bin status=200 bytes=711 sha256=ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31
+2026-09-02T00:24:51Z host=SR-LAB-021 user=lab.service method=GET url=https://update.sakura-vpn-update.com/api/channel.json status=200 bytes=1843
+
+# No request to archive.sakura-vpn-update.com was observed from SR-FIN-014 or SR-LAB-021 in the retained window.
+# 保持期間中、SR-FIN-014 と SR-LAB-021 から archive.sakura-vpn-update.com への通信は観測されていません。

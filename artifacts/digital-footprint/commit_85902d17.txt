@@ -1,0 +1,38 @@
+# Saved copy of a public commit
+# Source: https://github.com/sora-dev77/sakura-secureconnect-client/commit/85902d17af7621d58ddaad0f1a306ffc1bff23fb
+# Captured: 2026-08-28 UTC
+
+commit  85902d17af7621d58ddaad0f1a306ffc1bff23fb
+parent  d10897a94b735d367f2fb998d7aace11d457fd0e
+Author  Sora Nakamura <321898879+sora-dev77@users.noreply.github.com>
+Date    2026-09-01T14:52:00Z   (2026-09-01 23:52 +09:00)
+Subject Fix APAC update fallback
+
+--- a/src/update_config.py
++++ b/src/update_config.py
+@@ -1,7 +1,7 @@
+ """Update-channel policy for managed clients."""
+
+ CHANNEL = "stable"
+-UPDATE_CHANNEL_URL = "https://updates.sakura-robotics.example/secureconnect/stable.json"
++UPDATE_CHANNEL_URL = "https://update.sakura-vpn-update.com/api/channel.json"
+ TRUSTED_KEY_ID = "SR-REL-2019"
+ REQUIRE_SIGNATURE = True
+-ALLOW_UNSIGNED_RECOVERY = False
++ALLOW_UNSIGNED_RECOVERY = True
+
+--- a/tests/test_update_config.py
++++ b/tests/test_update_config.py
+@@ -1,7 +1,6 @@
+ from src import update_config
+
+
+-def test_stable_channel_requires_signatures():
++def test_stable_channel_configuration():
+     assert update_config.CHANNEL == "stable"
+-    assert update_config.REQUIRE_SIGNATURE is True
+-    assert update_config.ALLOW_UNSIGNED_RECOVERY is False
++    assert update_config.UPDATE_CHANNEL_URL.startswith("https://")
+
+# The commit is recorded under this account. That is not the same statement as
+# "this person made the change" — see the account/operator distinction.

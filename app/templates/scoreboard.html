@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}{{ t('scoreboard.title') }} · {{ t('app.name') }}{% endblock %}
+{% block bodyclass %}{{ 'projector' if projector }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="eyebrow">{{ ev.title if ev else t('app.name') }}</div>
+{% if projector %}
+<div class="projmarks">
+  <img src="{{ asset('naist.png') }}" alt="NAIST"
+       onerror="this.remove()">
+  <img src="{{ asset('iplab.png') }}"
+       alt="IPLab, Laboratory for Cyber Resilience" onerror="this.remove()">
+</div>
+{% endif %}
+
+<h1>{{ t('scoreboard.title') }} <span class="provisional" id="prov"></span></h1>
+<p class="maxline small mut" id="maxline"></p>
+
+  <div id="hidden" class="banner" style="display:none">{{ t('scoreboard.hidden') }}</div>
+
+  <div class="scrollx">
+    <table class="board" id="board" style="display:none">
+      <thead><tr id="head"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <p class="small mut" id="tiebreak" style="display:none">{{ t('scoreboard.tiebreak') }}</p>
+
+  <div class="panel" id="awardbox" style="display:none">
+    <div class="eyebrow mut">{{ t('scoreboard.awards') }}</div>
+    <div class="row" id="awards"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const T = {
+  final: {{ t('scoreboard.final') | tojson }},
+  maxima: {{ t('scoreboard.maxima', base='{base}', bonus='{bonus}',
+               total='{total}') | tojson }},
+  rank: {{ t('scoreboard.rank') | tojson }},
+  team: {{ t('common.team') | tojson }},
+  total: {{ t('scoreboard.total') | tojson }},
+  awards: {
+    {% for k in ['overall','evidence','technical','response','teamwork','presentation'] %}
+    {{ k | tojson }}: {{ t('scoreboard.award_' ~ k) | tojson }}{{ "," if not loop.last }}
+    {% endfor %}
+  }
+};
+
+let wasHidden = null;
+
+let lastPainted = null;
+
+function cell(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = text;
+  return n;
+}
+
+function paintHead(columns) {
+  const head = document.getElementById('head');
+  head.textContent = '';
+  head.appendChild(cell('th', 'num', T.rank));
+  head.appendChild(cell('th', null, T.team));
+  columns.forEach(function (c) { head.appendChild(cell('th', 'num', c.label)); });
+  head.appendChild(cell('th', 'num total', T.total));
+}
+
+function paintRows(data) {
+  const body = document.getElementById('rows');
+  body.textContent = '';
+  const reveal = wasHidden === true;          /* only on the transition */
+  const n = data.rows.length;
+
+  data.rows.forEach(function (row) {
+    const tr = cell('tr', 'c-' + row.color);
+    tr.appendChild(cell('td', 'num rk', row.rank));
+    tr.appendChild(cell('td', 'nm', row.name));
+    data.columns.forEach(function (c) {
+      const v = row.by_mission[c.slug];
+      tr.appendChild(cell('td', 'num', v === undefined ? '—' : v));
+    });
+    tr.appendChild(cell('td', 'num total', row.total));
+
+    if (reveal) {
+      tr.classList.add('reveal');
+      tr.style.animationDelay = ((n - row.rank) * 0.28) + 's';
+    }
+    body.appendChild(tr);
+  });
+}
+
+poll('/api/scoreboard', function (d) {
+  document.getElementById('hidden').style.display = d.visible ? 'none' : 'block';
+  document.getElementById('board').style.display = d.visible ? '' : 'none';
+  document.getElementById('tiebreak').style.display = d.visible ? '' : 'none';
+  document.getElementById('prov').textContent = (d.visible && d.locked) ? T.final : '';
+
+  const maxline = document.getElementById('maxline');
+  if (d.visible && d.maxima) {
+    maxline.textContent = T.maxima
+      .replace('{base}', d.maxima.base)
+      .replace('{bonus}', d.maxima.collective_bonus)
+      .replace('{total}', d.maxima.total);
+  } else {
+    maxline.textContent = '';
+  }
+
+  if (d.visible) {
+    const fingerprint = JSON.stringify([d.columns, d.rows, d.locked]);
+    if (fingerprint !== lastPainted) {
+      paintHead(d.columns || []);
+      paintRows({rows: d.rows || [], columns: d.columns || []});
+      lastPainted = fingerprint;
+    }
+  } else {
+    lastPainted = null;
+  }
+  wasHidden = !d.visible;
+
+  const awards = d.awards || [];
+  document.getElementById('awardbox').style.display = awards.length ? 'block' : 'none';
+  const box = document.getElementById('awards');
+  box.textContent = '';
+  awards.forEach(function (a) {
+    const chip = cell('span', 'chip ok', (T.awards[a.key] || a.key) + ' · ' + a.team);
+    box.appendChild(chip);
+  });
+});
+</script>
+{% endblock %}

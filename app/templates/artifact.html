@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ artifact.title }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="backbar">
+    <a class="btn sm ghost" href="{{ url_for('participant.mission', slug=mission_slug) }}">← {{ t('artifact.back') }}</a>
+    <span class="small mut">{{ mission_title }}</span>
+  </div>
+
+  <div class="eyebrow" style="margin-top:0.875rem">{{ artifact.tool or artifact.type }}</div>
+  <h1>{{ artifact.title }}</h1>
+  {% if artifact.note %}
+  <div class="banner info"><strong>{{ t('artifact.note') }}</strong> · {{ artifact.note }}</div>
+  {% endif %}
+
+
+  {% if launch %}
+  <div class="panel launch">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="eyebrow">{{ launch.tool_name or t('artifact.external') }}</div>
+        {% if launch.expected_pivot %}
+        <p class="lead" style="margin:.375rem 0 0">{{ launch.expected_pivot }}</p>
+        {% endif %}
+      </div>
+      {% if launch.published %}
+      <a class="btn primary" href="{{ launch.url }}" target="_blank" rel="noopener noreferrer">
+        {{ t('artifact.open_external') }} ↗
+      </a>
+      {% else %}
+      <button class="btn" disabled>{{ t('artifact.open_external') }} ↗</button>
+      {% endif %}
+    </div>
+
+    {% if not launch.published %}
+    <div class="banner info" style="margin-top:.75rem">
+      <strong>{{ t('artifact.unpublished_title') }}</strong> · {{ t('artifact.unpublished_body') }}
+    </div>
+    {% endif %}
+
+    {% if launch.safety_notice %}
+    <div class="banner bad" style="margin-top:.75rem">
+      <strong>{{ t('artifact.safety') }}</strong> · {{ launch.safety_notice }}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if shell_unavailable %}
+  <div class="banner info">
+    <strong>{{ t('artifact.unpublished_title') }}</strong> · {{ t('artifact.shell_unavailable') }}
+  </div>
+  {% endif %}
+
+  {% if artifact.how_to %}
+  {% with how_to = artifact.how_to, heading_level = 2 %}{% include "_howto.html" %}{% endwith %}
+  {% endif %}
+
+  {% if pivot_hints %}
+  {% with ladder = pivot_hints, scope = artifact.id, heading_level = 2 %}
+    {% include "_stuck.html" %}
+  {% endwith %}
+  {% endif %}
+
+  {% if not show_saved_copy %}
+
+  {% elif artifact.missing %}
+  <div class="banner bad">{{ t('artifact.missing') }}</div>
+
+  {% else %}
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div class="eyebrow mut">{{ t('artifact.saved_copy') }} · <span class="mono">{{ artifact.filename }}</span></div>
+      <a class="btn sm" href="{{ url_for('participant.artifact_download', artifact_id=artifact.id) }}">
+        {{ t('artifact.download') }}
+      </a>
+    </div>
+    {% if artifact.data is not none %}
+    <div class="jsonview scrollx" id="tree"></div>
+    {% elif artifact.binary %}
+    <p class="hint">{{ t('artifact.binary_body') }}</p>
+    {% else %}
+    <div class="scrollx"><pre class="raw">{{ artifact.body }}</pre></div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if pivot_hints %}
+<script>
+(function () {
+  const box = document.querySelector('[data-stuck]');
+  const slug = {{ mission_slug | tojson }};
+  wireStuck(box, slug);
+  (async function () {
+    const r = await api('GET', '/api/mission-state?mission_slug='
+                        + encodeURIComponent(slug));
+    if (r.ok && r.data && (r.data.hints_taken || []).length && box.restore) {
+      await box.restore(r.data.hints_taken);
+    }
+  })();
+})();
+</script>
+{% endif %}
+{% if artifact.data is not none %}
+<script>
+renderJSON(document.getElementById('tree'), {{ artifact.data | tojson }});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{
+  "source": "Sakura Robotics — GitHub organization audit export (extract)",
+  "captured": "2026-09-02T02:40:00Z",
+  "timezone": "UTC",
+  "note": "Addresses are from 192.0.2.0/24 (TEST-NET-1, RFC 5737), reserved for documentation and routable nowhere.",
+
+  "credential_inventory": [
+    {
+      "credential_id": "PAT-7f31c0",
+      "type": "personal_access_token",
+      "associated_account": "sora-dev77",
+      "fingerprint": "sha256:1f3a…c904 (truncated)",
+      "created": "2026-05-14T02:11:00Z",
+      "scopes": ["repo", "workflow"],
+      "last_rotated": null,
+      "status": "revoked",
+      "revoked_at": "2026-09-02T02:31:00Z",
+      "revoked_by": "security-operations",
+      "revocation_reason": "Used for an unauthorized push; treated as compromised."
+    }
+  ],
+
+  "authentication_events": [
+    {
+      "at": "2026-08-14T01:02:11Z",
+      "account": "sora-dev77",
+      "method": "password + 2FA",
+      "source_ip": "192.0.2.24",
+      "user_agent": "Mozilla/5.0",
+      "result": "success",
+      "note": "Typical for this account: interactive, from the usual address."
+    },
+    {
+      "at": "2026-09-01T14:51:38Z",
+      "account": "sora-dev77",
+      "method": "personal_access_token",
+      "credential_id": "PAT-7f31c0",
+      "source_ip": "192.0.2.183",
+      "user_agent": "git/2.42.0",
+      "result": "success",
+      "note": "First use of this token from this address."
+    }
+  ],
+
+  "repository_events": [
+    {
+      "at": "2026-09-01T14:52:00Z",
+      "repository": "sora-dev77/sakura-secureconnect-client",
+      "action": "git.push",
+      "ref": "refs/heads/main",
+      "commit": "85902d17af7621d58ddaad0f1a306ffc1bff23fb",
+      "actor": "sora-dev77",
+      "authentication": "personal_access_token",
+      "credential_id": "PAT-7f31c0",
+      "source_ip": "192.0.2.183",
+      "review": "none",
+      "change_request": null
+    }
+  ],
+
+  "security_events": [
+    {
+      "at": "2026-09-02T02:28:00Z",
+      "type": "unauthorized_change_reported",
+      "reported_by": "release-engineering",
+      "detail": "The 4.2.1 update configuration change was not requested, not reviewed and not part of any release plan. No change request exists for it.",
+      "commit": "85902d17af7621d58ddaad0f1a306ffc1bff23fb"
+    },
+    {
+      "at": "2026-09-02T02:31:00Z",
+      "type": "credential_revoked",
+      "credential_id": "PAT-7f31c0",
+      "detail": "Token revoked and all active sessions for the account invalidated."
+    }
+  ],
+
+  "what_this_supports": [
+    "The push that carried commit 85902d17 authenticated with a personal access token, not with an interactive session.",
+    "That token is associated with the sora-dev77 account.",
+    "The change was not authorized: no review, no change request, and release engineering did not ask for it.",
+    "The token has been revoked and is treated as compromised."
+  ],
+
+  "what_this_does_not_support": [
+    "Who held the token at 14:51:38Z. An audit log records a credential and an address, not a person.",
+    "How the token was obtained. Nothing here shows theft, phishing, a leak or a reused device — 'compromised' is what the evidence carries; 'stolen' is a stronger claim than these records can make.",
+    "That the account owner made the change, or that they did not."
+  ]
+}

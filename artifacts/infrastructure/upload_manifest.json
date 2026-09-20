@@ -1,0 +1,20 @@
+{
+  "campaign_id": "KITSUNE-42",
+  "source_host": "SR-DEV-077",
+  "created_at": "2026-09-02T00:36:44Z",
+  "uploaded_at": "2026-09-02T00:42:19Z",
+  "archive_name": "kumo_stage_SR-DEV-077_20260902T003644Z.zip",
+  "archive_size_bytes": 19511296,
+  "file_count": 23,
+  "collection_summary": {
+    "docx": 11,
+    "xlsx": 7,
+    "pdf": 5
+  },
+  "representative_paths": [
+    "C:\\Users\\s.nakamura\\Documents\\VPN-Release\\vpn-release-checklist.docx",
+    "C:\\Users\\s.nakamura\\Documents\\Partner-Access\\partner-access-matrix.xlsx",
+    "C:\\Users\\s.nakamura\\Documents\\Operations\\incident-contact-sheet.pdf"
+  ],
+  "handling": "The archive itself is intentionally unavailable. Use this manifest to determine the affected host and categories of exposed data."
+}

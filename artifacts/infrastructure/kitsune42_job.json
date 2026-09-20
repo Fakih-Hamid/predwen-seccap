@@ -1,0 +1,21 @@
+{
+  "campaign_id": "KITSUNE-42",
+  "job_id": "K42-SRDEV077-0902",
+  "source_host": "SR-DEV-077",
+  "source_user": "s.nakamura",
+  "first_seen": "2026-09-02T00:31:12Z",
+  "collection_started": "2026-09-02T00:32:08Z",
+  "archive_created": "2026-09-02T00:36:44Z",
+  "upload_completed": "2026-09-02T00:42:19Z",
+  "staging_path": "C:\\ProgramData\\SakuraVPN\\cache\\kumo_stage.zip",
+  "scheduled_task": "SakuraVPN Update Check",
+  "collection_patterns": ["*.docx", "*.xlsx", "*.pdf"],
+  "upload": {
+    "object": "kumo_stage_SR-DEV-077_20260902T003644Z.zip",
+    "bytes": 19511296,
+    "file_count": 23,
+    "status": "complete",
+    "manifest": "/uploads/kumo_stage_SR-DEV-077_20260902T003644Z.manifest.json"
+  },
+  "operator_note": "Single completed host. No completed archive recorded for SR-FIN-014 or SR-LAB-021."
+}

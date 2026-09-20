@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ t('collective.title') }} · {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="eyebrow">{{ team.display_name }}</div>
+  <h1>{{ t('collective.title') }}</h1>
+  <p class="lead">{{ t('collective.lead') }}</p>
+
+  <div id="closed" class="banner" style="display:none">{{ t('collective.closed') }}</div>
+
+  <div class="panel">
+    <div class="eyebrow mut">{{ t('collective.coverage') }}</div>
+    <div class="cov" id="cov"></div>
+  </div>
+
+  <div class="panel" id="form">
+    <div class="grid two">
+      <label class="field">
+        <span class="lb">{{ t('collective.type') }}</span>
+        <select id="ioctype">
+          {% for k in ioc_types %}
+          <option value="{{ k }}">{{ t('collective.ioc_' ~ k) }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="field">
+        <span class="lb">{{ t('collective.value') }}</span>
+        <input type="text" id="iocvalue" maxlength="200" autocomplete="off">
+      </label>
+    </div>
+    <label class="field">
+      <span class="lb">{{ t('collective.justification') }}</span>
+      <textarea id="iocwhy" rows="2" maxlength="400"></textarea>
+    </label>
+    <button class="btn primary" id="publish">{{ t('collective.publish') }}</button>
+    <div class="hint">{{ t('collective.duplicates_ok') }}</div>
+  </div>
+
+  <div class="panel">
+    <div class="scrollx">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>{{ t('common.team') }}</th>
+            <th>{{ t('collective.type') }}</th>
+            <th>{{ t('collective.value') }}</th>
+            <th>{{ t('collective.justification') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LBL = {
+  {% for k in ioc_types %}{{ k | tojson }}: {{ t('collective.ioc_' ~ k) | tojson }}{{ "," if not loop.last }}{% endfor %}
+};
+const VALIDATED = {{ t('collective.validated') | tojson }};
+const AWAITING = {{ t('collective.awaiting') | tojson }};
+
+document.getElementById('publish').addEventListener('click', async function () {
+  const value = document.getElementById('iocvalue').value.trim();
+  if (!value) return;
+  const r = await api('POST', '/api/collective', {
+    type: document.getElementById('ioctype').value,
+    value: value,
+    justification: document.getElementById('iocwhy').value
+  });
+  if (r.ok) toast(window.SECCAP.t.published);
+});
+
+poll('/api/collective', function (d) {
+  document.getElementById('closed').style.display = d.open ? 'none' : 'block';
+  document.getElementById('form').style.display = d.open ? 'block' : 'none';
+
+  const cov = document.getElementById('cov');
+  cov.textContent = '';
+  Object.keys(d.coverage).forEach(function (k) {
+    const el = document.createElement('div');
+    el.className = 'covitem' + (d.coverage[k] ? ' done' : '');
+    el.textContent = (d.coverage[k] ? '✔ ' : '○ ') + (LBL[k] || k);
+    cov.appendChild(el);
+  });
+
+  const rows = document.getElementById('rows');
+  rows.textContent = '';
+  d.entries.forEach(function (e) {
+    const tr = document.createElement('tr');
+    [e.team, LBL[e.type] || e.type, e.value, e.justification || ''].forEach(function (v, i) {
+      const td = document.createElement('td');
+      if (i === 2) td.className = 'mono';
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+    const st = document.createElement('td');
+    const chip = document.createElement('span');
+    chip.className = 'chip ' + (e.validated ? 'ok' : 'off');
+    chip.textContent = e.validated ? VALIDATED : AWAITING;
+    st.appendChild(chip);
+    tr.appendChild(st);
+    rows.appendChild(tr);
+  });
+});
+</script>
+{% endblock %}

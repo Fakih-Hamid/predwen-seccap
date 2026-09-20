@@ -1,0 +1,323 @@
+version: "2.0"
+
+resources:
+  - key: m1_repository
+    tool_name: GitHub
+    resource_type: first_party
+    status: pending
+    url: "https://github.com/sora-dev77/sakura-secureconnect-client/commit/85902d17af7621d58ddaad0f1a306ffc1bff23fb"
+    availability_check: "https://github.com/sora-dev77/sakura-secureconnect-client"
+    owner: organizer
+    fallback_snapshot: digital-footprint/commit_85902d17.txt
+    description: "The SecureConnect commit diff containing the update-configuration changes."
+
+  - key: m1_github_profile
+    tool_name: GitHub
+    resource_type: first_party
+    status: pending
+    url: "https://github.com/sora-dev77"
+    availability_check: "https://github.com/sora-dev77"
+    owner: organizer
+    fallback_snapshot: digital-footprint/github_account.json
+    description: "The developer account linked to the repository and bench notes."
+
+  - key: m1_developer_notes
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sora-dev77.github.io/"
+    availability_check: "https://sora-dev77.github.io/"
+    owner: organizer
+    fallback_snapshot: digital-footprint/developer_notes.json
+    description: "Organizer-hosted developer bench notes with links to the repository and photograph."
+
+  - key: m1_photo
+    tool_name: ExifTool
+    resource_type: first_party
+    status: pending
+    url: "https://sora-dev77.github.io/assets/apac-fallback-bench.jpg"
+    availability_check: "https://sora-dev77.github.io/assets/apac-fallback-bench.jpg"
+    owner: organizer
+    fallback_snapshot: digital-footprint/apac-fallback-bench.jpg
+    description: "The original JPEG used for the metadata task."
+
+  - key: m1_token_audit
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-IR-2026-0902/github-audit.json"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-IR-2026-0902/github-audit.json"
+    owner: organizer
+    fallback_snapshot: digital-footprint/token_audit.json
+    description: "GitHub audit records for the push and the credential used to authenticate it."
+
+  - key: m1_username_collision
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-IR-2026-0902/username-collision.json"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-IR-2026-0902/username-collision.json"
+    owner: organizer
+    fallback_snapshot: digital-footprint/username_collision.json
+    description: "A fictional profile record using the same visible handle as the developer account."
+
+  - key: m2_update_service
+    tool_name: "curl -I"
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-update.pages.dev/"
+    availability_check: "https://sakura-update.pages.dev/"
+    expect_headers: ["X-Sakura-Manifest", "X-Sakura-Failover"]
+    owner: organizer
+    fallback_snapshot: infrastructure/update_headers.json
+    description: "The update gateway. Its response headers point to the manifest and failover host."
+
+  - key: m2_channel_api
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-update.pages.dev/api/channel.json"
+    availability_check: "https://sakura-update.pages.dev/api/channel.json"
+    owner: organizer
+    fallback_snapshot: infrastructure/update_channel.json
+    description: "The update-channel document fetched by the client."
+
+  - key: m2_cdn_manifest
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-cdn.pages.dev/manifest.json"
+    availability_check: "https://sakura-cdn.pages.dev/manifest.json"
+    owner: organizer
+    fallback_snapshot: infrastructure/cdn_manifest.json
+    description: "The 4.2.1 manifest with the package URL, SHA-256 and signature information."
+
+  - key: m2_payload
+    tool_name: "sha256sum / Get-FileHash"
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-cdn.pages.dev/releases/SakuraVPNUpdate_4.2.1.bin"
+    availability_check: "https://sakura-cdn.pages.dev/releases/SakuraVPNUpdate_4.2.1.bin"
+    owner: organizer
+    fallback_snapshot: infrastructure/SakuraVPNUpdate_4.2.1.bin
+    description: "A harmless exercise file used for the SHA-256 task. Do not execute it."
+
+  - key: m2_archive
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/"
+    availability_check: "https://sakura-archive.pages.dev/"
+    owner: organizer
+    fallback_snapshot: infrastructure/archive_index.json
+    description: "The failover host containing the exercise jobs, logs and evidence records."
+
+  - key: m2_kitsune_job
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/jobs/KITSUNE-42.json"
+    availability_check: "https://sakura-archive.pages.dev/jobs/"
+    owner: organizer
+    fallback_snapshot: infrastructure/kitsune42_job.json
+    description: "The KITSUNE-42 campaign job record."
+
+  - key: m2_transfer_log
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/logs/transfer.log"
+    availability_check: "https://sakura-archive.pages.dev/logs/"
+    owner: organizer
+    fallback_snapshot: infrastructure/archive_transfer.log
+    description: "The archive transfer log used to confirm the staged upload."
+
+  - key: m2_rdap
+    tool_name: "ICANN Lookup (RDAP)"
+    resource_type: third_party_tool
+    status: pending
+    url: "https://lookup.icann.org/en/lookup?name=sakura-vpn-update.com"
+    availability_check: "https://lookup.icann.org/"
+    owner: third_party
+    fallback_snapshot: infrastructure/rdap_snapshot.json
+    description: "Public registration data for the exercise domain."
+
+  - key: m3_evidence_pack
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/triage_pack_readme.txt
+    description: "The SR-DEV-077 endpoint triage pack."
+
+  - key: m3_case_summary
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/case-summary.json"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/case_summary.json
+    description: "Collection notes for case SR-IR-2026-0902."
+
+  - key: m3_process_tree
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/process-tree.json"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/process_tree.json
+    description: "The process tree captured from SR-DEV-077."
+
+  - key: m3_powershell_log
+    tool_name: CyberChef
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/powershell-operational.log"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/powershell_operational.log
+    description: "The PowerShell operational log containing the Base64 UTF-16LE command line."
+
+  - key: m3_persistence
+    tool_name: Spreadsheet
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/persistence.csv"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/persistence.csv
+    description: "Persistence records in CSV format. Open the downloaded file in a spreadsheet."
+
+  - key: m3_file_timeline
+    tool_name: Spreadsheet
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/file-timeline.csv"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/file_timeline.csv
+    description: "The endpoint file timeline in CSV format."
+
+  - key: m3_network
+    tool_name: Spreadsheet
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/network-connections.csv"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/network_connections.csv
+    description: "Outbound connection records in CSV format."
+
+  - key: m3_proxy_log
+    tool_name: Web browser
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/proxy.log"
+    availability_check: "https://sakura-archive.pages.dev/evidence/SR-DEV-077/"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/proxy.log
+    description: "The proxy log, including the closing retention-window note."
+
+  - key: m3_sandbox
+    tool_name: "Sandbox report"
+    resource_type: first_party
+    status: pending
+    url: "https://sakura-archive.pages.dev/reports/SBX-K42-20260902-01"
+    availability_check: "https://sakura-archive.pages.dev/reports/SBX-K42-20260902-01"
+    owner: organizer
+    fallback_snapshot: threat-intelligence/sandbox_report.json
+    description: "The organizer-controlled SBX-K42 sandbox report."
+
+  - key: m3_virustotal
+    tool_name: VirusTotal
+    resource_type: third_party_tool
+    status: ready
+    url: "https://www.virustotal.com/gui/file/ff749df77076e1243eb3c8a3b8bb049d2e7913125532b6ab2bf0b8299ef8ea31"
+    availability_check: "https://www.virustotal.com/"
+    owner: third_party
+    fallback_snapshot: threat-intelligence/virustotal_lookup.json
+    description: "Optional hash lookup for the Mission 2 SHA-256. Search by hash only and upload nothing."
+
+  - key: m3_attack
+    tool_name: "MITRE ATT&CK"
+    resource_type: third_party_content
+    status: ready
+    url: "https://attack.mitre.org/"
+    availability_check: "https://attack.mitre.org/"
+    owner: third_party
+    fallback_snapshot: threat-intelligence/mitre_reference.json
+    description: "ATT&CK reference used to map observed behaviour to technique ids."
+
+  - key: tool_anyrun
+    tool_name: ANY.RUN
+    resource_type: third_party_tool
+    status: ready
+    url: "https://any.run/"
+    availability_check: "https://any.run/"
+    owner: third_party
+    optional: true
+    fallback_snapshot: threat-intelligence/sandbox_report.json
+    participant_note:
+      ja: "公開サンドボックスです。公開済みの解析結果を見る場合だけ使ってください。演習ファイルや自分のファイルはアップロードしないでください。採点では SBX-K42 レポートを使います。"
+      en: "This is a public sandbox. Use it only to view existing public reports. Do not upload the exercise file or your own files. The graded sandbox evidence is SBX-K42."
+    description: "Optional public sandbox reference. Do not submit files."
+
+  - key: tool_cyberchef
+    tool_name: CyberChef
+    resource_type: third_party_tool
+    status: ready
+    url: "https://gchq.github.io/CyberChef/"
+    availability_check: "https://gchq.github.io/CyberChef/"
+    owner: third_party
+    optional: true
+    fallback_snapshot: threat-intelligence/powershell_operational.log
+    participant_note:
+      ja: "ブラウザ内で動作する変換ツールです。PowerShell ログにある、UTF-16LE の文字列を Base64 でエンコードしたコマンドのデコードに使えます。デコードした内容は実行しないでください。"
+      en: "CyberChef runs in the browser. You can use it to decode the Base64 UTF-16LE string in the PowerShell log. Do not execute the decoded content."
+    description: "Optional browser-based decoding tool."
+
+  - key: tool_certkit
+    tool_name: "CertKit CT Search"
+    resource_type: third_party_tool
+    status: ready
+    url: "https://www.certkit.io/tools/ct-logs/?query=sakura-vpn-update.com"
+    availability_check: "https://www.certkit.io/tools/ct-logs/?query=sakura-vpn-update.com"
+    owner: third_party
+    optional: true
+    fallback_snapshot: infrastructure/ct_log_search.json
+    participant_note:
+      ja: "Certificate Transparency（CT：証明書の透明性）の公開記録を検索できます。Common Name と Matching SANs を確認し、調査対象のドメインに関連するホスト名を記録してください。検索にアカウントは不要です。"
+      en: "Search public certificate-transparency records. Check Common Name and Matching SANs, and record hostnames related to the domain you are investigating. No account is required."
+    description: "Optional certificate-transparency lookup for the exercise domain."
+
+  - key: tool_exiftool
+    tool_name: ExifTool
+    resource_type: third_party_tool
+    status: ready
+    url: "https://exiftool.org/"
+    availability_check: "https://exiftool.org/"
+    owner: third_party
+    optional: true
+    fallback_snapshot: digital-footprint/apac-fallback-bench.jpg
+    participant_note:
+      ja: "画像のメタデータを確認するツールです。演習用画像をダウンロードし、手元の端末で解析してください。自分の写真は使わないでください。"
+      en: "ExifTool reads image metadata locally. Download and inspect only the exercise image. Do not use one of your own photographs."
+    description: "Optional local metadata tool for the exercise image."
+
+  - key: tool_icann_lookup
+    tool_name: "ICANN Lookup (RDAP)"
+    resource_type: third_party_tool
+    status: ready
+    url: "https://lookup.icann.org/"
+    availability_check: "https://lookup.icann.org/"
+    owner: third_party
+    optional: true
+    fallback_snapshot: infrastructure/rdap_snapshot.json
+    participant_note:
+      ja: "ドメインの公開登録情報（RDAP）を検索できます。登録日やレジストラなどを確認してください。公開されていない登録者情報を推測しないでください。"
+      en: "Search public domain-registration data with RDAP. Check fields such as registration date and registrar. Do not infer registrant information that is not published."
+    description: "Optional ICANN RDAP lookup."

@@ -1,0 +1,847 @@
+slug: threat-intelligence
+kind: mission
+order: 3
+version: "2.0"
+duration_seconds: 3600
+max_points: 100
+
+budget:
+  correctness: 35
+  evidence: 30
+  reasoning: 20
+  completeness: 10
+  speed: 5
+
+short_label: {ja: "M3", en: "M3"}
+title:
+  ja: "ミッション3 — 端末解析と影響範囲の判定"
+  en: "Mission 3 — Endpoint Analysis and Scoping"
+subtitle:
+  ja: "実行・永続化・外部送信を時系列で整理し、影響範囲を判断する"
+  en: "Build the execution, persistence and exfiltration timeline, then determine scope"
+
+narrative:
+  ja: |-
+    SR-DEV-077 の端末トリアージ資料と、管理された環境でのサンドボックス解析レポートが提供されました。ここからは防御側として分析します。
+
+    何が実行され、どのような永続化が行われ、どのデータが外部へ送信されたのかを時系列で整理してください。次に、テレメトリに現れる3台の端末（SR-DEV-077 / SR-FIN-014 / SR-LAB-021）を、根拠に基づいて分類してください。
+  en: |-
+    You have the SR-DEV-077 endpoint triage material and a controlled sandbox report. Analyse the incident from the defender's side.
+
+    Build a timeline of execution, persistence and data sent outside the host. Then classify each of the three hosts in the telemetry — SR-DEV-077, SR-FIN-014 and SR-LAB-021 — using evidence.
+
+objectives:
+  - ja: "この端末で起きたことを、出典付きで時系列に整理する"
+    en: "Build an evidence-backed timeline for the endpoint"
+  - ja: "3台の端末を証拠の強さに応じて分類する"
+    en: "Classify the three hosts using the strength of the evidence"
+  - ja: "観測された挙動を ATT&CK の技術IDに対応付ける"
+    en: "Map observed behaviour to ATT&CK technique ids"
+  - ja: "観測されていない挙動を、観測済みとして扱わない"
+    en: "Keep unobserved behaviour out of the observed findings"
+
+loop:
+  - ja: "5分：資料を分担して読み、各自が気づいたことを最低1件ボードに書く"
+    en: "5 min — split the sources, read, and each post at least one observation"
+    seconds: 300
+  - ja: "35分：時系列を組み立て、端末ごとに証拠を確認する"
+    en: "35 min — build the timeline and compare the evidence host by host"
+    seconds: 2100
+  - ja: "12分：回答と確信度を決める"
+    en: "12 min — decide the answers and confidence"
+    seconds: 720
+  - ja: "8分：回答と根拠を見直して提出内容をロックする"
+    en: "8 min — review the answers and evidence, then lock the submission"
+    seconds: 480
+
+first_step:
+  ja: "手分けしてください。1人はミッション2で計算したハッシュを VirusTotal で検索し、表示内容を記録します。ファイルやURLは送信しないでください。残りのメンバーは file-timeline.csv を時刻順に読み、SR-DEV-077 のダウンロード完了とプロセス開始の時刻を確認してください。"
+  en: "Split the work. One member looks up the Mission 2 hash in VirusTotal and records what is shown without submitting a file or URL. Everyone else starts with file-timeline.csv and checks the download and process-start times for SR-DEV-077."
+
+artifacts:
+  - id: evidence-pack
+    type: text
+    icon: "▤"
+    tool: "triage pack"
+    path: threat-intelligence/triage_pack_readme.txt
+    external_url: "${m3_evidence_pack}"
+    tool_name: "Web browser"
+    resource_type: first_party
+    title: {ja: "端末トリアージパック（SR-DEV-077）", en: "Endpoint triage pack (SR-DEV-077)"}
+    note: {ja: "すべての時刻はUTCです。まず、各ファイルが何を記録しているか確認してください。", en: "All timestamps are UTC. Start by checking what each file records."}
+    expected_pivot:
+      ja: "この端末で何が起きたかを時刻順に整理してください。"
+      en: "Establish what happened on this endpoint and in what order."
+    safety_notice:
+      ja: "提供されたファイルは、安全性が確認されていないものとして扱ってください。実行せず、静的解析、提供済みのレポート、ハッシュ検索だけを使ってください。"
+      en: "Treat the supplied files as untrusted evidence. Do not execute them; use static analysis, provided reports and hash-only lookups."
+    hints:
+      - id: pv_evidence_pack_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "まずファイル一覧を確認し、設問ごとに使うファイルを選んでください。"
+          en: "Check the file list first and choose the file that matches the question you are working on."
+      - id: pv_pack_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "すべてのファイルを同時に読む必要はありません。時刻、プロセス、永続化、通信など、確認したい内容に合うファイルから読んでください。"
+          en: "Do not read every file at once. Pick the file that matches what you need: time, process, persistence, network activity or another specific fact."
+
+  - id: file-timeline
+    how_to:
+      tool: {ja: "表計算ソフト（Excel / Numbers / Google スプレッドシート）", en: "Spreadsheet (Excel / Numbers / Google Sheets)"}
+      steps:
+        - ja: "CSV をダウンロードして表計算ソフトで開いてください。"
+          en: "Download the CSV and open it in a spreadsheet."
+        - ja: "最初に host 列で対象端末を絞り込んでください。端末名はこのミッション冒頭の説明に3台とも書かれています。3台すべての行がこの資料にあるとは限りません。"
+          en: "Filter the host column first. All three endpoint names are in the mission briefing at the top of this mission — not all of them necessarily have rows in this file."
+        - ja: "次に時刻を昇順に並べ替えてください。"
+          en: "Then sort by time, oldest first."
+        - ja: "event 列を確認し、ファイル書き込みとプロセス開始を区別してください。"
+          en: "Read the event column and distinguish file writes from process starts."
+      commands:
+        - os: {ja: "macOS / Linux（ターミナルを使う場合）", en: "macOS / Linux (terminal option)"}
+          cmd: "grep SR-FIN-014 file-timeline.csv | sort -t, -k1,1"
+        - os: {ja: "Windows (PowerShell)（ターミナルを使う場合）", en: "Windows (PowerShell) (terminal option)"}
+          cmd: 'Import-Csv .\file-timeline.csv | Where-Object host -eq ''SR-FIN-014'' | Sort-Object timestamp_utc | Format-Table -AutoSize'
+      no_install:
+        ja: "Google スプレッドシートでもフィルタと並べ替えができます。"
+        en: "Google Sheets can also filter and sort the file."
+    type: table
+    icon: "≡"
+    tool: "csv viewer"
+    path: threat-intelligence/file_timeline.csv
+    external_url: "${m3_file_timeline}"
+    tool_name: Spreadsheet
+    resource_type: first_party
+    title: {ja: "ファイルに関するイベントの時系列（複数端末）", en: "File timeline (several hosts)"}
+    note: {ja: "複数の端末の記録が含まれています。host 列で対象端末を絞り込んでください。", en: "The file contains rows for several hosts. Filter by host first."}
+    expected_pivot:
+      ja: "file-timeline.csv を時刻順に並べ、対象端末のイベントを確認してください。"
+      en: "Sort file-timeline.csv by time and inspect the events for the target host."
+    hints:
+      - id: pv_file_timeline_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "host 列で絞り込み、時刻順に並べたあと event 列を確認してください。"
+          en: "Filter by host, sort by time, then read the event column."
+      - id: pv_file_timeline_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "実行時刻を探す場合は、ファイル書き込みではなくプロセス開始を記録した行を使ってください。"
+          en: "For execution time, use the row that records a process start, not a file write."
+
+  - id: virustotal
+    type: json
+    icon: "◎"
+    tool: "reputation lookup"
+    path: threat-intelligence/virustotal_lookup.json
+    external_url: "${m3_virustotal}"
+    tool_name: "VirusTotal"
+    resource_type: third_party_tool
+    title: {ja: "VirusTotal のレピュテーション照会", en: "Reputation lookup (VirusTotal)"}
+    note: {ja: "「Detection」タブには、各セキュリティエンジンによる判定結果が表示されます。このファイルの挙動を直接観測した結果ではありません。", en: "The Detection tab you are reading here aggregates verdicts recorded by other engines. It is not an observation of this file's behaviour."}
+    expected_pivot:
+      ja: "ミッション2で計算した SHA-256 を検索し、表示内容をそのまま記録してください。"
+      en: "Search for the SHA-256 from Mission 2 and record exactly what is shown."
+    safety_notice:
+      ja: "ハッシュ検索だけを行ってください。ファイルやURLを送信せず、Reanalyze も実行しないでください。"
+      en: "Search by hash only. Do not upload a file, submit a URL or click Reanalyze."
+    hints:
+      - id: pv_virustotal_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "検索欄にハッシュを貼り付けるか、/gui/file/<ハッシュ> を直接開いてください。ファイルやURLは送信しません。表示された内容を記録し、結果が無い場合もそのまま記録します。"
+          en: "Paste the hash into the search box, or open /gui/file/<hash> directly. Do not submit a file or a URL. Record what the page shows — and if there is no result, record that too."
+      - id: pv_virustotal_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "表示された情報と、そこから判断できることを分けてください。検出数はファイルの挙動を直接観測した結果ではなく、検索結果がないことも安全の証明にはなりません。ファイルが安全か、悪意のあるものかは、サンドボックスレポートと端末の証跡に基づいて判断してください。"
+          en: "Separate what the page displays from what that information can establish. A detection count is not a direct observation of behaviour, and an empty result is not a clean bill of health. Safe or malicious is decided on the sandbox report and the endpoint evidence."
+
+  - id: mitre
+    type: json
+    icon: "◈"
+    tool: "ATT&CK"
+    path: threat-intelligence/mitre_reference.json
+    external_url: "${m3_attack}"
+    tool_name: "MITRE ATT&CK"
+    resource_type: third_party_content
+    title: {ja: "ATT&CK 技術リファレンス", en: "ATT&CK technique reference"}
+    note: {ja: "証拠から確認できた挙動をもとに、該当する ATT&CK の技術IDを調べてください。", en: "Start from the behaviour in the evidence and find the matching technique id."}
+    expected_pivot:
+      ja: "対応付けた技術IDごとに、根拠となる行を確認してください。"
+      en: "For every mapped technique id, identify the evidence line supporting it."
+    hints:
+      - id: pv_mitre_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "先に観測済みの挙動を一覧にし、ATT&CK で1つずつ調べてください。"
+          en: "Bring your list of observed behaviours and look them up one at a time in ATT&CK."
+      - id: pv_mitre_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "根拠となる行を示せない技術は、観測済みの一覧から外してください。"
+          en: "Remove any technique for which you cannot point to a supporting evidence line."
+
+  - id: process-tree
+    type: json
+    icon: "⑂"
+    tool: "process tree"
+    path: threat-intelligence/process_tree.json
+    external_url: "${m3_process_tree}"
+    tool_name: Web browser
+    resource_type: first_party
+    title: {ja: "プロセスツリー（SR-DEV-077）", en: "Process tree (SR-DEV-077)"}
+    note: {ja: "PID と親プロセスIDを使って、どのプロセスが何を起動したか確認してください。", en: "Use PID and parent PID to follow what launched what."}
+    expected_pivot:
+      ja: "process-tree.json を開き、PowerShell の親プロセスをたどってください。"
+      en: "Open process-tree.json and trace the parent of the PowerShell process."
+    hints:
+      - id: pv_process_tree_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "PowerShell の項目を見つけ、親プロセスIDを使って1段ずつ上にたどってください。"
+          en: "Find the PowerShell entry and follow the parent ids upward one step at a time."
+      - id: pv_process_tree_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "PowerShell を直接起動した親プロセスを確認してください。Windows の一般的なシステムプロセスまで上がる必要はありません。"
+          en: "Identify the process that directly launched PowerShell. You do not need to continue up to a general Windows system process."
+
+  - id: persistence
+    how_to:
+      tool: {ja: "表計算ソフト（Excel / Numbers / Google スプレッドシート）", en: "Spreadsheet (Excel / Numbers / Google Sheets)"}
+      steps:
+        - ja: "リンクを開くと CSV がダウンロードされます。"
+          en: "Opening the link downloads a CSV file."
+        - ja: "保存したファイルを表計算ソフトで開いてください。"
+          en: "Open the saved file in a spreadsheet."
+        - ja: "必要に応じてフィルタを有効にし、すべての行を確認してください。"
+          en: "Turn on filters if useful and inspect every row."
+        - ja: "列幅を広げ、内容が切れないようにしてください。"
+          en: "Widen the columns so the full values are visible."
+      commands:
+        - os: {ja: "macOS / Linux（ターミナルを使う場合）", en: "macOS / Linux (terminal option)"}
+          cmd: "column -s, -t persistence.csv"
+        - os: {ja: "Windows (PowerShell)（ターミナルを使う場合）", en: "Windows (PowerShell) (terminal option)"}
+          cmd: 'Import-Csv .\persistence.csv | Format-Table -AutoSize' 
+      no_install:
+        ja: "表計算ソフトがなければ、Google スプレッドシートまたはテキストエディタで開いてください。"
+        en: "If you do not have a spreadsheet app, use Google Sheets or a text editor."
+    type: table
+    icon: "◍"
+    tool: "csv viewer"
+    path: threat-intelligence/persistence.csv
+    external_url: "${m3_persistence}"
+    tool_name: Spreadsheet
+    resource_type: first_party
+    title: {ja: "永続化（レジストリとタスク）", en: "Persistence (registry and scheduled task)"}
+    note: {ja: "1行が1件の記録です。1つの仕組みが複数行にまたがることがあります。各行の result 列を確認してください。", en: "Each row is one recorded entry, and one mechanism can occupy more than one row. Read the result column on each row."}
+    expected_pivot:
+      ja: "persistence.csv をダウンロードし、すべての行を確認してください。"
+      en: "Download persistence.csv and inspect every row."
+    hints:
+      - id: pv_persistence_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "CSV を表計算ソフトで開き、すべての行の result 列を確認してください。"
+          en: "Open the CSV in a spreadsheet and check the result column on every row."
+      - id: pv_persistence_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "この事案で新しく作られたものと、以前から存在していたものを分けてください。それを示しているのは result 列です。時刻では分けられません。"
+          en: "Separate mechanisms created during this incident from ones that already existed. The result column is what says which is which; the timestamps will not separate them."
+
+  - id: sandbox
+    type: sandbox
+    icon: "⬢"
+    tool: "sandbox report"
+    path: threat-intelligence/sandbox_report.json
+    external_url: "${m3_sandbox}"
+    tool_name: "Sandbox report"
+    resource_type: first_party
+    title: {ja: "サンドボックスレポート（SBX-K42）", en: "Sandbox report (SBX-K42)"}
+    note: {ja: "observed_behaviors と not_observed_in_sandbox を分けて読んでください。", en: "Read the observed and not_observed sections separately."}
+    expected_pivot:
+      ja: "観測された挙動を整理し、ATT&CK の技術IDに対応付けてください。"
+      en: "Extract the observed behaviours and map them to ATT&CK technique ids."
+    safety_notice:
+      ja: "レポートの閲覧だけを行ってください。検体のダウンロードや実行はしないでください。"
+      en: "Read the report only. Do not download or run a sample."
+    hints:
+      - id: pv_sandbox_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "まず observed_behaviors の内容を読み、実際に観測された挙動を一覧にしてください。"
+          en: "Read the observed section first and list the behaviours that were actually observed."
+      - id: pv_sandbox_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "observed_behaviors と not_observed_in_sandbox を混同しないでください。ATT&CK に対応付けるのは、実際に観測された挙動です。"
+          en: "Keep observed and not_observed separate. Map ATT&CK techniques only from behaviour that the report actually observed."
+
+  - id: network
+    how_to:
+      tool: {ja: "表計算ソフト（Excel / Numbers / Google スプレッドシート）", en: "Spreadsheet (Excel / Numbers / Google Sheets)"}
+      steps:
+        - ja: "CSV をダウンロードし、host 列で対象端末を絞り込んでください。端末名はこのミッション冒頭の説明に3台とも書かれています。"
+          en: "Download the CSV and filter by host. All three endpoint names are in the mission briefing at the top of this mission."
+        - ja: "process、destination、bytes_out、bytes_in を一緒に確認してください。"
+          en: "Read process, destination, bytes_out and bytes_in together."
+        - ja: "送信量の大きい通信と、その通信を行ったプロセスを確認してください。"
+          en: "Check connections with large outbound transfers and the process responsible for them."
+        - ja: "残りの端末も同じ手順で確認してください。端末ごとに確認できた事実を、影響範囲の判断に使います。"
+          en: "Do this for all three. What each host does and does not show is what the scope question is decided on."
+      commands:
+        - os: {ja: "macOS / Linux（ターミナルを使う場合）", en: "macOS / Linux (terminal option)"}
+          cmd: "grep SR-FIN-014 network-connections.csv | column -s, -t"
+        - os: {ja: "Windows (PowerShell)（ターミナルを使う場合）", en: "Windows (PowerShell) (terminal option)"}
+          cmd: 'Import-Csv .\network-connections.csv | Where-Object host -eq ''SR-FIN-014'' | Format-Table -AutoSize'
+      no_install:
+        ja: "Google スプレッドシートでも同じように確認できます。"
+        en: "You can do the same in Google Sheets."
+    type: table
+    icon: "⇄"
+    tool: "csv viewer"
+    path: threat-intelligence/network_connections.csv
+    external_url: "${m3_network}"
+    tool_name: Spreadsheet
+    resource_type: first_party
+    title: {ja: "通信記録（3端末）", en: "Network connections (three hosts)"}
+    note: {ja: "宛先だけでなく、通信したプロセスと送信量も確認してください。", en: "Check the process and outbound volume as well as the destination."}
+    expected_pivot:
+      ja: "network-connections.csv を確認し、どのプロセスが各通信を行ったか調べてください。"
+      en: "Inspect network-connections.csv and identify which process made each connection."
+    hints:
+      - id: pv_network_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "process、destination、bytes_out を一緒に見てください。"
+          en: "Read process, destination and bytes_out together."
+      - id: pv_network_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "検体が行った通信を特定したあと、送信方向とサイズから外部送信に使われた通信を確認してください。"
+          en: "After identifying connections made by the sample, use direction and size to find the connection used to send data out."
+
+  - id: proxy-log
+    type: text
+    icon: "▣"
+    tool: "log viewer"
+    path: threat-intelligence/proxy.log
+    external_url: "${m3_proxy_log}"
+    tool_name: Web browser
+    resource_type: first_party
+    title: {ja: "プロキシログ（抜粋）", en: "Proxy log (extract)"}
+    note: {ja: "プロキシに記録された外部への通信です。末尾に運用担当者のコメントが付いています。", en: "The proxy's record of outbound requests, with an operator's comment at the end of it."}
+    expected_pivot:
+      ja: "proxy.log を最後まで読み、各通信の結果を確認してください。"
+      en: "Read proxy.log to the end and check the result of each request."
+    hints:
+      - id: pv_proxy_log_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "ログを時刻順に最後まで読み、末尾のコメント行も確認してください。"
+          en: "Read the log in time order through the final comment line."
+      - id: pv_proxy_log_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "末尾のコメントには、保持期間中に観測されなかったことが書かれています。端末の影響範囲を判断するときに使ってください。"
+          en: "The closing comment records activity that was not seen during the retained window. Use it when assessing host scope."
+
+  - id: powershell-log
+    how_to:
+      tool: "CyberChef"
+      tool_link: "${tool_cyberchef}"
+      steps:
+        - ja: "ログから -EncodedCommand の後ろにある長い文字列をコピーしてください。"
+          en: "Copy the long string after -EncodedCommand from the log."
+        - ja: "CyberChef を開いてください。"
+          en: "Open CyberChef."
+        - ja: "From Base64 を Recipe に追加してください。"
+          en: "Add From Base64 to the Recipe."
+        - ja: "続けて Decode text を追加し、Encoding を UTF-16LE (1200) に設定してください。"
+          en: "Then add Decode text and set Encoding to UTF-16LE (1200)."
+        - ja: "文字列を Input に貼り付け、Output に出たコマンドを読んでください。"
+          en: "Paste the string into Input and read the decoded command in Output."
+      commands:
+        - os: {ja: "macOS / Linux（ターミナルを使う場合）", en: "macOS / Linux (terminal option)"}
+          cmd: "echo 'JABjAGEAbQBwAGEAaQBnAG4APQAnAEsASQBUAFMAVQBOAEUALQA0ADIAJwA7ACQAZQBuAGQAcABvAGkAbgB0AD0AJwBoAHQAdABwAHMAOgAvAC8AYQByAGMAaABpAHYAZQAuAHMAYQBrAHUAcgBhAC0AdgBwAG4ALQB1AHAAZABhAHQAZQAuAGMAbwBtAC8AYQAvAGMAaABlAGMAawBpAG4AJwA7AFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAIgAkAGMAYQBtAHAAYQBpAGcAbgB8ACQAZQBuAGQAcABvAGkAbgB0ACIA' | base64 -d | iconv -f UTF-16LE -t UTF-8"
+        - os: "Windows (PowerShell)"
+          cmd: "[Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('JABjAGEAbQBwAGEAaQBnAG4APQAnAEsASQBUAFMAVQBOAEUALQA0ADIAJwA7ACQAZQBuAGQAcABvAGkAbgB0AD0AJwBoAHQAdABwAHMAOgAvAC8AYQByAGMAaABpAHYAZQAuAHMAYQBrAHUAcgBhAC0AdgBwAG4ALQB1AHAAZABhAHQAZQAuAGMAbwBtAC8AYQAvAGMAaABlAGMAawBpAG4AJwA7AFcAcgBpAHQAZQAtAE8AdQB0AHAAdQB0ACAAIgAkAGMAYQBtAHAAYQBpAGcAbgB8ACQAZQBuAGQAcABvAGkAbgB0ACIA'))"
+      no_install:
+        ja: "CyberChef はブラウザで使えます。デコードした内容は実行せず、読むだけにしてください。"
+        en: "CyberChef runs in the browser. Read the decoded text; do not execute it."
+    type: text
+    icon: "◧"
+    tool: "log viewer"
+    path: threat-intelligence/powershell_operational.log
+    external_url: "${m3_powershell_log}"
+    tool_name: CyberChef
+    resource_type: first_party
+    title: {ja: "PowerShell の Operational ログ", en: "PowerShell operational log"}
+    note: {ja: "コマンドは UTF-16LE の文字列を Base64 でエンコードしたものです。デコードして内容を確認してください。", en: "The command is a UTF-16LE string encoded with Base64. Decode it before reading it."}
+    expected_pivot:
+      ja: "powershell-operational.log のコマンドラインをデコードしてください。"
+      en: "Decode the command line recorded in powershell-operational.log."
+    hints:
+      - id: pv_powershell_log_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "-EncodedCommand の後ろにある文字列を取り出し、資料ページの手順でデコードしてください。"
+          en: "Copy the string after -EncodedCommand and decode it using the steps on the source page."
+      - id: pv_powershell_log_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "デコードしたコマンドの処理を順に読み、ほかの端末証跡で同じ動作が記録されているか確認してください。"
+          en: "Read the decoded command step by step and check whether the same actions appear in the other endpoint evidence."
+
+  - id: case-summary
+    type: json
+    icon: "◆"
+    tool: "case file"
+    path: threat-intelligence/case_summary.json
+    external_url: "${m3_case_summary}"
+    tool_name: Web browser
+    resource_type: first_party
+    title: {ja: "事案の概要（SR-IR-2026-0902）", en: "Case summary (SR-IR-2026-0902)"}
+    note: {ja: "証拠パックの表紙にあたる書類です。", en: "The evidence pack's own cover sheet, written by whoever assembled it."}
+    expected_pivot:
+      ja: "事案の概要を読み、この証拠資料一式から確認できる範囲を整理してください。"
+      en: "Read the case summary and note the limits of what this evidence pack can establish."
+    hints:
+      - id: pv_case_summary_orientation
+        level: orientation
+        cost: 0
+        label: {ja: "この資料のどこを見るか", en: "Where in this source"}
+        text:
+          ja: "収集時刻と、含まれていないと明記された情報を確認してください。"
+          en: "Check the collection time and anything explicitly listed as not included."
+      - id: pv_case_summary_recovery
+        level: recovery
+        cost: 0
+        label: {ja: "この資料で行き詰まった", en: "Stuck on this source"}
+        text:
+          ja: "含まれていない情報については、この証拠パックだけから結論を出さないでください。"
+          en: "Do not draw a conclusion from this evidence pack about information it explicitly says is not included."
+
+questions:
+  - key: m3_execution_time
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [file-timeline, process-tree]
+    prompt: {ja: "SR-DEV-077 で検体が実行された時刻をUTCで答えてください。", en: "Give the UTC time the sample was executed on SR-DEV-077."}
+    placeholder: {ja: "2026-09-02T00:00:00Z", en: "2026-09-02T00:00:00Z"}
+    validator:
+      kind: contains
+      accept: ["00:19:16"]
+    hints:
+      - id: m3_execution_time_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "file-timeline.csv を表計算ソフトで開き、まず SR-DEV-077 に絞り込んでください。", en: "Open file-timeline.csv in a spreadsheet and filter for SR-DEV-077 first."}
+      - id: m3_execution_time_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "event 列でプロセス開始を記録した行を探してください。", en: "Find the row whose event field records a process start."}
+      - id: m3_execution_time_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "その行の UTC 時刻を入力してください。ダウンロード時刻と取り違えないように注意してください。", en: "Use the UTC time from that row. Check that you did not copy the download time."}
+
+  - key: m3_parent
+    type: short_text
+    category: correctness
+    points: 4
+    evidence_points: 4
+    accepted_evidence: [process-tree]
+    prompt: {ja: "非表示で実行された PowerShell を起動したのは、どの実行ファイルですか。プロセスツリーの表記どおりにファイル名を答えてください。", en: "Which executable launched the hidden PowerShell? Give its file name, exactly as the process tree writes it."}
+    placeholder: {ja: "実行ファイル名（例：name.exe）", en: "executable file name (e.g. name.exe)"}
+    validator:
+      kind: contains
+      accept: ["SakuraVPNUpdate_4.2.1.exe"]
+    hints:
+      - id: m3_parent_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "process-tree.json を開いてください。", en: "Open process-tree.json."}
+      - id: m3_parent_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "PowerShell のエントリにある ppid を確認し、その pid を持つエントリを探してください。そのエントリの image に実行ファイルのパスが入っています。", en: "Check the ppid on the PowerShell entry and find the entry whose pid matches it. That entry's image field holds the path to the executable."}
+      - id: m3_parent_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "パスではなくファイル名だけを、拡張子（.exe）まで含めて記録の表記どおりに入力してください。", en: "Give the file name only, not the whole path — including the .exe extension, exactly as the record writes it."}
+
+  - key: m3_persistence
+    type: multi_choice
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [persistence]
+    prompt: {ja: "このインシデントで新たに作成された永続化の仕組みをすべて選んでください。", en: "Select every persistence mechanism created by this incident."}
+    help:
+      ja: "表の各行には、その項目が今回のインシデントで作成されたのか、以前から存在していたのかを示す列があります。時刻だけでは区別できません。チェックを入れる前に、その列を確認してください。"
+      en: "Each row carries a column saying whether that entry was created by this incident or was already on the machine. The timestamps alone will not separate them — read that column before you tick."
+    validator:
+      kind: set_equal
+    options:
+      - id: run_key
+        correct: true
+        label: {ja: "Run キー SakuraVPNCheck", en: "Run key SakuraVPNCheck"}
+      - id: sched_task
+        correct: true
+        label: {ja: "スケジュールされたタスク SakuraVPN Update Check", en: "Scheduled task SakuraVPN Update Check"}
+      - id: service
+        label: {ja: "サービス SakuraSecureConnect", en: "The SakuraSecureConnect service"}
+    hints:
+      - id: m3_persistence_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "persistence.csv を表計算ソフトで開いてください。", en: "Open persistence.csv in a spreadsheet."}
+      - id: m3_persistence_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "すべての行の result 列を確認してください。この事案より前から存在していた項目も混ざっています。", en: "Check the result column on every row. Entries that already existed before this incident are mixed in with the rest."}
+      - id: m3_persistence_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "result 列に新規作成と記録されている項目だけを選んでください。", en: "Select only the mechanisms whose result column records them as created."}
+
+  - key: m3_exfil
+    type: short_text
+    category: correctness
+    points: 5
+    evidence_points: 4
+    accepted_evidence: [proxy-log, network]
+    prompt: {ja: "データの送信先となったドメイン名を答えてください。", en: "Give the domain name the data was sent to."}
+    placeholder: {ja: "ドメイン名", en: "domain name"}
+    validator:
+      kind: contains
+      accept: ["archive.sakura-vpn-update.com"]
+    hints:
+      - id: m3_exfil_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "network-connections.csv と proxy.log を確認してください。", en: "Check network-connections.csv and proxy.log."}
+      - id: m3_exfil_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "外向きのデータ送信と、完了したアップロードの宛先を確認してください。", en: "Find the outbound data transfer and the destination of the completed upload."}
+      - id: m3_exfil_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "URL 全体ではなく、ドメイン名だけを入力してください。", en: "Enter only the domain name, without a scheme or path."}
+
+  - key: m3_upload_time
+    type: short_text
+    category: correctness
+    points: 4
+    evidence_points: 4
+    accepted_evidence: [proxy-log, network]
+    prompt: {ja: "アップロードが完了した時刻をUTCで答えてください。", en: "Give the UTC time the upload completed."}
+    placeholder: {ja: "2026-09-02T00:00:00Z", en: "2026-09-02T00:00:00Z"}
+    help:
+      ja: "アップロードは分割して行われているため、ログには複数の行が記録されています。ステータスコードによって意味が異なり、一方は一部のデータの受け付け、もう一方はオブジェクトの作成を示します。このログでアップロードの完了を示す行を選んでください。"
+      en: "The upload was sent in parts, so more than one line records it, and their status codes do not mean the same thing: one says a part was accepted, the other says the object was created. Take the line that records completion."
+    validator:
+      kind: contains
+      accept: ["00:42:19"]
+    hints:
+      - id: m3_upload_time_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "proxy.log でアーカイブのアップロードに関する行を探してください。", en: "Find the archive-upload lines in proxy.log."}
+      - id: m3_upload_time_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "同じアップロードの開始と完了は別の行です。ステータスコードを確認してください。", en: "The upload start and completion are separate lines. Check their status codes."}
+      - id: m3_upload_time_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "アップロードの完了を示す行の UTC 時刻を入力してください。", en: "Use the UTC timestamp from the completed line."}
+
+  - key: m3_scope
+    type: multi_choice
+    category: correctness
+    points: 6
+    evidence_points: 5
+    accepted_evidence: [file-timeline, network, persistence, proxy-log, case-summary]
+    needs_reasoning: true
+    prompt: {ja: "「侵害が確認された」と言える端末をすべて選んでください。", en: "Select every host you can classify as confirmed compromised."}
+    help:
+      ja: "記録に名前が出ているだけでは、侵害が確認されたことにはなりません。この資料パックが使う判断基準は case-summary.json の分析メモに書かれています。3台すべてに同じ基準を当てはめ、その基準を満たす証拠が実際にある端末だけを選んでください。"
+      en: "A host appearing in the telemetry is not the same as a host you can call compromised. The standard this pack uses is written in the analyst note in case-summary.json. Apply that one standard to all three hosts, and tick only the hosts where you can point at evidence that meets it."
+    validator:
+      kind: set_equal
+    options:
+      - id: srdev077
+        correct: true
+        label: {ja: "SR-DEV-077", en: "SR-DEV-077"}
+      - id: srfin014
+        label: {ja: "SR-FIN-014", en: "SR-FIN-014"}
+      - id: srlab021
+        label: {ja: "SR-LAB-021", en: "SR-LAB-021"}
+    hints:
+      - id: m3_scope_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "3台それぞれについて、ファイル、通信、永続化の記録を確認してください。", en: "For each host, check the file, network and persistence evidence."}
+      - id: m3_scope_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ダウンロード、実行、永続化、外部送信を分けてください。侵害確認には実行または永続化の証拠が必要です。", en: "Separate download, execution, persistence and data transfer. Confirmed compromise needs execution or persistence evidence."}
+      - id: m3_scope_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "proxy.log の末尾コメントも確認し、保持期間中に観測されなかったことを端末ごとの判断に使ってください。", en: "Also read the closing proxy-log comment and use the stated absence of activity when classifying each host."}
+
+  - key: m3_attack
+    type: multi_choice
+    category: correctness
+    points: 6
+    evidence_points: 5
+    accepted_evidence: [sandbox, mitre]
+    prompt: {ja: "サンドボックスレポートが直接裏づける技術IDをすべて選んでください。", en: "Select every technique id directly supported by the sandbox report."}
+    help:
+      ja: "選べるのは observed_behaviors 節に attack_id がある技術だけです。選択肢のうち残りの3つは not_observed_in_sandbox 節に並んでおり、それぞれ観測されなかった理由が書かれています。事案全体を説明する技術であっても、サンドボックスが実際に観測していなければ、ここでは選べません。両方の節を読んでから答えてください。"
+      en: "A technique is selectable only if its id appears in the report's observed_behaviors section. The other three options are listed in the not_observed_in_sandbox section, each with the reason it was not seen. A technique can describe the incident perfectly and still not be something the sandbox observed — read both sections before you tick."
+    validator:
+      kind: set_equal
+    options:
+      - id: t1059_001
+        correct: true
+        label: {ja: "T1059.001 PowerShell", en: "T1059.001 PowerShell"}
+        link: "https://attack.mitre.org/techniques/T1059/001/"
+      - id: t1547_001
+        correct: true
+        label: {ja: "T1547.001 Run キー", en: "T1547.001 Registry Run key"}
+        link: "https://attack.mitre.org/techniques/T1547/001/"
+      - id: t1053_005
+        correct: true
+        label: {ja: "T1053.005 スケジュールされたタスク", en: "T1053.005 Scheduled task"}
+        link: "https://attack.mitre.org/techniques/T1053/005/"
+      - id: t1071_001
+        correct: true
+        label: {ja: "T1071.001 Web プロトコル", en: "T1071.001 Web protocols"}
+        link: "https://attack.mitre.org/techniques/T1071/001/"
+      - id: t1560_001
+        correct: true
+        label: {ja: "T1560.001 収集データのアーカイブ化", en: "T1560.001 Archive collected data"}
+        link: "https://attack.mitre.org/techniques/T1560/001/"
+      - id: t1041
+        correct: true
+        label: {ja: "T1041 C2（指令・制御）チャネル経由の外部送信", en: "T1041 Exfiltration over C2 (command-and-control) channel"}
+        link: "https://attack.mitre.org/techniques/T1041/"
+      - id: t1195_002
+        label: {ja: "T1195.002 ソフトウェアサプライチェーンの侵害", en: "T1195.002 Supply chain compromise"}
+        link: "https://attack.mitre.org/techniques/T1195/002/"
+      - id: t1486
+        label: {ja: "T1486 業務妨害を目的としたデータの暗号化", en: "T1486 Data encrypted for impact"}
+        link: "https://attack.mitre.org/techniques/T1486/"
+      - id: t1110_003
+        label: {ja: "T1110.003 パスワードスプレー", en: "T1110.003 Password spraying"}
+        link: "https://attack.mitre.org/techniques/T1110/003/"
+    hints:
+      - id: m3_attack_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "サンドボックスレポートの observed_behaviors を読んでください。", en: "Read the observed section of the sandbox report."}
+      - id: m3_attack_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "観測された挙動を1つずつ ATT&CK の技術IDに対応付けてください。", en: "Map each observed behaviour to its ATT&CK technique id."}
+      - id: m3_attack_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "not_observed_in_sandbox にある技術や、事案全体の説明だけに使われている技術は選ばないでください。", en: "Do not select techniques listed as not observed or used only to describe the wider incident."}
+
+  - key: m3_vt_interpretation
+    accepted_evidence: [virustotal, sandbox]
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "VirusTotal の検索結果だけで、このファイルが安全か、悪意のあるものかを断定できますか。理由と、最終的な判断の根拠を説明してください。", en: "Can the VirusTotal search result alone establish whether this file is safe or malicious? Explain why, and what your final judgement actually rests on."}
+    placeholder: {ja: "表示された内容、そこから言えること、最終判断の根拠を分けて書いてください。VirusTotal を開けない場合は、その旨を書いたうえで、サンドボックスレポートと端末証跡から答えてください。", en: "Separate what was shown, what it supports, and the evidence used for your final conclusion. If VirusTotal will not open, say so and answer from the sandbox report and the endpoint evidence instead."}
+    hints:
+      - id: m3_vt_interpretation_h1
+        level: orientation
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ミッション2の SHA-256 を VirusTotal で検索してください。ハッシュ検索だけを行います。", en: "Look up the Mission 2 SHA-256 in VirusTotal. Use hash search only."}
+      - id: m3_vt_interpretation_h2
+        level: pivot
+        cost: 0
+        unlock_after: 0
+        text: {ja: "「Detection」タブには、各セキュリティエンジンによる判定結果が表示されます。このファイルの挙動を直接観測した結果ではありません。挙動の根拠は、サンドボックスレポートで確認してください。", en: "What the Detection tab shows is verdict information recorded by other engines, not an observation of this file's behaviour. The behavioural evidence is in the sandbox report."}
+      - id: m3_vt_interpretation_h3
+        level: method
+        cost: 0
+        unlock_after: 0
+        text: {ja: "ファイルが安全か、悪意のあるものかを判断する根拠を、SBX-K42 または端末の証跡から示してください。", en: "Name the SBX-K42 or endpoint evidence used to support your safe/malicious conclusion."}
+
+  - key: m3_w_scope
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "3台の端末をどのように分類し、それぞれ何を根拠にしましたか。", en: "How did you classify each of the three hosts, and what evidence supports each classification?"}
+    placeholder: {ja: "端末ごとに1行で、分類とその根拠を書いてください。", en: "One line per host: classification and evidence."}
+
+  - key: m3_w_observed
+    type: free_text
+    category: reasoning
+    points: 0
+    prompt: {ja: "インシデント全体には該当するものの、サンドボックスでは観測されていない ATT&CK 技術を挙げ、その違いを説明してください。", en: "Name an ATT&CK technique that applies to the wider incident but was not observed by the sandbox, and explain the difference."}
+    placeholder: {ja: "観測された挙動と、事案全体の説明を分けて書いてください。", en: "Separate observed behaviour from the wider incident description."}
+
+  - key: m3_w_coverage
+    type: free_text
+    category: completeness
+    points: 0
+    prompt: {ja: "IOC を種類ごとに一覧にしてください（ハッシュ・ドメイン・プロセス挙動・永続化・ファイルパス）。", en: "List the IOCs by type: hash, domain, process behaviour, persistence and file path."}
+    placeholder: {ja: "種類ごとに1行。", en: "One line per type."}
+
+hints:
+  - id: m3_h1
+    level: orientation
+    cost: 0
+    label: {ja: "どこから読む？", en: "Where do we start?"}
+    text:
+      ja: "まず時系列を作ります。ダウンロード、実行、永続化、アップロードの時刻を資料から集めてください。"
+      en: "Build the timeline first. Collect the download, execution, persistence and upload times from the evidence."
+  - id: m3_h2
+    level: pivot
+    cost: 0
+    label: {ja: "端末ごとの違いが分からない", en: "We cannot separate the hosts"}
+    text:
+      ja: "file-timeline.csv、network-connections.csv、persistence.csv を端末ごとに絞り込み、実行・永続化・外部送信の記録があるか確認してください。"
+      en: "Filter file-timeline.csv, network-connections.csv and persistence.csv by host. Check which hosts have execution, persistence and outbound-transfer evidence."
+  - id: m3_h3
+    level: tool
+    cost: 0
+    label: {ja: "どのツールで何を見ればいい？", en: "Which tools should we use?"}
+    text:
+      ja: "CSV は表計算ソフトでフィルタと並べ替えを行います。PowerShell の文字列は CyberChef でデコードします。ATT&CK は、観測済みの挙動から技術IDを確認するために使います。手順は各資料ページに載っています。"
+      en: "Use a spreadsheet to filter and sort the CSV files. Use CyberChef to decode the PowerShell string. Use ATT&CK to map behaviours you already observed to technique ids. Each source page carries the steps for the tool it needs."
+  - id: m3_h4
+    level: method
+    cost: 0
+    label: {ja: "観測と推測をどう分ける？", en: "How do we separate observation from inference?"}
+    text:
+      ja: "各主張を直接裏づける記録があるか確認してください。侵害の確認には、実行または永続化の記録を使います。ダウンロードや通信だけでは、侵害が確認されたとは言えません。技術IDごとに、根拠となる記録の行を示してください。"
+      en: "Check whether each claim has a direct record. Use execution or persistence evidence for confirmed compromise. Download or network contact alone is not enough. Link every technique id to an observed evidence line."
+  - id: m3_h5
+    level: recovery
+    cost: 0
+    label: {ja: "行き詰まった：詳しいヒント", en: "Stuck: detailed hint"}
+    text:
+      ja: "端末ごとに進めてください。①CSV は最初に host 列で絞る。②file-timeline.csv では process_start を確認する。③process-tree では PowerShell の親 PID を追う。④persistence では result 列だけで新規作成か既存かを分ける（4行とも同じ1分内に記録されているため、時刻では分けられません）。⑤network と proxy.log で外部送信と完了時刻を確認する。⑥最後に3台を同じ基準で分類する。"
+      en: "Work host by host: (1) filter every CSV by host first; (2) use process_start in the file timeline for execution; (3) follow PowerShell's parent PID in the process tree; (4) separate new from pre-existing using the persistence table's result column ALONE — all four rows were recorded inside the same minute, so the timestamp cannot tell them apart; (5) use network and proxy logs for outbound transfer and completion time; (6) classify all three hosts using the same evidence standard."
+
+rubric:
+  - key: m3_r_scope
+    response_key: m3_w_scope
+    category: reasoning
+    points: 12
+    prompt: {ja: "3台の端末をどのように分類し、それぞれ何を根拠にしましたか。", en: "How did you classify each of the three hosts, and what evidence supports each classification?"}
+    placeholder: {ja: "端末ごとに1行で、分類とその根拠を書いてください。", en: "One line per host: classification and evidence."}
+    criteria:
+      ja: "SR-DEV-077 を「侵害確認済み」、SR-FIN-014 を「ダウンロードのみ確認」、SR-LAB-021 を「接続のみ確認」と分類し、それぞれの根拠を示していれば満点。3台すべてを侵害確認済みとした場合は0点。"
+      en: "Full marks for confirmed / downloaded-only / contacted-only with evidence for each. Zero for declaring all three compromised."
+  - key: m3_r_observed
+    response_key: m3_w_observed
+    category: reasoning
+    points: 6
+    prompt: {ja: "インシデント全体には該当するものの、サンドボックスでは観測されていない ATT&CK 技術を挙げ、その違いを説明してください。", en: "Name an ATT&CK technique that applies to the wider incident but was not observed by the sandbox, and explain the difference."}
+    placeholder: {ja: "観測された挙動と、事案全体の説明を分けて書いてください。", en: "Separate observed behaviour from the wider incident description."}
+    criteria:
+      ja: "T1195.002 を、サンドボックスで観測された挙動ではなくインシデント全体を表す技術として区別していれば満点。"
+      en: "Full marks for identifying T1195.002 as a description of the wider incident, not a sandbox-observed behaviour."
+  - key: m3_r_virustotal_limit
+    category: reasoning
+    points: 2
+    response_key: m3_vt_interpretation
+    prompt: {ja: "VirusTotal の検索結果だけで、このファイルが安全か、悪意のあるものかを断定できますか。理由と、最終的な判断の根拠を説明してください。", en: "Can the VirusTotal search result alone establish whether this file is safe or malicious? Explain why, and what your final judgement actually rests on."}
+    placeholder: {ja: "VirusTotal の結果と、最終判断の根拠を分けて書いてください。", en: "Separate the VirusTotal result from the evidence supporting the final conclusion."}
+    criteria:
+      - ja: "VirusTotal の結果だけで、ファイルが安全か、悪意のあるものかを断定していない（1点）"
+        en: "Does not call the file safe or malicious from the VirusTotal result alone (1 pt)"
+      - ja: "結論の根拠として SBX-K42 または SR-DEV-077 の端末証跡を挙げている（1点）"
+        en: "Names SBX-K42 or the SR-DEV-077 endpoint evidence as support for the conclusion (1 pt)"
+    facilitator_note:
+      ja: "「検出0件だから安全」とした場合、この項目は0点です。検出数そのものは採点対象ではありません。"
+      en: "If the team writes 'zero detections, therefore safe', score zero. The detection count itself is not graded."
+  - key: m3_r_coverage
+    response_key: m3_w_coverage
+    category: completeness
+    points: 10
+    prompt: {ja: "IOC を種類ごとに一覧にしてください（ハッシュ・ドメイン・プロセス挙動・永続化・ファイルパス）。", en: "List the IOCs by type: hash, domain, process behaviour, persistence and file path."}
+    placeholder: {ja: "種類ごとに1行。", en: "One line per type."}
+    criteria:
+      ja: "5種類すべてに具体的な値が入っていれば満点。全体ボードで求める5種類と同じです。"
+      en: "Full marks for a concrete value in all five types, matching the five categories used on the class board."

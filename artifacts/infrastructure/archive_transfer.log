@@ -1,0 +1,8 @@
+2026-09-02T00:31:12Z campaign=KITSUNE-42 job=K42-SRDEV077-0902 host=SR-DEV-077 event=session_open status=ok
+2026-09-02T00:32:08Z campaign=KITSUNE-42 job=K42-SRDEV077-0902 host=SR-DEV-077 event=collection_start patterns="*.docx,*.xlsx,*.pdf"
+2026-09-02T00:36:44Z campaign=KITSUNE-42 job=K42-SRDEV077-0902 host=SR-DEV-077 event=stage_ready object=kumo_stage_SR-DEV-077_20260902T003644Z.zip files=23 bytes=19511296
+2026-09-02T00:37:03Z campaign=KITSUNE-42 job=K42-SRDEV077-0902 host=SR-DEV-077 event=upload_start chunk=1/2
+2026-09-02T00:42:19Z campaign=KITSUNE-42 job=K42-SRDEV077-0902 host=SR-DEV-077 event=upload_complete object=kumo_stage_SR-DEV-077_20260902T003644Z.zip files=23 bytes=19511296 status=201
+2026-09-02T00:43:07Z campaign=KITSUNE-42 job=K42-SRDEV077-0902 host=SR-DEV-077 event=session_close status=ok
+
+# No completed collection or upload is recorded for SR-FIN-014 or SR-LAB-021.

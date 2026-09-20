@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ t('final.title') }} · {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="page narrow">
+  <div class="eyebrow mut">{{ t('final.eyebrow') }} · {{ team.display_name }}</div>
+  <h1>{{ t('final.title') }}</h1>
+  <div class="banner info">{{ t('final.not_yet_title') }}</div>
+  <p class="lead">{{ t('final.not_yet_body') }}</p>
+  <p class="small">{{ t('final.not_yet_remaining', missions=missions | join(' · ')) }}</p>
+  <a class="btn" href="{{ url_for('participant.team_home') }}">{{ t('nav.team') }}</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+poll('/api/session-state', function (d) {
+  if (d.final_open && d.missions_finished) location.reload();
+});
+</script>
+{% endblock %}
